@@ -30,7 +30,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     e.preventDefault()
     
     const supabase = createClient()
-    console.log(supabase.auth);
+
     setIsLoading(true)
     setError(null)
 

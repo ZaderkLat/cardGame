@@ -9,9 +9,11 @@ import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
 import GameDialog from "@/components/ui/dialogGameMessaje";
 import { isWinner } from "@/lib/gameEngine/twetyOne/twety_One";
-
+import { useUser } from "@/hooks/useUser";
 
 export default function Home() {
+    //userData
+    const { user,loading } = useUser();
     //Game State
     const [score, setScore] = useState<number>(0);
     const [hand, setHand] = useState<card[]>([]);
@@ -166,9 +168,10 @@ export default function Home() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-zinc-50 font-sans dark:bg-black">
+        <div className="flex flex-col flex-1 bg-zinc-50 dark:bg-black">
+            
             {/* Container */}
-            <div className="flex flex-row justify-center p-4 min-h-screen">
+            <div className="flex flex-row flex-1 justify-center p-4">
 
                 {/* left container */}
                 <div className="flex flex-col items-center justify-center w-1/4 h-full">
@@ -178,7 +181,7 @@ export default function Home() {
                 </div>
 
                 {/* center container */}
-                <div className="flex flex-col items-center justify-center w-1/2 h-100%">
+                <div className="flex flex-col items-center justify-center w-1/2">
                     <div className="flex justify-center pt-6">
                         <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
                             Twenty One Game
