@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { card } from "@/interface/card";
 import cardStyle from "@/components/ObjectsGame/cardStyle";
-import { ModeToggle } from "@/components/ui/modeToggle";
 import { GameState, LogGame } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
@@ -42,7 +41,7 @@ export default function Home() {
             method: "POST"
         }).then(res => res.json()) as GameState;
         setGameData(response);
-        console.log("Start Game:", response);
+       
         if (response.round === 1) {
             setGameInfo(prev => [...prev, { type: "info", message: `Game Started.` }]);
         } else {
@@ -62,7 +61,7 @@ export default function Home() {
         if (!GameData) return;
         const res = await fetch(`/api/game/twentyOne/state?gameId=${GameData.id}`)
         const data = await res.json()
-        console.log("Game State: response", data);
+        
 
 
     };
@@ -260,7 +259,7 @@ export default function Home() {
 
 
 
-                        <ModeToggle />
+                        
                     </div>
 
                 </div>
