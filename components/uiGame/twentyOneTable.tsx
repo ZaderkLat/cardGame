@@ -13,12 +13,13 @@ interface TwentyOneTableProps {
     setGameInfo: React.Dispatch<React.SetStateAction<LogGame[]>>;
     setRestartGame: React.Dispatch<React.SetStateAction<boolean>>;
     restartGame: boolean;
+    setScore: React.Dispatch<React.SetStateAction<number>>;
+    score: number;
 }
 
-export default function TwentyOneTable({ setGameInfo, setRestartGame, restartGame }: TwentyOneTableProps) {
+export default function TwentyOneTable({ setGameInfo, setRestartGame, restartGame, setScore, score }: TwentyOneTableProps) {
     const [hand, setHand] = useState<card[]>([]);
     const [deck, setDeck] = useState<card[]>([]);
-    const [score, setScore] = useState<number>(0);
 
     const [dialog, setDialog] = useState<dialogData>({
         open: false,
@@ -48,14 +49,14 @@ export default function TwentyOneTable({ setGameInfo, setRestartGame, restartGam
 
     };
     const startGame = async () => {
-        console.log("Starting game...");
+
         const response = await fetch("/api/game/twentyOne/startGame", {
             method: "POST"
         }).then(res => res.json()) as GameState;
         setGameData(response);
 
         if (response.round === 1) {
-            setGameInfo(prev => [...prev, { type: "info", message: `Game Started.` }]);
+            setGameInfo([{ type: "info", message: `Game Started.` }]);
         } else {
             setGameInfo(prev => [...prev, { type: "info", message: `Round ${response.round} started.` }]);
             setGameInfo(prev => [...prev, { type: "info", message: `Score obtained: ${response.score - score}` }]);
@@ -140,7 +141,7 @@ export default function TwentyOneTable({ setGameInfo, setRestartGame, restartGam
             setDeck(response.deck);
 
         } else {
-            console.log("Game finished");
+
             const { status, message, difficulty } = isWinner(response.score, "medium", response.countRound);
             openDialog({
                 title: "Game Result",
@@ -163,7 +164,6 @@ export default function TwentyOneTable({ setGameInfo, setRestartGame, restartGam
 
                 startGame();
             });
-
 
         }
     }
