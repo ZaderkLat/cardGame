@@ -28,4 +28,10 @@ export type LogGame = {
   message: string
 }
 
-export type difficultyLevel = "easy" | "medium" | "hard";
+
+
+export const difficulties = {
+  easy: { id: "easy", name: "Easy", description: "Beginner level ", requerimentPoints: 60 },
+  medium: { id: "medium", name: "Medium", description: "Intermediate level", requerimentPoints: 75 },
+  hard: { id: "hard", name: "Hard", description: "Expert level", requerimentPoints: 90 }
+}
