@@ -1,7 +1,6 @@
 import { card } from "@/interface/card";
 import { prepareGame, getCart } from "@/lib/gameEngine/prepareGame";
-import { difficultyLevel } from "@/interface/gameData";
-
+import { difficulties } from "@/interface/gameData";
 let playerHand: card[] = [];
 let remainingDeck: card[] = [];
 
@@ -31,8 +30,11 @@ export function calculateHandValue(hand: card[]) {
     }, 0);
 }
 //determine if the player is a winner based on the score and the difficulty level, if taken into account the total rounds played to determine the score needed to win
-export function isWinner(score: number, difficulty: difficultyLevel, totalRounds: number) {
+export function isWinner(score: number, difficulty: keyof typeof difficulties, totalRounds: number) {
     let isWin = false;
+    const requiredScore = difficulties[difficulty].requerimentPoints * totalRounds;
+    isWin = score >= requiredScore;
+    /*
     switch (difficulty) {
         case "easy":
             isWin = score >= 60 * totalRounds;
@@ -48,19 +50,19 @@ export function isWinner(score: number, difficulty: difficultyLevel, totalRounds
         default:
             isWin = false;
             break;
-    }
+    }*/
 
     if (isWin) {
         return {
             message: "You Win!",
             status: "win" as const,
-            difficulty: difficulty
+
         }
     } else {
         return {
             message: "You Lose!",
             status: "lose" as const,
-            difficulty: difficulty
+
         }
     }
 }

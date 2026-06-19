@@ -11,40 +11,46 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils";
-import { GameDialogProps, statusDialog } from "@/interface/dialog";
-
+import { statusDialog } from "@/interface/dialog";
+export type GameDialogProps = {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    title: string;
+    description: string;
+    status: "win" | "lose" | "continue";
+};
 
 //control the animation of the dialog based on the game status
 function getDialogStyle(status: statusDialog) {
-  return cn(
-    "max-w-md rounded-2xl p-6 shadow-xl",
-    "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
-    "duration-300",
+    return cn(
+        "max-w-md rounded-2xl p-6 shadow-xl",
+        "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
+        "duration-300",
 
-    // Base animation
-    "data-[state=open]:animate-in",
-    "data-[state=closed]:animate-out",
+        // Base animation
+        "data-[state=open]:animate-in",
+        "data-[state=closed]:animate-out",
 
-    // Variants
-    status === "continue" && [
-      "data-[state=open]:fade-in",
-      "data-[state=open]:zoom-in-95",
-      "data-[state=closed]:fade-out",
-      "data-[state=closed]:zoom-out-95",
-    ],
+        // Variants
+        status === "continue" && [
+            "data-[state=open]:fade-in",
+            "data-[state=open]:zoom-in-95",
+            "data-[state=closed]:fade-out",
+            "data-[state=closed]:zoom-out-95",
+        ],
 
-    status === "win" && [
-      "data-[state=open]:fade-in",
-      "data-[state=open]:zoom-in-150", // más impacto
-      "data-[state=open]:slide-in-from-bottom-2", // pequeño bounce visual
-    ],
+        status === "win" && [
+            "data-[state=open]:fade-in",
+            "data-[state=open]:zoom-in-150", // más impacto
+            "data-[state=open]:slide-in-from-bottom-2", // pequeño bounce visual
+        ],
 
-    status === "lose" && [
-      "data-[state=open]:fade-in",
-      "data-[state=open]:zoom-in-90", // entra más “pesado”
-      "data-[state=open]:slide-in-from-top-15", // cae
-    ]
-  );
+        status === "lose" && [
+            "data-[state=open]:fade-in",
+            "data-[state=open]:zoom-in-90", // entra más “pesado”
+            "data-[state=open]:slide-in-from-top-15", // cae
+        ]
+    );
 }
 
 export default function GameDialog({ title, description, open, status, onOpenChange }: GameDialogProps) {
@@ -67,8 +73,7 @@ export default function GameDialog({ title, description, open, status, onOpenCha
 
                 </DialogHeader>
 
-                {/* Divider */}
-                <div className="my-4 h-px bg-zinc-200 dark:bg-zinc-800 " />
+
 
                 <DialogFooter className="mt-4 flex justify-center gap-3">
 

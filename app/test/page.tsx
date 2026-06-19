@@ -12,7 +12,7 @@ import { useUser } from "@/hooks/useUser";
 
 export default function Home() {
     //userData
-    const { user,loading } = useUser();
+    const { user, loading } = useUser();
     //Game State
     const [score, setScore] = useState<number>(0);
     const [hand, setHand] = useState<card[]>([]);
@@ -41,7 +41,7 @@ export default function Home() {
             method: "POST"
         }).then(res => res.json()) as GameState;
         setGameData(response);
-       
+
         if (response.round === 1) {
             setGameInfo(prev => [...prev, { type: "info", message: `Game Started.` }]);
         } else {
@@ -61,7 +61,7 @@ export default function Home() {
         if (!GameData) return;
         const res = await fetch(`/api/game/twentyOne/state?gameId=${GameData.id}`)
         const data = await res.json()
-        
+
 
 
     };
@@ -168,7 +168,7 @@ export default function Home() {
 
     return (
         <div className="flex flex-col flex-1 bg-zinc-50 dark:bg-black">
-            
+
             {/* Container */}
             <div className="flex flex-row flex-1 justify-center p-4">
 
@@ -259,7 +259,7 @@ export default function Home() {
 
 
 
-                        
+
                     </div>
 
                 </div>
