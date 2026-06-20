@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { card } from "@/interface/card";
 import cardStyle from "@/components/ObjectsGame/cardStyle";
 import { GameState, LogGame } from "@/interface/gameData";
@@ -18,6 +19,7 @@ import {
     HoverCardContent,
     HoverCardTrigger
 } from "@/components/ui/hover-card";
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
@@ -175,86 +177,99 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     }
 
     return (
-        <div className="flex flex-col flex-1 bg-zinc-50 dark:bg-black h-full">
+        <div className="flex flex-col min-h-full bg-zinc-50 dark:bg-black">
 
-            {/* Container */}
-            <div className="relative flex flex-row flex-1 justify-center p-2">
+            {/* MAIN WRAPPER */}
+            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full">
 
-
-                {/* center container */}
+                {/* CENTER */}
                 <div className="flex flex-col items-center justify-center w-full">
-                    <div className="flex justify-center w-full">
 
-                        <div className="flex justify-baseline mb-4 absolute top-5 left-4">
-                            <h1 className="text-2xl font-bold text-gray-800 dark:text-white ">
-                                Score: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
-                            </h1>
-                        </div>
-                        <div className="flex justify-center pt-6">
-                            <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-                                Twenty One Game
-                            </h1>
-                        </div>
-                    </div>
+                    {/* TOP BAR */}
+                    <div className="flex justify-between w-full px-2 relative">
 
+                        <h1 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white absolute left-2 top-2">
+                            Score: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
+                        </h1>
 
-                    <div className="flex flex-col items-center justify-center flex-1">
-                        <div className="text-2xl font-bold text-gray-800 dark:text-white">
-                            Hand Value: {handValue}
-                        </div>
+                        <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mx-auto pt-10 lg:pt-2">
+                            Twenty One Game
+                        </h1>
 
                     </div>
 
-                    {/* BOTTOM */}
-                    <div className="flex flex-col items-center pb-6">
-                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    {/* CARD BUTTON AREA */}
+                    <div className="flex flex-1 flex-col items-center justify-center mt-6">
+                        <button
+                            onClick={handleTakeCard}
+                            className="w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105 active:scale-95 disabled:opacity-50"
+                            disabled={handValue >= 21}
+                        >
+                            <Image
+                                src="/backCard.svg"
+                                alt="Take card"
+                                width={96}
+                                height={144}
+                                className="w-full h-full object-cover"
+                            />
+                        </button>
+
+                        <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
+                            Click to draw a card
+                        </p>
+                    </div>
+
+                    {/* BOTTOM HAND */}
+                    <div className="relative flex flex-col items-center pb-6 border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
+
+                        {/* BOTÓN SOBRE EL BORDE */}
+                        <button
+                            onClick={handleEndRound}
+                            className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow-md text-sm sm:text-base"
+                        >
+                            End Round
+                        </button>
+
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mt-6">
                             Player Hand:
                         </h2>
 
-                        <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={handleTakeCard}
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            >
-                                Take card
-                            </button>
-
-                            <button
-                                onClick={handleEndRound}
-                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                            >
-                                End Round
-                            </button>
-
+                        <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mt-2">
+                            Hand Value: {handValue}
                         </div>
 
-                        <div className="flex gap-4 mt-4">
+                        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
                             {hand.map((card, index) => (
-                                <div key={index}>{cardStyle(card)}</div>
+                                <div key={index} className="scale-90 sm:scale-100">
+                                    {cardStyle(card)}
+                                </div>
                             ))}
                         </div>
+
                     </div>
-
                 </div>
-                {/* right container */}
-                <div className="flex flex-col w-1/4 h-full">
 
-                    {/* Top section: InfoGame takes most of the vertical space */}
-                    <div className="flex-1 flex items-start justify-center text-2xl font-bold text-gray-800 dark:text-white mb-4 ">
+                {/* RIGHT PANEL */}
+                <div className="w-full lg:w-1/4 h-auto lg:h-full mt-6 lg:mt-0">
+
+                    <div className="hidden sm:flex-1 sm:flex sm:items-start sm:justify-center text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         <InfoGame info={gameInfo} />
                     </div>
 
-                    {/* Bottom section: buttons aligned at the bottom */}
-                    <div className="relative flex flex-col gap-2 pb-4 items-center">
+                    <div className="flex flex-col gap-2 pb-4 items-center">
                         <button
                             onClick={handleRestartGame}
-                            className="px-3 py-1  bg-gray-500 text-white rounded hover:bg-gray-600"
+                            className="w-full lg:w-auto px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
                         >
                             Restart Game
                         </button>
 
-                        <ReturnButton setMenuState={setMenuState} menuState={"select"} className="dark:bg-gray-500 dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600">
-                            <p className="text-lg font-bold text-gray-800 dark:text-white">
+                        <ReturnButton
+                            setMenuState={setMenuState}
+                            menuState={"select"}
+                            className="w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
+                        >
+                            <p className="text-lg font-bold text-white">
                                 Exit Game
                             </p>
                         </ReturnButton>
@@ -271,34 +286,37 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             open={openDifficultDialog}
                             onOpenChange={setOpenDifficultDialog}
                             title="Select Difficulty"
-                            childrenBottom={<div className="flex justify-center">
-                                <ReturnButton
-                                    setMenuState={setMenuState}
-                                    menuState="select"
-                                    className="w-full h-full dark:bg-gray-500 dark:hover:bg-red-900
-                                        text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
-                                >
-                                    Exit Game
-                                </ReturnButton>
-                            </div>}
+                            childrenBottom={
+                                <div className="flex justify-center w-full">
+                                    <ReturnButton
+                                        setMenuState={setMenuState}
+                                        menuState="select"
+                                        className="w-full dark:bg-gray-500 dark:hover:bg-red-900 text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
+                                    >
+                                        Exit Game
+                                    </ReturnButton>
+                                </div>
+                            }
                         >
-                            <div className="text-lg font-bold text-gray-800 dark:text-white mb-4 justify-center flex">
+                            <div className="text-lg font-bold text-gray-800 dark:text-white mb-4 text-center">
                                 Please select the difficulty level:
                             </div>
-                            <div className="flex flex-row justify-center border-2 gap-6 rounded-lg p-4">
+
+                            <div className="flex flex-col sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4">
                                 {difficulties && Object.entries(difficulties).map(([key, value]) => (
                                     <label key={key} className="flex items-center gap-2 cursor-pointer">
                                         <Checkbox
                                             checked={difficulty === key}
                                             onCheckedChange={() => {
                                                 setDifficulty(key as keyof typeof difficulties);
-
                                             }}
                                         />
-                                        <div className="flex flex-row gap-2 items-center text-center justify-center">
-                                            <span className="text-lg font-medium text-gray-800 dark:text-white">
+
+                                        <div className="flex flex-col sm:flex-row gap-2 items-center text-center">
+                                            <span className="text-base sm:text-lg font-medium text-gray-800 dark:text-white">
                                                 {value.name}
                                             </span>
+
                                             <HoverCard>
                                                 <HoverCardTrigger>
                                                     <span className="text-sm text-gray-500 dark:text-gray-300">
@@ -306,28 +324,20 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                                     </span>
                                                 </HoverCardTrigger>
                                                 <HoverCardContent>
-                                                    <p>{value.description}, you need {value.requerimentPoints * (GameData?.countRound || 5)} points to win.</p>
+                                                    <p>
+                                                        {value.description}, you need {value.requerimentPoints * (GameData?.countRound || 5)} points to win.
+                                                    </p>
                                                 </HoverCardContent>
                                             </HoverCard>
-
                                         </div>
-
                                     </label>
                                 ))}
                             </div>
                         </DialogSelectDifficult>
 
-
                     </div>
-
-                </div >
-
-
-
-
-            </div >
-
-
-        </div >
+                </div>
+            </div>
+        </div>
     );
 }
