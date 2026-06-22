@@ -12,12 +12,20 @@ export function TopBar() {
     const router = useRouter();
 
     return (
-        <div className="w-full h-16 px-6 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
+        <div className="w-full h-12 px-6 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
 
             {/* Left */}
-            <h1 className="text-lg font-bold">
-                🎮 Twenty One
-            </h1>
+            <Button className="bg-transparent transition duration-500 hover:scale-115 flex justify-center items-center "
+                onClick={() =>
+                    window.location.href = "/"
+                }
+
+            >
+                <h1 className="text-lg font-bold text-black dark:text-white">
+                    🎮 Home Page
+                </h1>
+            </Button>
+
 
             {/* Right */}
             <div className="flex items-center gap-4">

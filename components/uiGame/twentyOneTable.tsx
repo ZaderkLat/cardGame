@@ -187,10 +187,15 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                     {/* TOP BAR */}
                     <div className="flex justify-between w-full px-2 relative">
+                        <div className="flex flex-col absolute left-2 top-2">
+                            <h1 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white ">
+                                Score: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
+                            </h1>
+                            <h1 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white ">
+                                Round: {`${GameData?.round} / ${GameData?.countRound}`}
+                            </h1>
+                        </div>
 
-                        <h1 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white absolute left-2 top-2">
-                            Score: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
-                        </h1>
 
                         <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mx-auto pt-10 lg:pt-2">
                             Twenty One Game
@@ -291,48 +296,60 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                     <ReturnButton
                                         setMenuState={setMenuState}
                                         menuState="select"
-                                        className="w-full dark:bg-gray-500 dark:hover:bg-red-900 text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
+                                        className="w-full dark:bg-gray-500 dark:hover:bg-red-900
+                                        text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
                                     >
                                         Exit Game
                                     </ReturnButton>
                                 </div>
                             }
                         >
-                            <div className="text-lg font-bold text-gray-800 dark:text-white mb-4 text-center">
-                                Please select the difficulty level:
-                            </div>
+                            <>
+                                <div className="text-base sm:text-lg font-bold text-gray-800 dark:text-white mb-6 text-center">
+                                    Please select the difficulty level:
+                                </div>
 
-                            <div className="flex flex-col sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4">
-                                {difficulties && Object.entries(difficulties).map(([key, value]) => (
-                                    <label key={key} className="flex items-center gap-2 cursor-pointer">
-                                        <Checkbox
-                                            checked={difficulty === key}
-                                            onCheckedChange={() => {
-                                                setDifficulty(key as keyof typeof difficulties);
-                                            }}
-                                        />
+                                <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
 
-                                        <div className="flex flex-col sm:flex-row gap-2 items-center text-center">
-                                            <span className="text-base sm:text-lg font-medium text-gray-800 dark:text-white">
-                                                {value.name}
-                                            </span>
+                                    {difficulties &&
+                                        Object.entries(difficulties).map(([key, value]) => (
+                                            <label
+                                                key={key}
+                                                className="flex flex-row items-center justify-center sm:justify-start gap-2 cursor-pointer"
+                                            >
+                                                <Checkbox
+                                                    checked={difficulty === key}
+                                                    onCheckedChange={() => {
+                                                        setDifficulty(key as keyof typeof difficulties);
+                                                    }}
+                                                />
 
-                                            <HoverCard>
-                                                <HoverCardTrigger>
-                                                    <span className="text-sm text-gray-500 dark:text-gray-300">
-                                                        (?)
+                                                <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
+                                                    <span className="text-sm sm:text-lg font-medium text-gray-800 dark:text-white">
+                                                        {value.name}
                                                     </span>
-                                                </HoverCardTrigger>
-                                                <HoverCardContent>
-                                                    <p>
-                                                        {value.description}, you need {value.requerimentPoints * (GameData?.countRound || 5)} points to win.
-                                                    </p>
-                                                </HoverCardContent>
-                                            </HoverCard>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
+
+                                                    <HoverCard>
+                                                        <HoverCardTrigger>
+                                                            <span className="text-sm text-gray-500 dark:text-gray-300">
+                                                                (?)
+                                                            </span>
+                                                        </HoverCardTrigger>
+
+                                                        <HoverCardContent className="max-w-62.5 sm:max-w-xs">
+                                                            <p className="text-sm">
+                                                                {value.description}, you need{" "}
+                                                                {value.requerimentPoints *
+                                                                    (GameData?.countRound || 5)}{" "}
+                                                                points to win.
+                                                            </p>
+                                                        </HoverCardContent>
+                                                    </HoverCard>
+                                                </div>
+                                            </label>
+                                        ))}
+                                </div>
+                            </>
                         </DialogSelectDifficult>
 
                     </div>

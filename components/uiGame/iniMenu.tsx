@@ -15,8 +15,8 @@ interface IniMenuProps {
 }
 export default function IniMenu({ setMenuState }: IniMenuProps) {
   return (
-    <div className="flex items-center justify-center h-full mb-16">
-      <Card className="w-full max-w-md h-auto p-16 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div className="flex items-center justify-center h-full p-4">
+      <Card className="w-full max-w-md h-auto pt-14 pb-14 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-5xl font-extrabold mb-3">
             <h1 className="text-5xl font-extrabold mb-3">
