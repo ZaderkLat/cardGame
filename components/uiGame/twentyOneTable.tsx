@@ -20,6 +20,9 @@ import {
     HoverCardTrigger
 } from "@/components/ui/hover-card";
 
+import FloatComponent from "../ui/floatComponent";
+import { toast } from "sonner"
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
@@ -50,6 +53,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
 
+    const [textFloatComponent, setTextFloadComponent] = useState<string>("");
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
         const response = await fetch("/api/game/twentyOne/startGame", {
@@ -63,6 +67,10 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             setGameInfo(prev => [...prev, { type: "info", message: `Round ${response.round} started.` }]);
             setGameInfo(prev => [...prev, { type: "info", message: `Score obtained: ${response.score - score}` }]);
         }
+
+        if (response.handValue === 21) {
+            setTextFloadComponent("Good luck!!! Perfect Round!!!")
+        }
         //set all data from response
         setHandValue(response.handValue);
         setScore(response.score);
@@ -70,7 +78,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         setDeck(response.deck);
 
 
+
     }
+
 
     //* Control the dialog data and its open and close states */
     const openDialog = (data: Omit<dialogData, "open">) => {
@@ -103,8 +113,15 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 playerHand: hand
             })
         }).then(res => res.json()) as GameState;
+
         setGameData(response);
 
+        if (response.handValue === 21) {
+            setTextFloadComponent("You win this round!!!")
+        }
+        if (response.handValue > 21) {
+            setTextFloadComponent("You lost this round")
+        }
         setGameInfo(prev => [...prev, { type: "info", message: `Card taken: ${response.playerHand.at(-1)?.rank + " of " + response.playerHand.at(-1)?.club || 0}` }]);
         setHandValue(response.handValue);
         setHand(response.playerHand);
@@ -168,7 +185,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 setHand([]);
                 setDeck([]);
                 setHandValue(0);
-
+                if (response.handValue === 21) {
+                    setTextFloadComponent("Good luck!!! Perfect Round!!!")
+                }
                 startGame();
             });
 
@@ -187,24 +206,35 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                     {/* TOP BAR */}
                     <div className="flex justify-between w-full px-2 relative">
-                        <div className="flex flex-col absolute left-2 top-2">
-                            <h1 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white ">
+
+                        {/* Score y Round */}
+                        <div className="absolute left-2 top-2 w-full px-2 flex justify-between sm:justify-start sm:flex-col sm:w-auto">
+
+                            <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
                                 Score: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
                             </h1>
-                            <h1 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white ">
+
+                            <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
                                 Round: {`${GameData?.round} / ${GameData?.countRound}`}
                             </h1>
+
                         </div>
 
-
-                        <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mx-auto pt-10 lg:pt-2">
+                        {/* Título */}
+                        <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mx-auto pt-10 sm:pt-16 lg:pt-2">
                             Twenty One Game
                         </h1>
 
                     </div>
 
                     {/* CARD BUTTON AREA */}
-                    <div className="flex flex-1 flex-col items-center justify-center mt-6">
+                    <div className="relative flex flex-1 flex-col items-center justify-center mt-6 w-full">
+                        <FloatComponent isVisible={handValue >= 21}>
+                            <div className="text-center">
+                                <span>{textFloatComponent}</span>
+                            </div>
+                        </FloatComponent>
+
                         <button
                             onClick={handleTakeCard}
                             className="w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105 active:scale-95 disabled:opacity-50"
