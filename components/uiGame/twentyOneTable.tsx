@@ -54,11 +54,17 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
 
     const [textFloatComponent, setTextFloadComponent] = useState<string>("");
+
+    //disable "end round" button
+    const [endRoundButton, setEndRoundButton] = useState<boolean>(false);
+
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
+        setEndRoundButton(true);
         const response = await fetch("/api/game/twentyOne/startGame", {
             method: "POST"
         }).then(res => res.json()) as GameState;
+
         setGameData(response);
 
         if (response.round === 1) {
@@ -76,6 +82,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         setScore(response.score);
         setHand(response.playerHand);
         setDeck(response.deck);
+        //enable "end round" button when the game is ready
+        setEndRoundButton(false);
 
 
 
@@ -116,12 +124,6 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
         setGameData(response);
 
-        if (response.handValue === 21) {
-            setTextFloadComponent("You win this round!!!")
-        }
-        if (response.handValue > 21) {
-            setTextFloadComponent("You lost this round")
-        }
         setGameInfo(prev => [...prev, { type: "info", message: `Card taken: ${response.playerHand.at(-1)?.rank + " of " + response.playerHand.at(-1)?.club || 0}` }]);
         setHandValue(response.handValue);
         setHand(response.playerHand);
@@ -140,7 +142,12 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         startGame();
     }
 
+
+
     const handleEndRound = async () => {
+        //disable "end round" button
+        setEndRoundButton(true);
+
         if (!GameData) return;
         const response = await fetch("/api/game/twentyOne/play/endRound", {
             method: "POST",
@@ -164,6 +171,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             setHandValue(response.handValue);
             setHand(response.playerHand);
             setDeck(response.deck);
+            setEndRoundButton(false);
+
 
         } else {
             const { status, message } = isWinner(response.score, difficulty, response.countRound);
@@ -172,7 +181,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 description: message + "\nScore: " + response.score + "\nDifficulty: " + difficulty,
                 status: status,
             });
-            setGameInfo(prev => [...prev, { type: status, message: `${message} with ${response.score} points.` }]);
+
 
             setPendingAction(() => () => {
                 setGameInfo(prev => [
@@ -185,9 +194,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 setHand([]);
                 setDeck([]);
                 setHandValue(0);
-                if (response.handValue === 21) {
-                    setTextFloadComponent("Good luck!!! Perfect Round!!!")
-                }
+
+
                 startGame();
             });
 
@@ -225,6 +233,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             Twenty One Game
                         </h1>
 
+
                     </div>
 
                     {/* CARD BUTTON AREA */}
@@ -237,7 +246,10 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                         <button
                             onClick={handleTakeCard}
-                            className="w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105 active:scale-95 disabled:opacity-50"
+                            className={`w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded
+                             transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
+                              active:scale-95 disabled:opacity-50
+                              ${handValue < 21 ? 'animate-breathe' : ''}`}
                             disabled={handValue >= 21}
                         >
                             <Image
@@ -252,18 +264,27 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                         <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
                             Click to draw a card
                         </p>
+
+
                     </div>
 
                     {/* BOTTOM HAND */}
                     <div className="relative flex flex-col items-center pb-6 border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
 
                         {/* BOTÓN SOBRE EL BORDE */}
-                        <button
-                            onClick={handleEndRound}
-                            className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition shadow-md text-sm sm:text-base"
-                        >
-                            End Round
-                        </button>
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                            <button
+                                onClick={handleEndRound}
+                                className={`
+                                    px-3 sm:px-4 py-2 text-white rounded-lg
+                                    ${handValue >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
+                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'}
+                                `}
+                                disabled={endRoundButton}
+                            >
+                                End Round
+                            </button>
+                        </div>
 
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mt-6">
                             Player Hand:
@@ -315,6 +336,18 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             title={dialog.title}
                             description={dialog.description}
                             status={dialog.status}
+                            backButton={
+                                <ReturnButton
+                                    setMenuState={setMenuState}
+                                    menuState={"select"}
+                                    className="w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white 
+                                    bg-gray-400 rounded-lg hover:bg-gray-600"
+                                >
+                                    <p className="text-lg font-bold text-white">
+                                        Exit Game
+                                    </p>
+                                </ReturnButton>
+                            }
                         />
 
                         <DialogSelectDifficult
@@ -328,6 +361,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                         menuState="select"
                                         className="w-full dark:bg-gray-500 dark:hover:bg-red-900
                                         text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
+
                                     >
                                         Exit Game
                                     </ReturnButton>
