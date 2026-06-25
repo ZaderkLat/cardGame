@@ -57,9 +57,12 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
     //disable "end round" button
     const [endRoundButton, setEndRoundButton] = useState<boolean>(false);
+    //disable "restart game" button
+    const [restartGameButton, setRestarGameButton] = useState<boolean>(false);
 
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
+        setRestarGameButton(true);
         setEndRoundButton(true);
         const response = await fetch("/api/game/twentyOne/startGame", {
             method: "POST"
@@ -82,13 +85,28 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         setScore(response.score);
         setHand(response.playerHand);
         setDeck(response.deck);
-        //enable "end round" button when the game is ready
+        //enable "end round" and restart game button when the game is ready
         setEndRoundButton(false);
+        setRestarGameButton(false);
 
 
 
     }
 
+    useEffect(() => {
+        if (handValue === 21 && (GameData?.playerHand.length ?? 0) === 2) {
+            setTextFloadComponent("Good Luck!!! Perfect Round!!!")
+            return;
+        }
+        if (handValue === 21 && (GameData?.playerHand.length ?? 0) > 2) {
+            setTextFloadComponent("You Win!")
+            return;
+        }
+        if (handValue > 21) {
+            setTextFloadComponent("You Lose.")
+            return;
+        }
+    }, [handValue])
 
     //* Control the dialog data and its open and close states */
     const openDialog = (data: Omit<dialogData, "open">) => {
@@ -315,7 +333,10 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                     <div className="flex flex-col gap-2 pb-4 items-center">
                         <button
                             onClick={handleRestartGame}
-                            className="w-full lg:w-auto px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
+                                ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500'}
+                            `}
+                            disabled={restartGameButton}
                         >
                             Restart Game
                         </button>
