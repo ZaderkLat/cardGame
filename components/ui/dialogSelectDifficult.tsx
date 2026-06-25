@@ -27,10 +27,10 @@ export type DialogSelectDifficult = {
 export default function DialogSelectDifficult({ title, open, children, onOpenChange, childrenBottom }: DialogSelectDifficult) {
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={onOpenChange} >
             <DialogContent
                 className={cn(
-                    "max-w-md rounded-2xl p-6 shadow-xl",
+                    " rounded-2xl p-4 shadow-xl ",
                     "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
                     "duration-300",
 
@@ -47,7 +47,7 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
                 )}
             >
 
-                <DialogHeader className="space-y-3 text-center">
+                <DialogHeader className=" text-center">
 
                     <DialogTitle className="text-2xl font-bold tracking-tight">
                         {title}
@@ -61,7 +61,7 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
 
                 {children}
 
-                <DialogFooter className="mt-4 bg-transparent">
+                <DialogFooter className="mt-2 bg-transparent">
                     <div className="grid grid-cols-2 gap-4 w-full">
                         {childrenBottom}
                         <DialogClose asChild>

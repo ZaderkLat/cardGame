@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { card } from "@/interface/card";
 import cardStyle from "@/components/ObjectsGame/cardStyle";
 import { GameState, LogGame } from "@/interface/gameData";
@@ -18,6 +19,10 @@ import {
     HoverCardContent,
     HoverCardTrigger
 } from "@/components/ui/hover-card";
+
+import FloatComponent from "../ui/floatComponent";
+import { toast } from "sonner"
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
@@ -48,11 +53,21 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
 
+    const [textFloatComponent, setTextFloadComponent] = useState<string>("");
+
+    //disable "end round" button
+    const [endRoundButton, setEndRoundButton] = useState<boolean>(false);
+    //disable "restart game" button
+    const [restartGameButton, setRestarGameButton] = useState<boolean>(false);
+
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
+        setRestarGameButton(true);
+        setEndRoundButton(true);
         const response = await fetch("/api/game/twentyOne/startGame", {
             method: "POST"
         }).then(res => res.json()) as GameState;
+
         setGameData(response);
 
         if (response.round === 1) {
@@ -61,14 +76,37 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             setGameInfo(prev => [...prev, { type: "info", message: `Round ${response.round} started.` }]);
             setGameInfo(prev => [...prev, { type: "info", message: `Score obtained: ${response.score - score}` }]);
         }
+
+        if (response.handValue === 21) {
+            setTextFloadComponent("Good luck!!! Perfect Round!!!")
+        }
         //set all data from response
         setHandValue(response.handValue);
         setScore(response.score);
         setHand(response.playerHand);
         setDeck(response.deck);
+        //enable "end round" and restart game button when the game is ready
+        setEndRoundButton(false);
+        setRestarGameButton(false);
+
 
 
     }
+
+    useEffect(() => {
+        if (handValue === 21 && (GameData?.playerHand.length ?? 0) === 2) {
+            setTextFloadComponent("Good Luck!!! Perfect Round!!!")
+            return;
+        }
+        if (handValue === 21 && (GameData?.playerHand.length ?? 0) > 2) {
+            setTextFloadComponent("You Win!")
+            return;
+        }
+        if (handValue > 21) {
+            setTextFloadComponent("You Lose.")
+            return;
+        }
+    }, [handValue])
 
     //* Control the dialog data and its open and close states */
     const openDialog = (data: Omit<dialogData, "open">) => {
@@ -101,6 +139,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 playerHand: hand
             })
         }).then(res => res.json()) as GameState;
+
         setGameData(response);
 
         setGameInfo(prev => [...prev, { type: "info", message: `Card taken: ${response.playerHand.at(-1)?.rank + " of " + response.playerHand.at(-1)?.club || 0}` }]);
@@ -121,7 +160,12 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         startGame();
     }
 
+
+
     const handleEndRound = async () => {
+        //disable "end round" button
+        setEndRoundButton(true);
+
         if (!GameData) return;
         const response = await fetch("/api/game/twentyOne/play/endRound", {
             method: "POST",
@@ -145,6 +189,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             setHandValue(response.handValue);
             setHand(response.playerHand);
             setDeck(response.deck);
+            setEndRoundButton(false);
+
 
         } else {
             const { status, message } = isWinner(response.score, difficulty, response.countRound);
@@ -153,7 +199,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 description: message + "\nScore: " + response.score + "\nDifficulty: " + difficulty,
                 status: status,
             });
-            setGameInfo(prev => [...prev, { type: status, message: `${message} with ${response.score} points.` }]);
+
 
             setPendingAction(() => () => {
                 setGameInfo(prev => [
@@ -167,6 +213,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 setDeck([]);
                 setHandValue(0);
 
+
                 startGame();
             });
 
@@ -175,86 +222,131 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     }
 
     return (
-        <div className="flex flex-col flex-1 bg-zinc-50 dark:bg-black h-full">
+        <div className="flex flex-col min-h-full bg-zinc-50 dark:bg-black">
 
-            {/* Container */}
-            <div className="relative flex flex-row flex-1 justify-center p-2">
+            {/* MAIN WRAPPER */}
+            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full">
 
-
-                {/* center container */}
+                {/* CENTER */}
                 <div className="flex flex-col items-center justify-center w-full">
-                    <div className="flex justify-center w-full">
 
-                        <div className="flex justify-baseline mb-4 absolute top-5 left-4">
-                            <h1 className="text-2xl font-bold text-gray-800 dark:text-white ">
+                    {/* TOP BAR */}
+                    <div className="flex justify-between w-full px-2 relative">
+
+                        {/* Score y Round */}
+                        <div className="absolute left-2 top-2 w-full px-2 flex justify-between sm:justify-start sm:flex-col sm:w-auto">
+
+                            <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
                                 Score: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
                             </h1>
-                        </div>
-                        <div className="flex justify-center pt-6">
-                            <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-                                Twenty One Game
+
+                            <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                                Round: {`${GameData?.round} / ${GameData?.countRound}`}
                             </h1>
-                        </div>
-                    </div>
 
-
-                    <div className="flex flex-col items-center justify-center flex-1">
-                        <div className="text-2xl font-bold text-gray-800 dark:text-white">
-                            Hand Value: {handValue}
                         </div>
 
+                        {/* Título */}
+                        <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mx-auto pt-10 sm:pt-16 lg:pt-2">
+                            Twenty One Game
+                        </h1>
+
+
                     </div>
 
-                    {/* BOTTOM */}
-                    <div className="flex flex-col items-center pb-6">
-                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                            Player Hand:
-                        </h2>
+                    {/* CARD BUTTON AREA */}
+                    <div className="relative flex flex-1 flex-col items-center justify-center mt-6 w-full">
+                        <FloatComponent isVisible={handValue >= 21}>
+                            <div className="text-center">
+                                <span>{textFloatComponent}</span>
+                            </div>
+                        </FloatComponent>
 
-                        <div className="flex gap-4 mt-4">
-                            <button
-                                onClick={handleTakeCard}
-                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                            >
-                                Take card
-                            </button>
+                        <button
+                            onClick={handleTakeCard}
+                            className={`w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded
+                             transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
+                              active:scale-95 disabled:opacity-50
+                              ${handValue < 21 ? 'animate-breathe' : ''}`}
+                            disabled={handValue >= 21}
+                        >
+                            <Image
+                                src="/backCard.svg"
+                                alt="Take card"
+                                width={96}
+                                height={144}
+                                className="w-full h-full object-cover"
+                            />
+                        </button>
 
+                        <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
+                            Click to draw a card
+                        </p>
+
+
+                    </div>
+
+                    {/* BOTTOM HAND */}
+                    <div className="relative flex flex-col items-center pb-6 border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
+
+                        {/* BOTÓN SOBRE EL BORDE */}
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                             <button
                                 onClick={handleEndRound}
-                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                className={`
+                                    px-3 sm:px-4 py-2 text-white rounded-lg
+                                    ${handValue >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
+                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'}
+                                `}
+                                disabled={endRoundButton}
                             >
                                 End Round
                             </button>
-
                         </div>
 
-                        <div className="flex gap-4 mt-4">
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mt-6">
+                            Player Hand:
+                        </h2>
+
+                        <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mt-2">
+                            Hand Value: {handValue}
+                        </div>
+
+                        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
                             {hand.map((card, index) => (
-                                <div key={index}>{cardStyle(card)}</div>
+                                <div key={index} className="scale-90 sm:scale-100">
+                                    {cardStyle(card)}
+                                </div>
                             ))}
                         </div>
+
                     </div>
-
                 </div>
-                {/* right container */}
-                <div className="flex flex-col w-1/4 h-full">
 
-                    {/* Top section: InfoGame takes most of the vertical space */}
-                    <div className="flex-1 flex items-start justify-center text-2xl font-bold text-gray-800 dark:text-white mb-4 ">
+                {/* RIGHT PANEL */}
+                <div className="w-full lg:w-1/4 h-auto lg:h-full mt-6 lg:mt-0">
+
+                    <div className="hidden sm:flex-1 sm:flex sm:items-start sm:justify-center text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         <InfoGame info={gameInfo} />
                     </div>
 
-                    {/* Bottom section: buttons aligned at the bottom */}
-                    <div className="relative flex flex-col gap-2 pb-4 items-center">
+                    <div className="flex flex-col gap-2 pb-4 items-center">
                         <button
                             onClick={handleRestartGame}
-                            className="px-3 py-1  bg-gray-500 text-white rounded hover:bg-gray-600"
+                            className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
+                                ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500'}
+                            `}
+                            disabled={restartGameButton}
                         >
                             Restart Game
                         </button>
 
-                        <ReturnButton setMenuState={setMenuState} menuState={"select"} className="dark:bg-gray-500 dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600">
-                            <p className="text-lg font-bold text-gray-800 dark:text-white">
+                        <ReturnButton
+                            setMenuState={setMenuState}
+                            menuState={"select"}
+                            className="w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
+                        >
+                            <p className="text-lg font-bold text-white">
                                 Exit Game
                             </p>
                         </ReturnButton>
@@ -265,69 +357,89 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             title={dialog.title}
                             description={dialog.description}
                             status={dialog.status}
+                            backButton={
+                                <ReturnButton
+                                    setMenuState={setMenuState}
+                                    menuState={"select"}
+                                    className="w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white 
+                                    bg-gray-400 rounded-lg hover:bg-gray-600"
+                                >
+                                    <p className="text-lg font-bold text-white">
+                                        Exit Game
+                                    </p>
+                                </ReturnButton>
+                            }
                         />
 
                         <DialogSelectDifficult
                             open={openDifficultDialog}
                             onOpenChange={setOpenDifficultDialog}
                             title="Select Difficulty"
-                            childrenBottom={<div className="flex justify-center">
-                                <ReturnButton
-                                    setMenuState={setMenuState}
-                                    menuState="select"
-                                    className="w-full h-full dark:bg-gray-500 dark:hover:bg-red-900
+                            childrenBottom={
+                                <div className="flex justify-center w-full">
+                                    <ReturnButton
+                                        setMenuState={setMenuState}
+                                        menuState="select"
+                                        className="w-full dark:bg-gray-500 dark:hover:bg-red-900
                                         text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
-                                >
-                                    Exit Game
-                                </ReturnButton>
-                            </div>}
+
+                                    >
+                                        Exit Game
+                                    </ReturnButton>
+                                </div>
+                            }
                         >
-                            <div className="text-lg font-bold text-gray-800 dark:text-white mb-4 justify-center flex">
-                                Please select the difficulty level:
-                            </div>
-                            <div className="flex flex-row justify-center border-2 gap-6 rounded-lg p-4">
-                                {difficulties && Object.entries(difficulties).map(([key, value]) => (
-                                    <label key={key} className="flex items-center gap-2 cursor-pointer">
-                                        <Checkbox
-                                            checked={difficulty === key}
-                                            onCheckedChange={() => {
-                                                setDifficulty(key as keyof typeof difficulties);
+                            <>
+                                <div className="text-base sm:text-lg font-bold text-gray-800 dark:text-white mb-6 text-center">
+                                    Please select the difficulty level:
+                                </div>
 
-                                            }}
-                                        />
-                                        <div className="flex flex-row gap-2 items-center text-center justify-center">
-                                            <span className="text-lg font-medium text-gray-800 dark:text-white">
-                                                {value.name}
-                                            </span>
-                                            <HoverCard>
-                                                <HoverCardTrigger>
-                                                    <span className="text-sm text-gray-500 dark:text-gray-300">
-                                                        (?)
+                                <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
+
+                                    {difficulties &&
+                                        Object.entries(difficulties).map(([key, value]) => (
+                                            <label
+                                                key={key}
+                                                className="flex flex-row items-center justify-center sm:justify-start gap-2 cursor-pointer"
+                                            >
+                                                <Checkbox
+                                                    checked={difficulty === key}
+                                                    onCheckedChange={() => {
+                                                        setDifficulty(key as keyof typeof difficulties);
+                                                    }}
+                                                />
+
+                                                <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
+                                                    <span className="text-sm sm:text-lg font-medium text-gray-800 dark:text-white">
+                                                        {value.name}
                                                     </span>
-                                                </HoverCardTrigger>
-                                                <HoverCardContent>
-                                                    <p>{value.description}, you need {value.requerimentPoints * (GameData?.countRound || 5)} points to win.</p>
-                                                </HoverCardContent>
-                                            </HoverCard>
 
-                                        </div>
+                                                    <HoverCard>
+                                                        <HoverCardTrigger>
+                                                            <span className="text-sm text-gray-500 dark:text-gray-300">
+                                                                (?)
+                                                            </span>
+                                                        </HoverCardTrigger>
 
-                                    </label>
-                                ))}
-                            </div>
+                                                        <HoverCardContent className="max-w-62.5 sm:max-w-xs">
+                                                            <p className="text-sm">
+                                                                {value.description}, you need{" "}
+                                                                {value.requerimentPoints *
+                                                                    (GameData?.countRound || 5)}{" "}
+                                                                points to win.
+                                                            </p>
+                                                        </HoverCardContent>
+                                                    </HoverCard>
+                                                </div>
+                                            </label>
+                                        ))}
+                                </div>
+                            </>
                         </DialogSelectDifficult>
 
-
                     </div>
-
-                </div >
-
-
-
-
-            </div >
-
-
-        </div >
+                </div>
+            </div>
+        </div>
     );
 }

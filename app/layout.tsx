@@ -8,7 +8,7 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
-
+import { Toaster } from "@/components/ui/sonner"
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -44,6 +44,7 @@ export default function RootLayout({
             <main className="flex-1 flex flex-col">
 
               {children}
+              <Toaster />
             </main>
 
           </ThemeProvider>
