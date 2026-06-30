@@ -24,8 +24,11 @@ export type GameDialogProps = {
 
 };
 
+import { useTranslations } from "next-intl";
+
 //control the animation of the dialog based on the game status
 function getDialogStyle(status: statusDialog) {
+
     return cn(
         "max-w-md rounded-2xl p-6 shadow-xl",
         "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
@@ -58,7 +61,7 @@ function getDialogStyle(status: statusDialog) {
 }
 
 export default function GameDialog({ title, description, open, status, onOpenChange, backButton }: GameDialogProps) {
-
+    const t = useTranslations("dialogGameMessaje");
     return (
         <Dialog open={open} onOpenChange={onOpenChange} >
             <DialogContent
@@ -90,7 +93,7 @@ export default function GameDialog({ title, description, open, status, onOpenCha
                                     open && "animate-pulse-once"
                                 )}
                             >
-                                Play Again
+                                {t("playAgain")}
                             </Button>
                         </DialogClose>
                     </div>

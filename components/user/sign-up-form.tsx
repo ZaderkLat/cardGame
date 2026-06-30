@@ -1,6 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -17,31 +18,36 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 
-export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export function SignUpForm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'div'>) {
+  const t = useTranslations('SignUp')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
   const [nickname, setNickname] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+
   const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const supabase = createClient()
 
     setIsLoading(true)
     setError(null)
 
     if (password !== repeatPassword) {
-      setError('Passwords do not match')
+      setError(t('passwordsDoNotMatch'))
       setIsLoading(false)
       return
     }
 
     try {
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -52,10 +58,12 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
           },
         },
       })
+
       if (error) throw error
+
       router.push('/auth/sign-up-success')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      setError(error instanceof Error ? error.message : t('unknownError'))
     } finally {
       setIsLoading(false)
     }
@@ -65,38 +73,53 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Sign up</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
+          <CardTitle className="text-2xl">
+            {t('title')}
+          </CardTitle>
+
+          <CardDescription>
+            {t('description')}
+          </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">
+                  {t('email')}
+                </Label>
+
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder={t('emailPlaceholder')}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="nickname">Nickname</Label>
+                <Label htmlFor="nickname">
+                  {t('nickname')}
+                </Label>
+
                 <Input
                   id="nickname"
                   type="text"
-                  placeholder="Enter your nickname"
+                  placeholder={t('nicknamePlaceholder')}
                   required
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                 />
               </div>
+
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
+                <Label htmlFor="password">
+                  {t('password')}
+                </Label>
+
                 <Input
                   id="password"
                   type="password"
@@ -105,10 +128,12 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="repeat-password">Repeat Password</Label>
-                </div>
+                <Label htmlFor="repeat-password">
+                  {t('repeatPassword')}
+                </Label>
+
                 <Input
                   id="repeat-password"
                   type="password"
@@ -118,15 +143,30 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
                 />
               </div>
 
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating an account...' : 'Sign up'}
+              {error && (
+                <p className="text-sm text-red-500">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? t('creatingAccount')
+                  : t('signUp')}
               </Button>
             </div>
+
             <div className="mt-4 text-center text-sm">
-              Already have an account?{' '}
-              <Link href="/auth/login" className="underline underline-offset-4">
-                Login
+              {t('alreadyHaveAccount')}{' '}
+              <Link
+                href="/auth/login"
+                className="underline underline-offset-4"
+              >
+                {t('login')}
               </Link>
             </div>
           </form>

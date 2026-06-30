@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import ConfigMenu from "@/components/user/configMenu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ModeToggle } from "@/components/ui/modeToggle";
 
+import { useTranslations } from "next-intl";
 export function TopBar() {
     const { user, loading } = useUser();
     const router = useRouter();
+    const t = useTranslations("topBar")
 
     return (
-        <div className="w-full h-12 px-6 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
+        <div className="w-full h-12 px-2 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
 
             {/* Left */}
             <Button className="bg-transparent transition duration-500 hover:scale-115 flex justify-center items-center "
@@ -22,7 +23,7 @@ export function TopBar() {
 
             >
                 <h1 className="text-lg font-bold text-black dark:text-white">
-                    🎮 Home Page
+                    🎮 {t("homePage")}
                 </h1>
             </Button>
 
@@ -43,27 +44,32 @@ export function TopBar() {
                 ) : (
                     <>
                         <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                            Username:{" "}
+                            {t("username")}:{" "}
                             <span className="font-semibold text-zinc-900 dark:text-white">
                                 {user?.name}
                             </span>
                         </span>
 
                         {user?.isGuest ? (
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    router.push("/auth/login");
-                                }}
-                            >
-                                Login
-                            </Button>
+                            <div className="flex flex-row gap-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        router.push("/auth/login");
+                                    }}
+                                >
+                                    {t("login")}
+                                </Button>
+                                <ConfigMenu />
+                            </div>
+
+
                         ) : (
                             <ConfigMenu />
                         )}
                     </>
                 )}
-                <ModeToggle />
+
             </div>
         </div>
     );

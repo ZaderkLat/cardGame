@@ -1,0 +1,120 @@
+{
+    "Home": {
+        "title": "Card Game"
+    },
+    "iniMenu": {
+        "welcome": "Welcome",
+        "description": "Test your luck and strategy. Try to get as close to 21 as possible without going over.",
+        "playButton": "Play",
+        "howPlayButton": "How to Play"
+    },
+    "selectGameMenu": {
+        "title": "Select Game",
+        "description": "Choose a game to play and have fun!"
+    },
+    "twentyOne": {
+        "title": "Twenty One Game",
+        "clickToDraw": "Click to draw a card",
+        "playerHand": "Player Hand",
+        "handValue": "Hand Value",
+        "endRound": "End Round",
+        "restartGame": "Restart Game",
+        "exitGame": "Exit Game",
+        "score": "Score",
+        "round": "Round",
+        "selectDifficulty": "Select Difficulty",
+        "difficultyText": "Please select the difficulty level:",
+        "cardTaken": "Card taken",
+        "gameStarted": "Game started",
+        "roundStarted": "Round started",
+        "scoreObtained": "ended. Score obtained",
+        "noScore": "ended. No score obtained",
+        "youWin": "You win",
+        "youLose": "You lose",
+        "perfectRound": "Good luck! Perfect round!",
+        "of": "of",
+        "started": "started",
+        "scoreObtain": "Score obtained",
+        "gameResult": "Game result",
+        "difficult": "Difficult",
+        "youNeed": "you need",
+        "pointsTo": "points to win",
+        "with": "with",
+        "points": "points"
+    },
+    "dialogGameMessaje": {
+        "playAgain": "Play Again"
+    },
+    "topBar": {
+        "homePage": "Home Page",
+        "username": "Username",
+        "login": "Login"
+    },
+    "SettingsMenu": {
+        "myAccount": "My Account",
+        "profile": "Profile",
+        "billing": "Billing",
+        "logout": "Log Out"
+    },
+    "Login": {
+        "title": "Login",
+        "description": "Enter your email below to log in to your account.",
+        "email": "Email",
+        "emailPlaceholder": "email@example.com",
+        "password": "Password",
+        "forgotPassword": "Forgot your password?",
+        "login": "Login",
+        "loggingIn": "Logging in...",
+        "noAccount": "Don't have an account?",
+        "signUp": "Sign up",
+        "unknownError": "An error occurred."
+    },
+    "logOutButton": {
+        "logOut": "Logout"
+    },
+    "SignUp": {
+        "title": "Sign Up",
+        "description": "Create a new account",
+        "email": "Email",
+        "emailPlaceholder": "email@example.com",
+        "nickname": "Nickname",
+        "nicknamePlaceholder": "Enter your nickname",
+        "password": "Password",
+        "repeatPassword": "Repeat Password",
+        "signUp": "Sign Up",
+        "creatingAccount": "Creating account...",
+        "alreadyHaveAccount": "Already have an account?",
+        "login": "Login",
+        "passwordsDoNotMatch": "Passwords do not match",
+        "unknownError": "An error occurred."
+    },
+    "UpdatePassword": {
+        "title": "Reset Your Password",
+        "description": "Please enter your new password below.",
+        "newPassword": "New Password",
+        "newPasswordPlaceholder": "New password",
+        "savePassword": "Save New Password",
+        "saving": "Saving...",
+        "unknownError": "An error occurred."
+    },
+    "ForgotPassword": {
+        "title": "Reset Your Password",
+        "description": "Enter your email and we'll send you a link to reset your password.",
+        "email": "Email",
+        "emailPlaceholder": "email@example.com",
+        "sendResetEmail": "Send Reset Email",
+        "sending": "Sending...",
+        "alreadyHaveAccount": "Already have an account?",
+        "login": "Login",
+        "checkEmail": "Check Your Email",
+        "instructionsSent": "Password reset instructions sent.",
+        "emailSentDescription": "If you registered using your email and password, you will receive a password reset email.",
+        "unknownError": "An error occurred."
+    },
+    "SignUpSuccess": {
+        "pageTitle": "Card Game",
+        "title": "Thank you for signing up!",
+        "description": "Check your email to confirm your account.",
+        "content": "You've successfully signed up. Please check your email and confirm your account before signing in."
+    }
+}

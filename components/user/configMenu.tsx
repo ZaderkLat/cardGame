@@ -13,7 +13,11 @@ import { createClient } from '@/lib/client'
 import { useRouter } from "next/navigation";
 import { Cog } from "lucide-react";
 import { ModeToggle } from "../ui/modeToggle";
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "../ui/languajeToggle";
+
 export default function ConfigMenu() {
+    const t = useTranslations("SettingsMenu");
     const router = useRouter();
 
     const logoutHandler = async () => {
@@ -28,21 +32,32 @@ export default function ConfigMenu() {
                     <Cog className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent>
                 <DropdownMenuGroup>
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuItem>Billing</DropdownMenuItem>
+                    <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
+
+                    <DropdownMenuItem>
+                        {t("profile")}
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem>
+                        {t("billing")}
+                    </DropdownMenuItem>
                 </DropdownMenuGroup>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                    
+
+                <DropdownMenuGroup className="flex justify-center gap-6">
                     <ModeToggle />
+                    <LanguageSwitcher />
                 </DropdownMenuGroup>
+
                 <DropdownMenuSeparator />
+
                 <DropdownMenuGroup>
                     <DropdownMenuItem onClick={logoutHandler}>
-                        Logout
+                        {t("logout")}
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
             </DropdownMenuContent>
