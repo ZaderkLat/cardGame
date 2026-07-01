@@ -1,6 +1,7 @@
 export interface card {
     value: number;
-    club: string;
+    club_en: string;
+    club_es: string
     rank: string;
 }
 

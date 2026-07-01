@@ -12,10 +12,10 @@ export default function cardStyle(playerCard: card) {
 
             {/* Center Suit */}
             <div className="flex justify-center items-center text-4xl text-red-500">
-                {playerCard.club === "Hearts" && <Heart color="red" fill="red" />}
-                {playerCard.club === "Spades" && <Spade color="blue" fill="blue" />}
-                {playerCard.club === "Clubs" && <Club color="black" fill="black" />}
-                {playerCard.club === "Diamonds" && <Diamond color="orange" fill="orange" />}
+                {playerCard.club_en === "Hearts" && <Heart color="red" fill="red" />}
+                {playerCard.club_en === "Spades" && <Spade color="blue" fill="blue" />}
+                {playerCard.club_en === "Clubs" && <Club color="black" fill="black" />}
+                {playerCard.club_en === "Diamonds" && <Diamond color="orange" fill="orange" />}
             </div>
 
             {/* Bottom Right (rotated) */}

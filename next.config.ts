@@ -1,10 +1,9 @@
-import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
 
-const nextConfig: NextConfig = {
-  /* Aquí van tus otras opciones de configuración si las tenías */
-  
-  // Ponlo directamente en la raíz, NO dentro de experimental:
+const withNextIntl = createNextIntlPlugin();
+
+const nextConfig = {
   allowedDevOrigins: ['192.168.40.53'],
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

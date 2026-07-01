@@ -1,0 +1,119 @@
+{
+    "Home": {
+        "title": "Juego de cartas"
+    },
+    "iniMenu": {
+        "welcome": "Bienvenido",
+        "description": "Pon a prueba tu suerte y estrategía. Llega lo más cerca que puedas al 21 sin sobrepasarlo.",
+        "playButton": "Jugar",
+        "howPlayButton": "Como jugar"
+    },
+    "selectGameMenu": {
+        "title": "Selecciona un juego",
+        "description": "Elige un juego para divertirte y pasar un buen rato"
+    },
+    "twentyOne": {
+        "title": "Juego Twenty One",
+        "clickToDraw": "Haz clic para robar una carta",
+        "playerHand": "Mano del jugador",
+        "handValue": "Valor de la mano",
+        "endRound": "Terminar ronda",
+        "restartGame": "Reiniciar juego",
+        "exitGame": "Salir del juego",
+        "score": "Puntuación",
+        "round": "Ronda",
+        "selectDifficulty": "Seleccionar dificultad",
+        "difficultyText": "Por favor selecciona el nivel de dificultad:",
+        "cardTaken": "Carta tomada",
+        "gameStarted": "Juego iniciado",
+        "roundStarted": "Ronda iniciada",
+        "scoreObtained": "terminada. Puntos obtenidos",
+        "noScore": "terminada. No obtuviste puntos",
+        "youWin": "Ganaste",
+        "youLose": "Perdiste",
+        "perfectRound": "¡Buena suerte! ¡Ronda perfecta!",
+        "of": "de",
+        "started": "inició",
+        "gameResult": "Resultado de la partida",
+        "difficult": "Dificultad",
+        "youNeed": "necesitas",
+        "pointsTo": "puntos para ganar",
+        "with": "con",
+        "points": "puntos"
+    },
+    "dialogGameMessaje": {
+        "playAgain": "Jugar de nuevo"
+    },
+    "topBar": {
+        "homePage": "Página Principal",
+        "username": "Usuario",
+        "login": "Iniciar Sesión"
+    },
+    "SettingsMenu": {
+        "myAccount": "Mi cuenta",
+        "profile": "Perfil",
+        "billing": "Facturación",
+        "logout": "Cerrar sesión"
+    },
+    "Login": {
+        "title": "Iniciar sesión",
+        "description": "Ingresa tu correo electrónico para acceder a tu cuenta.",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "correo@ejemplo.com",
+        "password": "Contraseña",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "login": "Iniciar sesión",
+        "loggingIn": "Iniciando sesión...",
+        "noAccount": "¿No tienes una cuenta?",
+        "signUp": "Registrarse",
+        "unknownError": "Ha ocurrido un error."
+    },
+    "logOutButton": {
+        "logOut": "Cerrar sesión"
+    },
+    "SignUp": {
+        "title": "Crear cuenta",
+        "description": "Crea una nueva cuenta",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "correo@ejemplo.com",
+        "nickname": "Nombre de usuario",
+        "nicknamePlaceholder": "Ingresa tu nombre de usuario",
+        "password": "Contraseña",
+        "repeatPassword": "Repetir contraseña",
+        "signUp": "Registrarse",
+        "creatingAccount": "Creando la cuenta...",
+        "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+        "login": "Iniciar sesión",
+        "passwordsDoNotMatch": "Las contraseñas no coinciden",
+        "unknownError": "Ha ocurrido un error."
+    },
+    "UpdatePassword": {
+        "title": "Restablecer contraseña",
+        "description": "Ingresa tu nueva contraseña.",
+        "newPassword": "Nueva contraseña",
+        "newPasswordPlaceholder": "Nueva contraseña",
+        "savePassword": "Guardar nueva contraseña",
+        "saving": "Guardando...",
+        "unknownError": "Ha ocurrido un error."
+    },
+    "ForgotPassword": {
+        "title": "Restablecer contraseña",
+        "description": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "correo@ejemplo.com",
+        "sendResetEmail": "Enviar correo de recuperación",
+        "sending": "Enviando...",
+        "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+        "login": "Iniciar sesión",
+        "checkEmail": "Revisa tu correo",
+        "instructionsSent": "Se enviaron las instrucciones para restablecer la contraseña.",
+        "emailSentDescription": "Si te registraste con un correo electrónico y contraseña, recibirás un correo para restablecer tu contraseña.",
+        "unknownError": "Ha ocurrido un error."
+    },
+    "SignUpSuccess": {
+        "pageTitle": "Juego de cartas",
+        "title": "¡Gracias por registrarte!",
+        "description": "Revisa tu correo electrónico para confirmar tu cuenta.",
+        "content": "Te has registrado correctamente. Antes de iniciar sesión, revisa tu correo electrónico y confirma tu cuenta."
+    }
+}

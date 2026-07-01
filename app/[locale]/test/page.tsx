@@ -22,15 +22,13 @@ import {
 
 import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
 }
 export default function Home({ setMenuState }: TwentyOneTableProps) {
     const t = useTranslations("twentyOne");
-    //languaje path
-    const locale = useLocale();
     //Game State
     const [score, setScore] = useState<number>(0);
     const [hand, setHand] = useState<card[]>([]);
@@ -74,14 +72,14 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         setGameData(response);
 
         if (response.round === 1) {
-            setGameInfo(prev => [...prev, { type: "info", message: t("gameStarted") + "." }]);
+            setGameInfo(prev => [...prev, { type: "info", message: `Game Started.` }]);
         } else {
-            setGameInfo(prev => [...prev, { type: "info", message: `${t("round")} ${response.round} ${t("started")}.` }]);
-            setGameInfo(prev => [...prev, { type: "info", message: `${t("scoreObtain")}: ${response.score - score}` }]);
+            setGameInfo(prev => [...prev, { type: "info", message: `Round ${response.round} started.` }]);
+            setGameInfo(prev => [...prev, { type: "info", message: `Score obtained: ${response.score - score}` }]);
         }
 
         if (response.handValue === 21) {
-            setTextFloadComponent(t("perfectRound"));
+            setTextFloadComponent("Good luck!!! Perfect Round!!!")
         }
         //set all data from response
         setHandValue(response.handValue);
@@ -91,6 +89,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         //enable "end round" and restart game button when the game is ready
         setEndRoundButton(false);
         setRestarGameButton(false);
+
+
 
     }
 
@@ -142,16 +142,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         }).then(res => res.json()) as GameState;
 
         setGameData(response);
-        //`name_${locale}` as keyof typeof value]
-        setGameInfo(prev => [
-            ...prev,
-            {
-                type: "info",
-                message: `${t("cardTaken")}: ${response.playerHand.at(-1)?.rank
-                    } ${t("of")} ${response.playerHand.at(-1)?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
-                    }`,
-            },
-        ]);
+
+        setGameInfo(prev => [...prev, { type: "info", message: `Card taken: ${response.playerHand.at(-1)?.rank + " of " + response.playerHand.at(-1)?.club || 0}` }]);
         setHandValue(response.handValue);
         setHand(response.playerHand);
         setDeck(response.deck);
@@ -184,9 +176,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
 
         if (response.score !== score) {
-            setGameInfo(prev => [...prev, { type: "win", message: `${t("round")} ${response.round - 1} ${t("scoreObtained")}: ${response.score - score}` }]);
+            setGameInfo(prev => [...prev, { type: "win", message: `Round ${response.round - 1} ended. Score obtained: ${response.score - score}` }]);
         } else {
-            setGameInfo(prev => [...prev, { type: "lose", message: `${t("round")}  ${response.round - 1} ${t("noScore")}.` }]);
+            setGameInfo(prev => [...prev, { type: "lose", message: `Round ${response.round - 1} ended. No score obtained.` }]);
         }
 
 
@@ -203,10 +195,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
         } else {
             const { status, message } = isWinner(response.score, difficulty, response.countRound);
-
             openDialog({
-                title: t("gameResult"),
-                description: `${t(message)}\n${t("score")}: ${response.score}\n${t("difficult")}: ${difficulties[difficulty][`name_${locale}` as "name_es" | "name_en"]}`,
+                title: "Game Result",
+                description: message + "\nScore: " + response.score + "\nDifficulty: " + difficulty,
                 status: status,
             });
 
@@ -214,7 +205,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             setPendingAction(() => () => {
                 setGameInfo(prev => [
                     ...prev,
-                    { type: status, message: `${t(message)} ${t("with")} ${response.score} ${t("points")}.` },
+                    { type: status, message: `${message} with ${response.score} points.` },
                 ]);
 
                 setGameData(null);
@@ -334,7 +325,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="w-full h-full lg:w-1/4  lg:h-full mt-6 lg:mt-0">
+                <div className="w-full lg:w-1/4 h-auto lg:h-full mt-6 lg:mt-0">
 
                     <div className="hidden sm:flex-1 sm:flex sm:items-start sm:justify-center text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         <InfoGame info={gameInfo} />
@@ -421,7 +412,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                                                 <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
                                                     <span className="text-sm sm:text-lg font-medium text-gray-800 dark:text-white">
-                                                        {value[`name_${locale}` as keyof typeof value]}
+                                                        {value.name}
                                                     </span>
 
                                                     <HoverCard>
@@ -433,10 +424,10 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                                                         <HoverCardContent className="max-w-62.5 sm:max-w-xs">
                                                             <p className="text-sm">
-                                                                {value[`description_${locale}` as keyof typeof value]}, {`${t("youNeed")} `}
+                                                                {value.description}, you need{" "}
                                                                 {value.requerimentPoints *
-                                                                    (GameData?.countRound || 5)}
-                                                                {` ${t("pointsTo")}.`}
+                                                                    (GameData?.countRound || 5)}{" "}
+                                                                points to win.
                                                             </p>
                                                         </HoverCardContent>
                                                     </HoverCard>

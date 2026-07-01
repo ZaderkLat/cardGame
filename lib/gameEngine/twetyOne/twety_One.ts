@@ -34,33 +34,17 @@ export function isWinner(score: number, difficulty: keyof typeof difficulties, t
     let isWin = false;
     const requiredScore = difficulties[difficulty].requerimentPoints * totalRounds;
     isWin = score >= requiredScore;
-    /*
-    switch (difficulty) {
-        case "easy":
-            isWin = score >= 60 * totalRounds;
-            break;
 
-        case "medium":
-            isWin = score >= 75 * totalRounds;
-            break;
-
-        case "hard":
-            isWin = score >= 90 * totalRounds;
-            break;
-        default:
-            isWin = false;
-            break;
-    }*/
-
+    //response with label name in messages/en.json|es.json
     if (isWin) {
         return {
-            message: "You Win!",
+            message: "youWin",
             status: "win" as const,
 
         }
     } else {
         return {
-            message: "You Lose!",
+            message: "youLose",
             status: "lose" as const,
 
         }

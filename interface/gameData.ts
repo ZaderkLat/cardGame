@@ -31,7 +31,7 @@ export type LogGame = {
 
 
 export const difficulties = {
-  easy: { id: "easy", name: "Easy", description: "Beginner level ", requerimentPoints: 60 },
-  medium: { id: "medium", name: "Medium", description: "Intermediate level", requerimentPoints: 75 },
-  hard: { id: "hard", name: "Hard", description: "Expert level", requerimentPoints: 90 }
+  easy: { id: "easy", name_en: "Easy", name_es: "Fácil", description_en: "Beginner level ", description_es: "Nivel para novatos", requerimentPoints: 60 },
+  medium: { id: "medium", name_en: "Medium", name_es: "Normal", description_en: "Intermediate level", description_es: "Nivel para intermedio", requerimentPoints: 75 },
+  hard: { id: "hard", name_en: "Hard", name_es: "Difícil", descriptio_en: "Expert level", description_es: "Nivel para expertos", requerimentPoints: 90 }
 }
