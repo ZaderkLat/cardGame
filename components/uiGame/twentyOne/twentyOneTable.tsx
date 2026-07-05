@@ -23,6 +23,7 @@ import {
 import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
+import Maze from "@/components/uiGame/maze";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
@@ -62,6 +63,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const [endRoundButton, setEndRoundButton] = useState<boolean>(false);
     //disable "restart game" button
     const [restartGameButton, setRestarGameButton] = useState<boolean>(false);
+
 
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
@@ -280,13 +282,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                               ${handValue < 21 ? 'animate-breathe' : ''}`}
                             disabled={handValue >= 21}
                         >
-                            <Image
-                                src="/backCard.svg"
-                                alt="Take card"
-                                width={96}
-                                height={144}
-                                className="w-full h-full object-cover"
-                            />
+                            <Maze />
                         </button>
 
                         <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">

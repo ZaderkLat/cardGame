@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TwentyOneTable from "@/components/uiGame/twentyOneTable";
+import TwentyOneTable from "@/components/uiGame/twentyOne/twentyOneTable";
 import IniMenu from "@/components/uiGame/iniMenu";
 import SelectGameMenu from "@/components/uiGame/selectGameMenu";
 import { MenuStatus } from "@/interface/menuStatus";
