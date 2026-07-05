@@ -15,8 +15,6 @@ export default function ReturnButton({ setMenuState, menuState, children, classN
     return (
         <button
             onClick={() => setMenuState(menuState)}
-
-
             className={`min-w-10 min-h-10 top-4 left-4  p-2 ${className}`}
         >
 
