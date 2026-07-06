@@ -89,8 +89,8 @@ export default function GameDialog({ title, description, open, status, onOpenCha
                         <DialogClose asChild>
                             <Button
                                 className={cn(
-                                    "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg text-lg h-full",
-                                    open && "animate-pulse-once"
+                                    "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg text-lg h-full hover:scale-105",
+                                    open && "animate-pulse-once bg-blue-500 text-white hover:bg-blue-600 dark:hover:bg-blue-700 "
                                 )}
                             >
                                 {t("playAgain")}

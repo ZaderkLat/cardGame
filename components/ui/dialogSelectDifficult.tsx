@@ -68,8 +68,8 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
                             <Button
                                 className={cn(
                                     "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg hover:bg-zinc-200",
-                                    "dark:hover:bg-green-800 w-full text-2xl py-5 rounded-lg font-bold  dark:bg-gray-700 dark:text-zinc-300",
-                                    open && "animate-pulse-once"
+                                    "dark:hover:bg-green-800 w-full text-2xl py-5 rounded-lg font-bold  dark:bg-green-700 dark:text-zinc-300",
+                                    open && "animate-pulse-once transition-all hover:scale-105"
                                 )}
                             >
                                 Play

@@ -23,9 +23,21 @@ export default function GameLog({ info }: { info: Log[] }) {
     return (
         <div
             ref={containerRef}
-            className="w-full h-150 overflow-y-auto font-mono text-sm p-3
-             rounded-lg border dark:border-zinc-700 dark:bg-black dark:text-green-400
-             bg-white border-zinc-700 text-green-700"
+            className="flex-1
+        min-h-0
+        w-full
+        overflow-y-auto
+        font-mono
+        text-sm
+        p-3
+        rounded-lg
+        border
+        dark:border-zinc-700
+        dark:bg-black
+        dark:text-green-400
+        bg-white
+        border-zinc-700
+        text-green-700"
         >
             {info.map((log, index) => (
                 <div

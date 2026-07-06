@@ -15,10 +15,10 @@ import { difficulties } from "@/interface/gameData";
 import DialogSelectDifficult from "@/components/ui/dialogSelectDifficult";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger
-} from "@/components/ui/hover-card";
+    Popover,
+    PopoverContent,
+    PopoverTrigger
+} from "@/components/ui/popover";
 
 import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
@@ -168,7 +168,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     }, [openDifficultDialog]);
 
     const handleRestartGame = () => {
-        startGame();
+        setOpenDifficultDialog(true);
     }
 
 
@@ -237,7 +237,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         <div className="flex flex-col min-h-full bg-zinc-50 dark:bg-black">
 
             {/* MAIN WRAPPER */}
-            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full">
+            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full h-full">
 
                 {/* CENTER */}
                 <div className="flex flex-col items-center justify-center w-full">
@@ -246,7 +246,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                     <div className="flex justify-between w-full px-2 relative">
 
                         {/* Score y Round */}
-                        <div className="absolute left-2 top-2 w-full px-2 flex justify-between sm:justify-start sm:flex-col sm:w-auto">
+                        <div className="absolute left-1 top-2 w-full px-2 flex justify-between sm:justify-start sm:flex-col sm:w-auto">
 
                             <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
                                 {t("score")}: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
@@ -292,8 +292,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                     </div>
 
-                    {/* BOTTOM HAND */}
-                    <div className="relative flex flex-col items-center pb-6 border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
+                    {/* BOTTOM PLAYER HAND */}
+                    <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
+                     dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
 
                         {/* Button over border*/}
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -330,9 +331,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="w-full h-full lg:w-1/4  lg:h-full mt-6 lg:mt-0">
+                <div className="w-full lg:w-1/4 mt-6 lg:mt-0 flex flex-col min-h-0">
 
-                    <div className="hidden sm:flex-1 sm:flex sm:items-start sm:justify-center text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                    <div className="hidden sm:flex flex-1 min-h-0 text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         <InfoGame info={gameInfo} />
                     </div>
 
@@ -350,7 +351,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                         <ReturnButton
                             setMenuState={setMenuState}
                             menuState={"select"}
-                            className="w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
+                            className="w-full lg:w-auto dark:bg-gray-500
+                             dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
                         >
                             <p className="text-lg font-bold text-white">
                                 {t("exitGame")}
@@ -367,8 +369,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                 <ReturnButton
                                     setMenuState={setMenuState}
                                     menuState={"select"}
-                                    className="w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white 
-                                    bg-gray-400 rounded-lg hover:bg-gray-600"
+                                    className="w-full lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
+                                     dark:hover:bg-red-800 rounded-lg"
                                 >
                                     <p className="text-lg font-bold text-white">
                                         {t("exitGame")}
@@ -386,8 +388,9 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                     <ReturnButton
                                         setMenuState={setMenuState}
                                         menuState="select"
-                                        className="w-full dark:bg-gray-500 dark:hover:bg-red-900
-                                        text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold"
+                                        className="w-full dark:bg-red-700 dark:hover:bg-red-900
+                                        text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold
+                                        transition-all hover:scale-105"
 
                                     >
                                         {t("exitGame")}
@@ -413,6 +416,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                                     onCheckedChange={() => {
                                                         setDifficulty(key as keyof typeof difficulties);
                                                     }}
+                                                    className=" border-gray-400"
                                                 />
 
                                                 <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
@@ -420,22 +424,22 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                                         {value[`name_${locale}` as keyof typeof value]}
                                                     </span>
 
-                                                    <HoverCard>
-                                                        <HoverCardTrigger>
+                                                    <Popover>
+                                                        <PopoverTrigger>
                                                             <span className="text-sm text-gray-500 dark:text-gray-300">
                                                                 (?)
                                                             </span>
-                                                        </HoverCardTrigger>
+                                                        </PopoverTrigger>
 
-                                                        <HoverCardContent className="max-w-62.5 sm:max-w-xs">
+                                                        <PopoverContent className="max-w-62.5 sm:max-w-xs">
                                                             <p className="text-sm">
                                                                 {value[`description_${locale}` as keyof typeof value]}, {`${t("youNeed")} `}
                                                                 {value.requerimentPoints *
                                                                     (GameData?.countRound || 5)}
                                                                 {` ${t("pointsTo")}.`}
                                                             </p>
-                                                        </HoverCardContent>
-                                                    </HoverCard>
+                                                        </PopoverContent>
+                                                    </Popover>
                                                 </div>
                                             </label>
                                         ))}

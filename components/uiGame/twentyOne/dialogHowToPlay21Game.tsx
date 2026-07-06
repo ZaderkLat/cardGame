@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/dialog"
 
 import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-} from "@/components/ui/hover-card"
+    Popover,
+    PopoverContent,
+    PopoverTrigger
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -129,18 +129,18 @@ export default function DialogHowToPlay21Game({ open21, onOpenChange21 }: GameDi
                                     </p>
 
                                     <div className="flex justify-center transition duration-200  hover:scale-105 active:scale-95">
-                                        <HoverCard openDelay={100} closeDelay={200}>
-                                            <HoverCardTrigger>
+                                        <Popover>
+                                            <PopoverTrigger>
                                                 <Maze />
-                                            </HoverCardTrigger>
-                                            <HoverCardContent side="top" className="w-40">
+                                            </PopoverTrigger>
+                                            <PopoverContent side="top" className="w-40">
                                                 <div className="flex justify-center">
                                                     <p className="text-sm text-gray-700 dark:text-gray-300">{t("hitHover")}</p>
                                                 </div>
 
 
-                                            </HoverCardContent>
-                                        </HoverCard>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </div>
 
