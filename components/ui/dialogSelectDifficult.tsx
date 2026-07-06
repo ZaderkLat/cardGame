@@ -5,13 +5,12 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
     DialogFooter,
     DialogClose
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils";
-
+import { useTranslations } from "next-intl";
 
 
 export type DialogSelectDifficult = {
@@ -25,7 +24,7 @@ export type DialogSelectDifficult = {
 
 
 export default function DialogSelectDifficult({ title, open, children, onOpenChange, childrenBottom }: DialogSelectDifficult) {
-
+    const t = useTranslations("DialogSelectDifficult");
     return (
         <Dialog open={open} onOpenChange={onOpenChange} >
             <DialogContent
@@ -72,7 +71,7 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
                                     open && "animate-pulse-once transition-all hover:scale-105"
                                 )}
                             >
-                                Play
+                                {t("play")}
                             </Button>
                         </DialogClose>
 

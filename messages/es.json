@@ -157,5 +157,8 @@
         "play": "Jugar",
         "instructions": "Haz clic para ver las instrucciones de",
         "howToPlay": "Cómo jugar"
+    },
+    "DialogSelectDifficult": {
+        "play": "Jugar"
     }
 }

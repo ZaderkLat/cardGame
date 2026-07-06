@@ -158,5 +158,8 @@
         "play": "Play",
         "instructions": "Click to see the instructions for",
         "howToPlay": "How to Play"
+    },
+    "DialogSelectDifficult": {
+        "play": "Play"
     }
 }
