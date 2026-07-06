@@ -15,7 +15,17 @@ import CardSelectGame from "./cardSelectGame";
 import DialogHowToPlay21Game from "@/components/uiGame/twentyOne/dialogHowToPlay21Game";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-
+//I need change this to a more generic function, like a dictionary, because I'm gonna use a date base, for example:
+/**
+ * Table parameters:
+ * Id : number for example 1
+ * code: games
+ * datatype: 
+ * value : twenty_one
+ * label_en: Twenty One//agregar a base de datos
+ * label_es: Ventiuno//agregar a base de datos
+ * parent_id: null
+ */
 const games = [
     {
         name: "Twenty One",
@@ -47,17 +57,12 @@ export default function SelectGameMenu({ setMenuState }: SelectGameMenuProps) {
                     <ArrowLeft />
                 </ReturnButton>
 
-                <CardHeader className="pt-6 pb-6 text-center border-b">
+                <CardHeader className="pt-6 pb-6 mb-2 text-center border-b">
                     <CardTitle className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">
                         {t("title")}
                     </CardTitle>
 
-                    <CardDescription className="
-            mt-3
-            text-base sm:text-lg
-            text-gray-600 dark:text-gray-400
-            max-w-md mx-auto
-          ">
+                    <CardDescription className="mt-3 text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                         {t("description")}
                     </CardDescription>
                 </CardHeader>

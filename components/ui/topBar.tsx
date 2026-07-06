@@ -13,7 +13,7 @@ export function TopBar() {
     const t = useTranslations("topBar")
 
     return (
-        <div className="w-full h-12 px-2 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
+        <div className="w-full h-12 px-2 py-2 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
 
             {/* Left */}
             <Button className="bg-transparent transition duration-500 hover:scale-115 flex justify-center items-center "

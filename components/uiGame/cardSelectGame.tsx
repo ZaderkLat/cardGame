@@ -92,8 +92,8 @@ export default function CardSelectGame({
                         variant="outline"
                         onClick={() => setMenuState(menuState)}
                         className="rounded-full px-8 border-gray-300 bg-blue-500 text-white
-            hover:bg-blue-600 dark:border-zinc-600 dark:bg-transparent
-            dark:text-white dark:hover:bg-zinc-800 transition-all hover:scale-105"
+                                hover:bg-blue-600 hover:text-white dark:border-zinc-600 dark:bg-transparent
+                                dark:text-white dark:hover:bg-zinc-800 transition-all hover:scale-105"
                     >
                         {t("play")}
                     </Button>
