@@ -29,7 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 const games = [
     {
         name: "Twenty One",
-        image: "/21logo.png",
+        image: "/21logo.webp",
         state: "game_twenty_one" as const,
         howToPlay: DialogHowToPlay21Game,
     }
@@ -44,11 +44,11 @@ export default function SelectGameMenu({ setMenuState }: SelectGameMenuProps) {
 
     const t = useTranslations("selectGameMenu");
     return (
-        <div className="flex items-center justify-center w-full h-full p-4">
+        <div className="flex items-center justify-center w-full h-full p-4 s">
             <Card className="relative w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
 
                 <ReturnButton
-                    className=" absolute top-4 left-4 border border-gray-300 dark:border-gray-600 hover:bg-gray-100
+                    className=" absolute top-1 left-1 border border-gray-300 dark:border-gray-600 hover:bg-gray-100
                      dark:hover:bg-gray-700 transition-colors rounded-full
           "
                     setMenuState={setMenuState}
