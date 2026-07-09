@@ -51,7 +51,7 @@ export function TopBar() {
                     </>
                 ) : (
                     <>
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                        <span className="flex flex-row items-center text-sm text-zinc-600 dark:text-zinc-400">
                             {t("username")}:{" "}
                             <span className="font-semibold text-zinc-900 dark:text-white">
                                 <ConfigMenu username={user?.name || ""} isGuest={user?.isGuest || false} />
