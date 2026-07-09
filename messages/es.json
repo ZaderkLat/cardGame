@@ -6,7 +6,10 @@
         "welcome": "Bienvenido",
         "description": "Pon a prueba tu suerte y estrategía. Llega lo más cerca que puedas al 21 sin sobrepasarlo.",
         "playButton": "Jugar",
-        "howPlayButton": "Como jugar"
+        "howPlayButton": "Como jugar",
+        "login": "Iniciar Sesión",
+        "register": "Crear cuenta nueva",
+        "historial": "Historial"
     },
     "selectGameMenu": {
         "title": "Selecciona un juego",
@@ -53,7 +56,10 @@
         "myAccount": "Mi cuenta",
         "profile": "Perfil",
         "billing": "Facturación",
-        "logout": "Cerrar sesión"
+        "logout": "Cerrar sesión",
+        "login": "Iniciar sesión",
+        "register": "Registrarse",
+        "configuration": "Configuración"
     },
     "Login": {
         "title": "Iniciar sesión",

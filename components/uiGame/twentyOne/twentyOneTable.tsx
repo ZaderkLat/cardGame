@@ -19,7 +19,7 @@ import {
     PopoverContent,
     PopoverTrigger
 } from "@/components/ui/popover";
-
+import { Button } from "@/components/ui/button";
 import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
@@ -278,7 +278,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             onClick={handleTakeCard}
                             className={`w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded
                              transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
-                              active:scale-95 disabled:opacity-50
+                              active:scale-95 disabled:opacity-50 
                               ${handValue < 21 ? 'animate-breathe' : ''}`}
                             disabled={handValue >= 21}
                         >
@@ -303,7 +303,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                 className={`
                                     px-3 sm:px-4 py-2 text-white rounded-lg
                                     ${handValue >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
-                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'}
+                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
                                 `}
                                 disabled={endRoundButton}
                             >
@@ -341,7 +341,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                         <button
                             onClick={handleRestartGame}
                             className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
-                                ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500'}
+                                ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500 transition-all hover:scale-105'}
                             `}
                             disabled={restartGameButton}
                         >
@@ -354,7 +354,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             className="w-full lg:w-auto dark:bg-gray-500
                              dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
                         >
-                            <p className="text-lg font-bold text-white">
+                            <p className="text-lg font-bold text-white transition-all hover:scale-105">
                                 {t("exitGame")}
                             </p>
                         </ReturnButton>
@@ -388,8 +388,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                     <ReturnButton
                                         setMenuState={setMenuState}
                                         menuState="select"
-                                        className="w-full dark:bg-red-700 dark:hover:bg-red-900
-                                        text-white bg-gray-400 rounded-lg hover:bg-gray-600 font-bold
+                                        className="w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-900
+                                        text-white rounded-lg  font-bold
                                         transition-all hover:scale-105"
 
                                     >
@@ -416,7 +416,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                                     onCheckedChange={() => {
                                                         setDifficulty(key as keyof typeof difficulties);
                                                     }}
-                                                    className=" border-gray-400"
+                                                    className=" border-gray-400 data-[state=checked]:bg-blue-600"
                                                 />
 
                                                 <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">

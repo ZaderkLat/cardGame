@@ -40,7 +40,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       // Recovery guest from localStorage
       const storedGuest = await localStorage.getItem("guest");
-      console.log("Stored guest:", storedGuest);
+
 
       if (storedGuest) {
         setUser(JSON.parse(storedGuest));

@@ -6,7 +6,10 @@
         "welcome": "Welcome",
         "description": "Test your luck and strategy. Try to get as close to 21 as possible without going over.",
         "playButton": "Play",
-        "howPlayButton": "How to Play"
+        "howPlayButton": "How to Play",
+        "login": "Login",
+        "register": "Create new account",
+        "historial": "Historial"
     },
     "selectGameMenu": {
         "title": "Select Game",
@@ -54,7 +57,10 @@
         "myAccount": "My Account",
         "profile": "Profile",
         "billing": "Billing",
-        "logout": "Log Out"
+        "logout": "Log Out",
+        "login": "Login",
+        "register": "Register",
+        "configuration": "Configuration"
     },
     "Login": {
         "title": "Login",
