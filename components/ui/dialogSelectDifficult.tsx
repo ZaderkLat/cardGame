@@ -66,7 +66,7 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
                         <DialogClose asChild>
                             <Button
                                 className={cn(
-                                    "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg hover:bg-zinc-200 bg-green-600 hover:bg-green-700",
+                                    "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg  bg-green-600 hover:bg-green-700",
                                     "dark:hover:bg-green-800 w-full text-2xl py-5 rounded-lg font-bold  dark:bg-green-700 dark:text-zinc-300",
                                     open && "animate-pulse-once transition-all hover:scale-105"
                                 )}

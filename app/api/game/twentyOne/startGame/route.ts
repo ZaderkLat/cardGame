@@ -1,27 +1,26 @@
-import { NextResponse } from "next/server"
-import { createGame } from "@/lib/gameEngine/gameStore"
+import { NextResponse, NextRequest } from "next/server"
 import { randomUUID } from "crypto"
-import { prepareGame } from "@/lib/gameEngine/prepareGame"
-import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One"
+import { starGame, calculateHandValue, storageGame, assignTurn } from "@/lib/gameEngine/twetyOne/twety_One"
+import type { GameState, PlayerInfo, PlayersRequest } from "@/interface/gameData"
 
-export async function POST() {
-    const { playerHand, remainingDeck } = prepareGame(2)
+export async function POST(request: NextRequest) {
 
-    const game = {
+    const playersGame: PlayersRequest[] = await request.json();
+
+    const { playersInfo, shuffledMaze } = starGame(playersGame)
+
+    const game: GameState = {
         id: randomUUID(),
-        playerHand: playerHand,
-        enemyHand: playerHand,
-        score : 0,
-        deck: remainingDeck,
-        turn: "player",
+        players: playersInfo,
+        deck: shuffledMaze,
+        turn: 1,
         round: 1,
         countRound: 5,
         statusGame: "continue" as const,
-        handValue: calculateHandValue(playerHand),
         lastUpdated: Date.now()
     }
 
-    createGame(game)
+    storageGame(game)
 
     return NextResponse.json(game)
 }

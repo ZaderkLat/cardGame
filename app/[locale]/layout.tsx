@@ -43,11 +43,10 @@ export default async function LocaleLayout({
   return (
 
     <html
-
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="h-full flex flex-col ">
+      <body className="h-screen flex flex-col">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="class"
@@ -57,14 +56,12 @@ export default async function LocaleLayout({
             storageKey="theme"
           >
             <UserProvider>
-
               <TopBar />
 
-              <main className="flex-1 flex flex-col ">
+              <main className="flex-1 min-h-0 flex flex-col">
                 {children}
                 <Toaster />
               </main>
-
             </UserProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

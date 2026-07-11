@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
-import { createGame, updateGame } from "@/lib/gameEngine/gameStore"
-import { randomUUID } from "crypto"
 import { prepareGame } from "@/lib/gameEngine/prepareGame"
-import { calculateHandValue, scoreGame } from "@/lib/gameEngine/twetyOne/twety_One"
+import { calculateHandValue, scoreGame, updateStorageGame, starGame } from "@/lib/gameEngine/twetyOne/twety_One"
 
 
 export async function POST(req: Request) {
@@ -15,7 +13,7 @@ export async function POST(req: Request) {
         gameData.statusGame = "finished"
     }
     const roundScore = scoreGame(gameData.playerHand)
-    const { playerHand, remainingDeck } = prepareGame(2)
+    const { playerHand, remainingDeck } = starGame()
 
 
     const game = {
@@ -32,7 +30,7 @@ export async function POST(req: Request) {
         lastUpdated: Date.now()
     }
 
-    updateGame(gameData.id, game)
+    updateStorageGame(gameData.id, game)
 
     return NextResponse.json(game)
 }

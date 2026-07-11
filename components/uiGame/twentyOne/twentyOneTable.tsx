@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+
 import { card } from "@/interface/card";
 import cardStyle from "@/components/ObjectsGame/cardStyle";
-import { GameState, LogGame } from "@/interface/gameData";
+import { GameState, LogGame, PlayersRequest, Mode } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
 import GameDialog from "@/components/ui/dialogGameMessaje";
 import { isWinner } from "@/lib/gameEngine/twetyOne/twety_One";
 import ReturnButton from "@/components/uiGame/returnButton";
 import { MenuStatus } from "@/interface/menuStatus";
-import { difficulties } from "@/interface/gameData";
+import { difficulties, PlayerInfo } from "@/interface/gameData";
 import DialogSelectDifficult from "@/components/ui/dialogSelectDifficult";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -19,23 +19,36 @@ import {
     PopoverContent,
     PopoverTrigger
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
 import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
+import {
+    Combobox,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList,
+} from "@/components/ui/combobox"
+import { SimpleCombobox } from "@/components/ui/simpleComboBox";
+import { useUser } from "@/hooks/useUser";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
 }
+
 export default function Home({ setMenuState }: TwentyOneTableProps) {
     const t = useTranslations("twentyOne");
+    const { user } = useUser();
+
+    const [players, setPlayers] = useState<PlayersRequest[]>([])
+
+
     //languaje path
     const locale = useLocale();
     //Game State
-    const [score, setScore] = useState<number>(0);
-    const [hand, setHand] = useState<card[]>([]);
-    const [deck, setDeck] = useState<card[]>([]);
+
     const [gameInfo, setGameInfo] = useState<LogGame[]>([]);
 
     const [dialog, setDialog] = useState<dialogData>({
@@ -45,11 +58,20 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         status: "continue" as const,
 
     });
-
-    const [handValue, setHandValue] = useState<number>(0);
+    //------------------------------//
+    const modes: Mode[] = [
+        { label_es: "Solitario", label_en: "Solo", value: "solo" },
+        { label_es: "Contra Dealer", label_en: "VS Dealer", value: "dealer" }
+    ] as const;
+    const [mode, setMode] = useState("solo");
+    //------------------------------//
+    const [value, setValue] = useState<string | null>(null)
     /*Game Data*/
-    const [GameData, setGameData] = useState<GameState | null>(null);
+    const [gameData, setGameData] = useState<GameState | null>(null);
 
+    const player = gameData?.players.find(
+        p => p.idPlayer === user?.id
+    );
 
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
@@ -67,49 +89,69 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
+
+        //create the player "dealer"<-CPU
         setRestarGameButton(true);
         setEndRoundButton(true);
-        const response = await fetch("/api/game/twentyOne/startGame", {
-            method: "POST"
-        }).then(res => res.json()) as GameState;
+        const res = await fetch("/api/game/twentyOne/startGame", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(players),
+        });
+
+        if (!res.ok) {
+            throw new Error("Error al iniciar la partida");
+        }
+
+        const response: GameState = await res.json();
+        setGameData(response);
 
         setGameData(response);
 
         if (response.round === 1) {
-            setGameInfo(prev => [...prev, { type: "info", message: t("gameStarted") + "." }]);
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "info",
+                    message: t("gameStarted") + "."
+                }
+            ]);
         } else {
-            setGameInfo(prev => [...prev, { type: "info", message: `${t("round")} ${response.round} ${t("started")}.` }]);
-            setGameInfo(prev => [...prev, { type: "info", message: `${t("scoreObtain")}: ${response.score - score}` }]);
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "info",
+                    message: `${t("round")} ${response.round} ${t("started")}.`
+                }
+            ]);
         }
 
-        if (response.handValue === 21) {
-            setTextFloadComponent(t("perfectRound"));
-        }
-        //set all data from response
-        setHandValue(response.handValue);
-        setScore(response.score);
-        setHand(response.playerHand);
-        setDeck(response.deck);
-        //enable "end round" and restart game button when the game is ready
         setEndRoundButton(false);
         setRestarGameButton(false);
 
     }
 
     useEffect(() => {
-        if (handValue === 21 && (GameData?.playerHand.length ?? 0) === 2) {
+        if (!player) return;
+
+        if (player.handValue === 21 && player.hand.length === 2) {
             setTextFloadComponent(t("perfectRound"));
             return;
         }
-        if (handValue === 21 && (GameData?.playerHand.length ?? 0) > 2) {
+
+        if (player.handValue === 21) {
             setTextFloadComponent(t("youWin"));
             return;
         }
-        if (handValue > 21) {
+
+        if (player.handValue > 21) {
             setTextFloadComponent(t("youLose"));
             return;
         }
-    }, [handValue])
+
+    }, [player, t]);
 
     //* Control the dialog data and its open and close states */
     const openDialog = (data: Omit<dialogData, "open">) => {
@@ -128,62 +170,54 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             setPendingAction(null);
         }
     };
+    const getPlayer = () => {
+
+        return gameData?.players.find(p => p.idPlayer === user?.id)
+
+    }
     //* -------------------------------------------------------------------- */
     const handleTakeCard = async () => {
-        if (!GameData) return;
+        if (!gameData || !user) return;
+
         const response = await fetch("/api/game/twentyOne/play/takeCard", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                gameId: GameData.id,
-                remainingDeck: deck,
-                playerHand: hand
+                gameId: gameData.id,
             })
         }).then(res => res.json()) as GameState;
 
         setGameData(response);
-        //`name_${locale}` as keyof typeof value]
+
+        const player = getPlayer();
+
+        if (!player) return;
+
+        const lastCard = player.hand.at(-1);
+
         setGameInfo(prev => [
             ...prev,
             {
                 type: "info",
-                message: `${t("cardTaken")}: ${response.playerHand.at(-1)?.rank
-                    } ${t("of")} ${response.playerHand.at(-1)?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
+                message: `${t("cardTaken")}: ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
                     }`,
             },
         ]);
-        setHandValue(response.handValue);
-        setHand(response.playerHand);
-        setDeck(response.deck);
-
-    }
-
-    useEffect(() => {
-        if (openDifficultDialog === false) {
-            startGame();
-        }
-
-    }, [openDifficultDialog]);
-
-    const handleRestartGame = () => {
-        setOpenDifficultDialog(true);
-    }
-
-
-
+    };
     const handleEndRound = async () => {
         //disable "end round" button
         setEndRoundButton(true);
 
-        if (!GameData) return;
+        if (!gameData) return;
         const response = await fetch("/api/game/twentyOne/play/endRound", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ GameState: GameData })
+            body: JSON.stringify({ GameState: gameData })
         }).then(res => res.json()) as GameState;
-
+        setGameData(response);
+        setEndRoundButton(false);
 
         if (response.score !== score) {
             setGameInfo(prev => [...prev, { type: "win", message: `${t("round")} ${response.round - 1} ${t("scoreObtained")}: ${response.score - score}` }]);
@@ -195,15 +229,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         //* control the dialog when the game ends*/
         if (response.statusGame !== "finished") {
             //after I make the system to select the difficulty level
-            setGameData(response);
-            setScore(response.score);
-            setHandValue(response.handValue);
-            setHand(response.playerHand);
-            setDeck(response.deck);
-            setEndRoundButton(false);
 
-
-        } else {
             const { status, message } = isWinner(response.score, difficulty, response.countRound);
 
             openDialog({
@@ -220,18 +246,67 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 ]);
 
                 setGameData(null);
-                setScore(0);
-                setHand([]);
-                setDeck([]);
-                setHandValue(0);
+
 
 
                 startGame();
             });
 
+        } else {
+
+
 
         }
     }
+    useEffect(() => {
+        if (openDifficultDialog === false) {
+            startGame();
+        }
+
+    }, [openDifficultDialog]);
+
+    const handleRestartGame = () => {
+        setOpenDifficultDialog(true);
+    }
+
+    useEffect(() => {
+        if (!user) return;
+
+        setPlayers([
+            {
+                idPlayer: user.id,
+                userName: user.name,
+            },
+        ]);
+    }, [user]);
+
+    useEffect(() => {
+        setPlayers((prevPlayers) => {
+            if (mode === "solo") {
+                return prevPlayers.filter(
+                    (player) => player.idPlayer !== "dealer"
+                );
+            }
+
+            const dealerExists = prevPlayers.some(
+                (player) => player.idPlayer === "dealer"
+            );
+
+            if (dealerExists) {
+                return prevPlayers;
+            }
+
+            return [
+                ...prevPlayers,
+                {
+                    idPlayer: "dealer",
+                    userName: "Dealer",
+                },
+            ];
+        });
+    }, [mode]);
+
+
 
     return (
         <div className="flex flex-col min-h-full bg-zinc-50 dark:bg-black">
@@ -249,11 +324,11 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                         <div className="absolute left-1 top-2 w-full px-2 flex justify-between sm:justify-start sm:flex-col sm:w-auto">
 
                             <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                                {t("score")}: {`${score} / ${difficulties[difficulty].requerimentPoints * (GameData?.countRound ?? 0)}`}
+                                {t("score")}: {`${player?.score ?? 0} / ${difficulties[difficulty].requerimentPoints * (gameData?.countRound ?? 0)}`}
                             </h1>
 
                             <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                                {t("round")}: {`${GameData?.round} / ${GameData?.countRound}`}
+                                {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
                             </h1>
 
                         </div>
@@ -268,7 +343,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                     {/* CARD BUTTON AREA */}
                     <div className="relative flex flex-1 flex-col items-center justify-center mt-6 w-full">
-                        <FloatComponent isVisible={handValue >= 21}>
+                        <FloatComponent isVisible={(player?.handValue ?? 0) >= 21}>
                             <div className="text-center">
                                 <span>{textFloatComponent}</span>
                             </div>
@@ -279,8 +354,8 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             className={`w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded
                              transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
                               active:scale-95 disabled:opacity-50 
-                              ${handValue < 21 ? 'animate-breathe' : ''}`}
-                            disabled={handValue >= 21}
+                              ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
+                            disabled={(player?.handValue ?? 0) >= 21}
                         >
                             <Maze />
                         </button>
@@ -302,7 +377,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                 onClick={handleEndRound}
                                 className={`
                                     px-3 sm:px-4 py-2 text-white rounded-lg
-                                    ${handValue >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
+                                    ${(player?.handValue ?? 0) >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
                                     ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
                                 `}
                                 disabled={endRoundButton}
@@ -316,11 +391,11 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                         </h2>
 
                         <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mt-2">
-                            {t("handValue")}: {handValue}
+                            {t("handValue")}: {(player?.handValue ?? 0)}
                         </div>
 
                         <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
-                            {hand.map((card, index) => (
+                            {player?.hand.map((card, index) => (
                                 <div key={index} className="scale-90 sm:scale-100">
                                     {cardStyle(card)}
                                 </div>
@@ -399,51 +474,65 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             }
                         >
                             <>
-                                <div className="text-base sm:text-lg font-bold text-gray-800 dark:text-white mb-6 text-center">
-                                    {t("difficultyText")}
+                                <div className="flex flex-col">
+                                    <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
+                                        Select mode:
+                                    </p>
+                                    <SimpleCombobox
+                                        items={modes}
+                                        value={mode}
+                                        languaje={locale}
+                                        onChange={setMode}
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <div className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white text-center">
+                                        <p>{t("difficultyText")}</p>
+                                    </div>
+
+                                    <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
+
+                                        {difficulties &&
+                                            Object.entries(difficulties).map(([key, value]) => (
+                                                <label
+                                                    key={key}
+                                                    className="flex flex-row items-center justify-center sm:justify-start gap-2 cursor-pointer"
+                                                >
+                                                    <Checkbox
+                                                        checked={difficulty === key}
+                                                        onCheckedChange={() => {
+                                                            setDifficulty(key as keyof typeof difficulties);
+                                                        }}
+                                                        className=" border-gray-400 data-[state=checked]:bg-blue-600"
+                                                    />
+
+                                                    <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
+                                                        <span className="text-sm sm:text-lg font-medium text-gray-800 dark:text-white">
+                                                            {value[`name_${locale}` as keyof typeof value]}
+                                                        </span>
+
+                                                        <Popover>
+                                                            <PopoverTrigger>
+                                                                <span className="text-sm text-gray-500 dark:text-gray-300">
+                                                                    (?)
+                                                                </span>
+                                                            </PopoverTrigger>
+
+                                                            <PopoverContent className="max-w-62.5 sm:max-w-xs">
+                                                                <p className="text-sm">
+                                                                    {value[`description_${locale}` as keyof typeof value]}, {`${t("youNeed")} `}
+                                                                    {value.requerimentPoints *
+                                                                        (gameData?.countRound || 5)}
+                                                                    {` ${t("pointsTo")}.`}
+                                                                </p>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                    </div>
                                 </div>
 
-                                <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
-
-                                    {difficulties &&
-                                        Object.entries(difficulties).map(([key, value]) => (
-                                            <label
-                                                key={key}
-                                                className="flex flex-row items-center justify-center sm:justify-start gap-2 cursor-pointer"
-                                            >
-                                                <Checkbox
-                                                    checked={difficulty === key}
-                                                    onCheckedChange={() => {
-                                                        setDifficulty(key as keyof typeof difficulties);
-                                                    }}
-                                                    className=" border-gray-400 data-[state=checked]:bg-blue-600"
-                                                />
-
-                                                <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
-                                                    <span className="text-sm sm:text-lg font-medium text-gray-800 dark:text-white">
-                                                        {value[`name_${locale}` as keyof typeof value]}
-                                                    </span>
-
-                                                    <Popover>
-                                                        <PopoverTrigger>
-                                                            <span className="text-sm text-gray-500 dark:text-gray-300">
-                                                                (?)
-                                                            </span>
-                                                        </PopoverTrigger>
-
-                                                        <PopoverContent className="max-w-62.5 sm:max-w-xs">
-                                                            <p className="text-sm">
-                                                                {value[`description_${locale}` as keyof typeof value]}, {`${t("youNeed")} `}
-                                                                {value.requerimentPoints *
-                                                                    (GameData?.countRound || 5)}
-                                                                {` ${t("pointsTo")}.`}
-                                                            </p>
-                                                        </PopoverContent>
-                                                    </Popover>
-                                                </div>
-                                            </label>
-                                        ))}
-                                </div>
                             </>
                         </DialogSelectDifficult>
 

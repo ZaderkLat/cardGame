@@ -1,26 +1,38 @@
 import { NextResponse } from "next/server"
-import { getGame, updateGame } from "@/lib/gameEngine/gameStore"
-import {getNewCart, scoreGame, calculateHandValue} from "@/lib/gameEngine/twetyOne/twety_One"
+import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, handlerTurns } from "@/lib/gameEngine/twetyOne/twety_One"
 
 
 export async function POST(req: Request) {
-  const { gameId, remainingDeck, playerHand } = await req.json()
+  const { gameId } = await req.json()
 
-  const game = getGame(gameId)
+  const game = getStorageGame(gameId)
 
   if (!game) {
     return NextResponse.json({ error: "Game not found" }, { status: 404 })
   }
-  const { newHand, newDeck } = getNewCart(remainingDeck, playerHand);
+  const player = playerInTurn(game);
+  if (!player) {
+    return NextResponse.json({ error: "Player not found" }, { status: 404 })
+  }
+  const { newHand, newDeck } = getNewCard(game.deck, player?.hand);
 
-  game.handValue = calculateHandValue(newHand);
+  const updatedPlayers = game.players.map(p =>
+    p.idPlayer === player.idPlayer
+      ? {
+        ...p,
+        hand: newHand,
+        handValue: calculateHandValue(newHand)
+      }
+      : p
+  );
 
-  game.playerHand = newHand
-  game.deck = newDeck 
-  game.turn = "enemy"
- 
+  game.players = updatedPlayers;
+  game.deck = newDeck
+  /* this dont change here
+  game.turn = handlerTurns(game);
+*/
 
-  updateGame(gameId, game)
+  updateStorageGame(gameId, game)
 
   return NextResponse.json(game)
 }

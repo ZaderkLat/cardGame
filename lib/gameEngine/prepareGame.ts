@@ -1,20 +1,26 @@
-import { shuffleDeck, getCards} from "./controllerMaze";
+import { shuffleDeck, getCards } from "./controllerMaze";
 import { card } from "@/interface/card";
+import { PlayersRequest } from "@/interface/gameData";
 
-export function prepareGame(handSize: number) {
+export function prepareGame(handSize: number, quantityPlayer: number) {
 
-    const shuffledMaze= shuffleDeck();
-    const { cards: playerHand, deck: remainingDeck } = getCards(handSize, shuffledMaze);
-   
+    let shuffledMaze = shuffleDeck();
+    const hands: card[][] = [];
 
-    return { playerHand, remainingDeck };
+    for (let i = 0; i < quantityPlayer; i++) {
+        const { cards: playerHand, deck: remainingDeck } = getCards(handSize, shuffledMaze);
+        shuffledMaze = remainingDeck;
+        hands.push(playerHand)
+    }
+
+    return { hands, shuffledMaze };
 }
 
 
-export function getCart(remainingDeck: card[], hand: card[]) {
-    //take a cart
-    const { cards: newCart, deck: newDeck } = getCards(1, remainingDeck);
-    //add the cart to the hand
-    const newHand = [...hand, ...newCart];
+export function getCard(remainingDeck: card[], hand: card[]) {
+    //take a card
+    const { cards: newCard, deck: newDeck } = getCards(1, remainingDeck);
+    //add the card to the hand
+    const newHand = [...hand, ...newCard];
     return { newHand, newDeck };
 }
