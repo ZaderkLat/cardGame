@@ -19,6 +19,7 @@ export type PlayerInfo = {
   hand: card[]
   handValue: number
   turn: number
+  status: "continue" | "stand" | "lose" | "win" | "blackJack"
 }
 //this object is send by frontend to make PlayerInfo object
 export interface PlayersRequest {
@@ -44,8 +45,8 @@ export const difficulties = {
 }
 //Possible dealers, in the future, want to add "personalities", such as different phrases and ways to play, for this is "value".
 export const dealears = {
-  John: { id: "john", name: "John", value: 0.5 },
-  Carlos: { id: "carlos", name: "Carlos", value: 0.8 },
-  Valeria: { id: "valeria", name: "Valeria", value: 1 },
-  Fernanda: { id: "fernanda", name: "Fernanda", value: 1.3 }
+  John: { id: "dealer", name: "John", value: 0.5 },
+  Carlos: { id: "dealer", name: "Carlos", value: 0.8 },
+  Valeria: { id: "dealer", name: "Valeria", value: 1 },
+  Fernanda: { id: "dealer", name: "Fernanda", value: 1.3 }
 }

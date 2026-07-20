@@ -17,22 +17,22 @@ export function TopBar() {
         <div className="w-full h-12 px-2 py-2 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black">
 
             {/* Left */}
-            <Button className="bg-transparent transition duration-500 hover:scale-115 flex justify-center items-center "
-                onClick={() =>
-                    window.location.href = "/"
-                }
-
+            <Button
+                className="bg-transparent transition duration-500 hover:scale-115 hover:bg-transparent"
+                onClick={() => {
+                    window.location.href = "/";
+                }}
             >
-                <h1 className="flex flex-row items-center text-lg font-bold text-black dark:text-white">
+                <span className="flex items-center text-lg font-bold text-black dark:text-white">
                     <Image
                         src={image}
-                        alt={"Mini Games"}
+                        alt="Mini Games"
                         width={100}
                         height={100}
-                        className="h-9  w-9 object-cover rounded-lg"
+                        className="h-9 w-9 rounded-lg object-cover"
                     />
                     {t("homePage")}
-                </h1>
+                </span>
             </Button>
 
 
@@ -52,7 +52,7 @@ export function TopBar() {
                 ) : (
                     <>
                         <span className="flex flex-row items-center text-sm text-zinc-600 dark:text-zinc-400">
-                            {t("username")}:{" "}
+                            {t("username")}:
                             <span className="font-semibold text-zinc-900 dark:text-white">
                                 <ConfigMenu username={user?.name || ""} isGuest={user?.isGuest || false} />
                             </span>

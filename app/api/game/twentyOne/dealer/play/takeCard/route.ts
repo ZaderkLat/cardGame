@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, handlerTurns } from "@/lib/gameEngine/twetyOne/twety_One"
+import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, handlerTurns, getPlayerState } from "@/lib/gameEngine/twetyOne/twety_One"
 
 
 export async function POST(req: Request) {
@@ -11,17 +11,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Game not found" }, { status: 404 })
   }
   const player = playerInTurn(game);
+
   if (!player) {
     return NextResponse.json({ error: "Player not found" }, { status: 404 })
   }
   const { newHand, newDeck } = getNewCard(game.deck, player?.hand);
+  player.hand = newHand
+  player.handValue = calculateHandValue(newHand)
+  /*getPlayerState return
+    lose: if playerHandValue > 21
+    stand: if playerHandValue == 21
+    continue: if playerHandValue < 21
+    blackJack: if playerHandValue == 21 & playerHand.length ==2 
+    NOTE: Only LOSE is possible in this EndPoint
+  */
+  player.status = getPlayerState(player.handValue, player.hand.length)
 
   const updatedPlayers = game.players.map(p =>
     p.idPlayer === player.idPlayer
       ? {
         ...p,
-        hand: newHand,
-        handValue: calculateHandValue(newHand)
+        hand: player.hand,
+        handValue: player.handValue,
+        status: player.status
       }
       : p
   );

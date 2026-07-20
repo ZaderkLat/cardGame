@@ -34,7 +34,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const t = useTranslations("twentyOne");
     const { user } = useUser();
 
-    const [players, setPlayers] = useState<PlayersRequest[]>([])
+    const [playersList, setPlayersList] = useState<PlayersRequest[]>([])
 
 
     //languaje path
@@ -63,12 +63,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
     const [player, setPlayer] = useState<PlayerInfo>();
 
-    useEffect(() => {
-        if (!gameData || !user) return;
-        setPlayer(gameData?.players.find(
-            p => p.idPlayer === user?.id)
-        );
-    }, [gameData, user])
+
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
     //Handler diffcult selection
@@ -94,7 +89,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(players),
+            body: JSON.stringify(playersList),
         });
 
         if (!res.ok) {
@@ -197,7 +192,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const handleTakeCard = async () => {
         if (!gameData || !user) return;
 
-        const response = await fetch(`/api/game/twentyOne/${mode}/play/takeCard`, {
+        const response = await fetch(`/api/game/twentyOne/dealer/play/takeCard`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -226,10 +221,10 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     const handleEndRound = async () => {
         //disable "end round" button
         setEndRoundButton(true);
-        console.log(gameData?.players.map(p => `${p.userName} ${p.status}`))
+
         if (!gameData) return;
 
-        const response = await fetch(`/api/game/twentyOne/${mode}/play/endRound`, {
+        const response = await fetch(`/api/game/twentyOne/dealer/play/endRound`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -237,14 +232,14 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             })
         }).then(res => res.json()) as GameState;
 
-        const playerTurn = await response.players.find(p => p.turn == response.turn)
+        const playerTurn = response.players.find(p => p.turn == response.turn)
 
         if (playerTurn?.idPlayer == user?.id) {
             setGameInfo(prev => [
                 ...prev,
                 {
                     type: "win",
-                    message: "It's Your turn."
+                    message: `It's ${playerTurn?.userName} turn.`
                 }
             ]);
         } else {
@@ -302,20 +297,39 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
         }
     }
+    const handlerStand = async () => {
+        if (!gameData) return;
+        const response = await fetch(
+            "/api/game/twentyOne/dealer/play/standRound",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    gameId: gameData.id
+                })
+            }
+        ).then(res => res.json());
+
+        setGameData(response)
+
+    }
     /** ----------------DEALER PLAY--------------------*/
     useEffect(() => {
         if (!player) return;
 
-        if (mode === "dealer" && (player.status === "stand" || player.status === "blackJack")) {
+        if (mode === "dealer" && player.status === "stand") {
             handleDealer();
         }
 
     }, [player]);
+
     const handleDealer = async () => {
         if (!gameData) return;
 
         const response = await fetch(
-            "/api/game/twentyOne/dealer/play",
+            "/api/game/twentyOne/dealer/play/dealerPlay",
             {
                 method: "POST",
                 headers: {
@@ -336,15 +350,11 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         }
 
     }, [openDifficultDialog]);
-
-    const handleRestartGame = () => {
-        setOpenDifficultDialog(true);
-    }
-
+    //create the user playerList when user charge
     useEffect(() => {
         if (!user) return;
 
-        setPlayers([
+        setPlayersList([
             {
                 idPlayer: user.id,
                 userName: user.name,
@@ -353,7 +363,20 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
     }, [user]);
 
     useEffect(() => {
-        setPlayers((prevPlayers) => {
+        if (!gameData || !user) return;
+        setPlayer(gameData?.players.find(
+            p => p.idPlayer === user?.id)
+        );
+    }, [gameData, user])
+
+    const handleRestartGame = () => {
+        setOpenDifficultDialog(true);
+    }
+
+
+    //create the dealer player or delete, it's depends if the user choose the solo or vs dealer mode
+    useEffect(() => {
+        setPlayersList(((prevPlayers) => {
             if (mode === "solo") {
                 return prevPlayers.filter(
                     (player) => player.idPlayer !== "dealer"
@@ -375,7 +398,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 },
                 ...prevPlayers,
             ];
-        });
+        }));
     }, [mode]);
 
 
@@ -392,7 +415,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                     {/* TOP BAR */}
                     <div className="flex justify-between w-full px-2 relative">
 
-                        {/* Score y Round */}
+                        {/* Score y Round 
                         <div className="absolute left-1 top-2 w-full px-2 flex justify-between sm:justify-start sm:flex-col sm:w-auto">
 
                             <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
@@ -404,7 +427,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             </h1>
 
                         </div>
-
+                        */}
                         {/* Title */}
                         <h1 className="text-2xl lg:text-4xl font-bold text-gray-800 dark:text-white mx-auto pt-10 sm:pt-16 lg:pt-2">
                             {t("title")}
@@ -445,6 +468,17 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
                         {/* Button over border*/}
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                            <button
+                                onClick={handleEndRound}
+                                className={`
+                                    px-3 sm:px-4 py-2 text-white rounded-lg
+                                    ${(player?.handValue ?? 0) >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
+                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
+                                `}
+                                disabled={endRoundButton}
+                            >
+                                Stand
+                            </button>
                             <button
                                 onClick={handleEndRound}
                                 className={`

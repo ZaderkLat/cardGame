@@ -6,7 +6,13 @@ import type { GameState, PlayerInfo, PlayersRequest } from "@/interface/gameData
 export async function POST(request: NextRequest) {
 
     const playersGame: PlayersRequest[] = await request.json();
-
+    /*getPlayerState return
+        lose: if playerHandValue > 21
+        stand: if playerHandValue == 21
+        continue: if playerHandValue < 21
+        blackJack: if playerHandValue == 21 & playerHand.length ==2 
+        NOTE: Only LOSE is possible in takeCard function
+      */
     const { playersInfo, shuffledMaze } = starGame(playersGame)
 
     const game: GameState = {
