@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     if (!gameData) {
         return NextResponse.json({ error: "Game not found" }, { status: 404 })
     }
-
+    console.log(gameData.players)
     const currentRound = gameData.round + 1
 
     if (currentRound > gameData.countRound) {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const roundScore = scoreGame(player.hand)
 
     const { playersInfo, shuffledMaze } = endRound(gameData)
-
+    console.log(playersInfo)
     const updatedPlayers = playersInfo.map(p =>
         p.idPlayer === player.idPlayer
             ? {
@@ -51,8 +51,7 @@ export async function POST(req: Request) {
         id: gameData.id,
         players: updatedPlayers,
         deck: shuffledMaze,
-        //turn = 0 it's for dealer turn
-        turn: 0,
+        turn: 1,
         round: currentRound,
         countRound: gameData.countRound,
         statusGame: gameData.statusGame,

@@ -27,7 +27,8 @@ export function starGame(players: PlayersRequest[]) {
             hand: hands[index],
             handValue: calculateHandValue(hands[index]),
             turn: player.idPlayer === "dealer" ? 0 : (turns[index - 1] ?? 1),
-            status: getPlayerState(calculateHandValue(hands[index]), hands[index].length)
+            status: getPlayerState(calculateHandValue(hands[index]), hands[index].length),
+            roundsWin: 0
         }));
     return {
         playersInfo,
@@ -48,7 +49,8 @@ export function endRound(gameData: GameState) {
             hand: hands[index],
             handValue,
             turn: player.turn,
-            status: continueGame === "continue" ? "stand" : continueGame
+            status: continueGame === "continue" ? "stand" : continueGame,
+            roundsWin: player.roundsWin
         };
     });
 
@@ -80,6 +82,9 @@ export function dealerPlay(playerDealer: PlayerInfo) {
 }
 export function playerInTurn(game: GameState) {
     return playerTurnData(game);
+}
+export function playerById(game: GameState, idPlayer: string) {
+    return playerById(game, idPlayer);
 }
 export function handlerTurns(game: GameState) {
     return nextTurn(game)
@@ -207,5 +212,96 @@ export function getNewCard(remainingDeck: card[], hand: card[]) {
     return getCard(remainingDeck, hand);
 }
 
-//this function calcule the points gain for round
+export function assingWinner(playersList: PlayerInfo[]): PlayerInfo[] {
+    const dealer = playersList[0];
+    const players = playersList.slice(1);
+
+    const results = players.map((player) => {
+        if (player.handValue > 21) {
+            return {
+                ...player,
+                status: "lose" as const
+            };
+        }
+
+        if (dealer.handValue > 21) {
+            return {
+                ...player,
+                status: "win" as const,
+                roundsWin: player.roundsWin + 1
+            };
+        }
+
+        if (
+            player.handValue === 21 &&
+            player.hand.length === 2
+        ) {
+            if (
+                dealer.handValue === 21 &&
+                dealer.hand.length === 2
+            ) {
+                return {
+                    ...player,
+                    status: "push" as const
+                };
+            }
+
+            return {
+                ...player,
+                status: "blackJack" as const,
+                roundsWin: player.roundsWin + 1
+            };
+        }
+
+        if (
+            dealer.handValue === 21 &&
+            dealer.hand.length === 2
+        ) {
+            return {
+                ...player,
+                status: "lose" as const
+            };
+        }
+
+        if (player.handValue > dealer.handValue) {
+            return {
+                ...player,
+                status: "win" as const,
+                roundsWin: player.roundsWin + 1
+            };
+        }
+
+        if (player.handValue < dealer.handValue) {
+            return {
+                ...player,
+                status: "lose" as const
+            };
+        }
+
+        return {
+            ...player,
+            status: "push" as const
+        };
+    });
+
+    const dealerWonRound = results.some(
+        (player) => player.status === "lose"
+    );
+
+    const updatedDealer: PlayerInfo = {
+        ...dealer,
+        roundsWin: dealerWonRound
+            ? dealer.roundsWin + 1
+            : dealer.roundsWin,
+        status:
+            dealer.handValue > 21
+                ? "lose"
+                : dealer.handValue === 21 &&
+                    dealer.hand.length === 2
+                    ? "blackJack"
+                    : "stand"
+    };
+
+    return [updatedDealer, ...results];
+}
 

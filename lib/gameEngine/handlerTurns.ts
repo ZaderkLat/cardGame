@@ -9,6 +9,14 @@ export function playerTurnData(gameData: GameState) {
         )
     );
 }
+export function playerById(gameData: GameState, idPlayer: string) {
+
+    return (
+        gameData?.players.find(
+            p => p.idPlayer === idPlayer
+        )
+    );
+}
 /**
  @param gameData turn = 1
 (1 % 4) + 1 = 2

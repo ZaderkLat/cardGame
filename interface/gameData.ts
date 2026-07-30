@@ -11,7 +11,8 @@ export type GameState = {
   statusGame: "continue" | "finished"
   lastUpdated: number
 }
-
+//change this type only produce errors in lib/gameEngine/twetyOne/twety_One.ts
+//only add the new data in the function startGame and endGame
 export type PlayerInfo = {
   idPlayer: string
   userName: string
@@ -19,7 +20,8 @@ export type PlayerInfo = {
   hand: card[]
   handValue: number
   turn: number
-  status: "continue" | "stand" | "lose" | "win" | "blackJack"
+  roundsWin: number
+  status: "continue" | "stand" | "lose" | "win" | "blackJack" | "push"
 }
 //this object is send by frontend to make PlayerInfo object
 export interface PlayersRequest {
@@ -28,7 +30,7 @@ export interface PlayersRequest {
 }
 
 export type LogGame = {
-  type: "info" | "win" | "lose"
+  type: "info" | "win" | "lose" | "separate"
   message: string
 }
 
