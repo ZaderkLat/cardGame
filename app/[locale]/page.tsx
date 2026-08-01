@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import TwentyOneTable from "@/components/uiGame/twentyOne/twentyOneTable";
+import TwentyOneSelect from "@/components/uiGame/twentyOne/twentyOneSelectMode";
 import IniMenu from "@/components/uiGame/iniMenu";
 import SelectGameMenu from "@/components/uiGame/selectGameMenu";
 import { MenuStatus } from "@/interface/menuStatus";
@@ -25,7 +26,7 @@ export default function Home() {
         <IniMenu setMenuState={handlerMenu} />
       )}
       {menuState === "select" && <SelectGameMenu setMenuState={handlerMenu} menuState={previousMenuState} />}
-      {menuState === "game_twenty_one" && <TwentyOneTable setMenuState={handlerMenu} />}
+      {menuState === "game_twenty_one" && <TwentyOneSelect setMenuState={handlerMenu} />}
 
 
 

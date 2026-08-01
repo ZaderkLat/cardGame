@@ -42,7 +42,8 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
                     "data-[state=open]:zoom-in-95",
                     "data-[state=closed]:fade-out",
                     "data-[state=closed]:zoom-out-95",
-                    "justify-center items-center"
+                    "justify-center items-center",
+
                 )}
             >
 
@@ -57,8 +58,10 @@ export default function DialogSelectDifficult({ title, open, children, onOpenCha
 
 
                 </DialogHeader>
+                <div className="w-full">
+                    {children}
+                </div>
 
-                {children}
 
                 <DialogFooter className="mt-2 bg-transparent">
                     <div className="grid grid-cols-2 gap-4 w-full">
