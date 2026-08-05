@@ -19,9 +19,7 @@ export default function GameLog({ info }: { info: LogGame[] }) {
 
     return (
         <div className="
-    flex-1 min-h-0 rounded-lg border h-full w-f
-    dark:border-zinc-700
-    overflow-hidden
+    flex-1 min-h-0 rounded-lg border h-full w-full dark:border-zinc-700 overflow-hidden
 ">
             <div
                 ref={containerRef}

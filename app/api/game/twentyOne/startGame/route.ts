@@ -1,11 +1,11 @@
 import { NextResponse, NextRequest } from "next/server"
 import { randomUUID } from "crypto"
-import { starGame, calculateHandValue, storageGame, assignTurn } from "@/lib/gameEngine/twetyOne/twety_One"
+import { starGame, calculateHandValue, storageGame, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
 import type { GameState, PlayerInfo, PlayersRequest } from "@/interface/gameData"
 
 export async function POST(request: NextRequest) {
+    const { players, rounds } = await request.json();
 
-    const playersGame: PlayersRequest[] = await request.json();
 
     /*getPlayerState return
         lose: if playerHandValue > 21
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
         blackJack: if playerHandValue == 21 & playerHand.length ==2 
         NOTE: Only LOSE is possible in takeCard function
       */
-    const { playersInfo, shuffledMaze } = starGame(playersGame)
+    const { playersInfo, shuffledMaze } = starGame(players);
 
     const game: GameState = {
         id: randomUUID(),
@@ -22,13 +22,16 @@ export async function POST(request: NextRequest) {
         deck: shuffledMaze,
         turn: 1,
         round: 1,
-        countRound: 5,
+        countRound: rounds,
         statusGame: "continue" as const,
         lastUpdated: Date.now()
     }
 
     storageGame(game)
 
-    return NextResponse.json(game)
+
+    const gameResponse = hideDealerCard(game);
+
+    return NextResponse.json(gameResponse)
 }
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { card } from "@/interface/card";
 import cardStyle from "@/components/ObjectsGame/cardStyle";
 import { GameState, LogGame, PlayersRequest, Mode } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
@@ -23,16 +22,22 @@ import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
-import { SimpleCombobox } from "@/components/ui/simpleComboBox";
-import { useUser } from "@/hooks/useUser";
-interface TwentyOneTableProps {
-    setMenuState: (state: MenuStatus) => void;
 
+import QuantitySelector from "@/components/ui/quantitySelector";
+interface TwentyOneTableSoloProps {
+    setMenuState: (state: MenuStatus) => void;
+    difficulty: keyof typeof difficulties;
+    rounds: number;
+    onChangeDifficulty: (
+        difficulty: keyof typeof difficulties
+    ) => void;
+    setRounds: React.Dispatch<React.SetStateAction<number>>;
+    userId: string;
+    userName: string;
 }
 
-export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps) {
+export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, onChangeDifficulty, setRounds, userId, userName }: TwentyOneTableSoloProps) {
     const t = useTranslations("twentyOne");
-    const { user } = useUser();
 
     const [players, setPlayers] = useState<PlayersRequest[]>([])
 
@@ -51,11 +56,7 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
 
     });
     //------------------------------//
-    const modes: Mode[] = [
-        { label_es: "Solitario", label_en: "Solo", value: "solo" },
-        { label_es: "Contra Dealer", label_en: "VS Dealer", value: "dealer" }
-    ] as const;
-    const [mode, setMode] = useState("solo");
+
     //------------------------------//
     /*Game Data*/
     const [gameData, setGameData] = useState<GameState | null>(null);
@@ -63,17 +64,12 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
 
     const [player, setPlayer] = useState<PlayerInfo>();
 
-    useEffect(() => {
-        if (!gameData || !user) return;
-        setPlayer(gameData?.players.find(
-            p => p.idPlayer === user?.id)
-        );
-    }, [gameData, user])
+
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
     //Handler diffcult selection
-    const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
-    const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
+
+    const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(false);
 
     const [textFloatComponent, setTextFloadComponent] = useState<string>("");
 
@@ -88,7 +84,12 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
 
-        //create the player "dealer"<-CPU
+        const players: PlayersRequest[] = [
+            {
+                idPlayer: userId,
+                userName: userName,
+            },
+        ];
         setRestarGameButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
@@ -97,7 +98,10 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(players),
+            body: JSON.stringify({
+                players: players,
+                rounds: rounds,
+            }),
         });
 
         if (!res.ok) {
@@ -105,11 +109,9 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
         }
 
         const response: GameState = await res.json();
-        setGameData(response);
 
         setGameData(response);
-        //find player in turn
-        const playerTurn = response.players.find(p => p.turn == response.turn)
+
         if (response.round === 1) {
             setGameInfo(prev => [
                 ...prev,
@@ -128,23 +130,7 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
             ]);
         }
 
-        if (playerTurn?.idPlayer == user?.id) {
-            setGameInfo(prev => [
-                ...prev,
-                {
-                    type: "win",
-                    message: "It's Your turn."
-                }
-            ]);
-        } else {
-            setGameInfo(prev => [
-                ...prev,
-                {
-                    type: "lose",
-                    message: `It's ${playerTurn?.userName} turn.`
-                }
-            ]);
-        }
+
         setEndRoundButton(false);
         setRestarGameButton(false);
         setTakeCardButton(false);
@@ -194,15 +180,15 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
     };
     const getPlayer = (gameData: GameState) => {
 
-        return gameData?.players.find(p => p.idPlayer === user?.id)
+        return gameData?.players.find(p => p.idPlayer === userId)
 
     }
     //* -------------------------------------------------------------------- */
     const handleTakeCard = async () => {
-        if (!gameData || !user) return;
+        if (!gameData) return;
         setTakeCardButton(true);
         setEndRoundButton(true);
-        const response = await fetch(`/api/game/twentyOne/${mode}/play/takeCard`, {
+        const response = await fetch(`/api/game/twentyOne/solo/play/takeCard`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -237,7 +223,7 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
 
         if (!gameData) return;
 
-        const response = await fetch(`/api/game/twentyOne/${mode}/play/endRound`, {
+        const response = await fetch(`/api/game/twentyOne/solo/play/endRound`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -246,7 +232,7 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
         }).then(res => res.json()) as GameState;
 
         const playerResponse = getPlayer(response)
-        const player = gameData?.players.find(p => p.idPlayer === user?.id)
+        const player = gameData?.players.find(p => p.idPlayer === userId)
 
         if (!playerResponse || !player) return;
 
@@ -292,34 +278,8 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
 
         }
     }
-    /** ----------------DEALER PLAY--------------------*/
-    useEffect(() => {
-        if (!player) return;
 
-        if (mode === "dealer" && (player.status === "stand" || player.status === "blackJack")) {
-            handleDealer();
-        }
 
-    }, [player]);
-    const handleDealer = async () => {
-        if (!gameData) return;
-
-        const response = await fetch(
-            "/api/game/twentyOne/dealer/play",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    gameId: gameData.id
-                })
-            }
-        ).then(res => res.json());
-
-        setGameData(response);
-    }
-    /** ----------------DEALER PLAY--------------------*/
     useEffect(() => {
         if (openDifficultDialog === false) {
             startGame();
@@ -331,47 +291,20 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
         setOpenDifficultDialog(true);
     }
 
+
+    //set the player data
     useEffect(() => {
-        if (!user) return;
+        if (!gameData) return;
+        setPlayer(gameData?.players.find(
+            p => p.idPlayer === userId)
+        );
 
-        setPlayers([
-            {
-                idPlayer: user.id,
-                userName: user.name,
-            },
-        ]);
-    }, [user]);
-
-    useEffect(() => {
-        setPlayers((prevPlayers) => {
-            if (mode === "solo") {
-                return prevPlayers.filter(
-                    (player) => player.idPlayer !== "dealer"
-                );
-            }
-
-            const dealerExists = prevPlayers.some(
-                (player) => player.idPlayer === "dealer"
-            );
-
-            if (dealerExists) {
-                return prevPlayers;
-            }
-
-            return [
-                {
-                    idPlayer: "dealer",
-                    userName: "Dealer",
-                },
-                ...prevPlayers,
-            ];
-        });
-    }, [mode]);
+    }, [gameData])
 
 
 
     return (
-        <div className="flex flex-col min-h-full bg-zinc-50 dark:bg-black">
+        <div className="flex flex-col h-full bg-zinc-50 dark:bg-black">
 
             {/* MAIN WRAPPER */}
             <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full h-full">
@@ -537,22 +470,22 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
                             }
                         >
                             <>
-                                <div className="flex flex-col">
-                                    <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
-                                        Select mode:
-                                    </p>
-                                    <SimpleCombobox
-                                        items={modes}
-                                        value={mode}
-                                        languaje={locale}
-                                        onChange={setMode}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white text-center">
+
+                                <div className="flex flex-col w-full h-full gap-5">
+                                    <div className="text-base sm:text-lg font-bold text-gray-800 dark:text-white text-center">
                                         <p>{t("difficultyText")}</p>
                                     </div>
+                                    <div className="flex items-center gap-4">
+                                        <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
+                                            Rounds:
+                                        </p>
 
+                                        <QuantitySelector
+                                            value={rounds}
+                                            onChange={setRounds}
+                                        />
+
+                                    </div>
                                     <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
 
                                         {difficulties &&
@@ -563,10 +496,11 @@ export default function TwentyOneTableSolo({ setMenuState }: TwentyOneTableProps
                                                 >
                                                     <Checkbox
                                                         checked={difficulty === key}
-                                                        onCheckedChange={() => {
-                                                            setDifficulty(key as keyof typeof difficulties);
-                                                        }}
-                                                        className=" border-gray-400 data-[state=checked]:bg-blue-600"
+                                                        onCheckedChange={() =>
+                                                            onChangeDifficulty(
+                                                                key as keyof typeof difficulties
+                                                            )
+                                                        }
                                                     />
 
                                                     <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">

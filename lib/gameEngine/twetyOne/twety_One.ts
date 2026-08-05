@@ -30,6 +30,7 @@ export function starGame(players: PlayersRequest[]) {
             status: getPlayerState(calculateHandValue(hands[index]), hands[index].length),
             roundsWin: 0
         }));
+
     return {
         playersInfo,
         shuffledMaze,
@@ -58,6 +59,26 @@ export function endRound(gameData: GameState) {
         playersInfo,
         shuffledMaze,
     };
+}
+//hide the second card of the dealer and return the game state with the hidden card
+export function hideDealerCard(game: GameState) {
+    const gameResponse = structuredClone(game);
+    //if the first player is not the dealer, return the game state without hiding the card
+    if (game.players[0].idPlayer !== "dealer") return game;
+
+    gameResponse.players[0].hand = gameResponse.players[0].hand.map(
+        (card, index) =>
+            index === 1
+                ? {
+                    rank: "?",
+                    value: 0,
+                    club_en: "",
+                    club_es: ""
+                }
+                : card
+    );
+    gameResponse.players[0].handValue = calculateHandValue(gameResponse.players[0].hand);
+    return gameResponse;
 }
 export function getPlayerState(handValue: number, quantityCard: number) {
     if (handValue > 21) {

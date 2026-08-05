@@ -23,13 +23,12 @@ export async function POST(req: Request) {
   }
   //if player.handValue > 21 automatically the player lost
   //if player.status == "blacJack" automatically the player win
+  game.turn = 0
+  const dealerData = playerInTurn(game);
+  //just to avoid typescript error
+  if (!dealerData) return NextResponse.json({ error: "Dealer not found" }, { status: 404 })
   if (player.handValue <= 21 && player.status != "blackJack") {
     //the turn "0" always is for dealer
-    game.turn = 0
-    const dealerData = playerInTurn(game);
-    //just to avoid typescript error
-    if (!dealerData) return NextResponse.json({ error: "Dealer not found" }, { status: 404 })
-
     while (dealerData.handValue < 17) {
       const { newHand, newDeck } = getNewCard(game.deck, dealerData.hand)
       game.deck = newDeck

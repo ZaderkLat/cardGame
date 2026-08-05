@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { scoreGame, updateStorageGame, endRound, getStorageGame, playerInTurn, handlerTurns, isWinner } from "@/lib/gameEngine/twetyOne/twety_One"
+import { scoreGame, updateStorageGame, endRound, getStorageGame, playerInTurn, handlerTurns, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
 import { GameState } from "@/interface/gameData"
 
 export async function POST(req: Request) {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         deck: shuffledMaze,
         turn: nextTurn,
         round: currentRound,
-        countRound: 5,
+        countRound: gameData.countRound,
         statusGame: gameData.statusGame,
         lastUpdated: Date.now()
     }

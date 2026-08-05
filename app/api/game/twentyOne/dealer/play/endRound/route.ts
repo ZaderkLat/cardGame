@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { scoreGame, updateStorageGame, endRound, getStorageGame, playerInTurn, handlerTurns, isWinner, getPlayerState } from "@/lib/gameEngine/twetyOne/twety_One"
+import { scoreGame, updateStorageGame, endRound, getStorageGame, playerInTurn, handlerTurns, isWinner, getPlayerState, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
 import { GameState } from "@/interface/gameData"
 
 export async function POST(req: Request) {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     const roundScore = scoreGame(player.hand)
 
     const { playersInfo, shuffledMaze } = endRound(gameData)
-    console.log(playersInfo)
+
     const updatedPlayers = playersInfo.map(p =>
         p.idPlayer === player.idPlayer
             ? {
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     }
 
     updateStorageGame(gameData.id, game)
-
-    return NextResponse.json(game)
+    const gameResponse = hideDealerCard(game);
+    return NextResponse.json(gameResponse)
 }
 

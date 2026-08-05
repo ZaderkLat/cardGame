@@ -15,8 +15,9 @@ import {
     PopoverContent,
     PopoverTrigger
 } from "@/components/ui/popover";
-import TwentyOneTableSolo from "./twentyOneTable";
+import TwentyOneTableSolo from "./twentyOneTableSolo";
 import TwentyOneTableDealer from "./twentyOneTableDealer";
+import { useUser } from "@/hooks/useUser";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
@@ -27,7 +28,7 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
     const t = useTranslations("twentyOne");
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
     const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
-
+    const { user } = useUser();
     const [rounds, setRounds] = useState<number>(5)
     const modes: Mode[] = [
         { label_es: "Solitario", label_en: "Solo", value: "solo" },
@@ -35,7 +36,12 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
 
     ] as const;
     const [mode, setMode] = useState("solo");
+    const difficultyDisabled = mode === "dealer";
+
+
+
     return (
+
         <div className="h-full w-full">
 
             <DialogSelectDifficult
@@ -95,6 +101,7 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
                                     >
                                         <Checkbox
                                             checked={difficulty === key}
+                                            disabled={difficultyDisabled}
                                             onCheckedChange={() => {
                                                 setDifficulty(key as keyof typeof difficulties);
                                             }}
@@ -133,8 +140,35 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
 
 
             </DialogSelectDifficult>
-            {mode === "solo" && <TwentyOneTableSolo setMenuState={setMenuState} />}
-            {mode === "dealer" && <TwentyOneTableDealer setMenuState={setMenuState} />}
+
+
+            {!openDifficultDialog && (
+                <>
+                    {mode === "solo" && (
+                        <TwentyOneTableSolo
+                            setMenuState={setMenuState}
+                            difficulty={difficulty}
+                            rounds={rounds}
+                            onChangeDifficulty={setDifficulty}
+                            setRounds={setRounds}
+                            userId={user?.id || ""}
+                            userName={user?.name || ""}
+
+                        />
+                    )}
+
+                    {mode === "dealer" && (
+                        <TwentyOneTableDealer
+                            setMenuState={setMenuState}
+                            rounds={rounds}
+                            setRounds={setRounds}
+                            userId={user?.id || ""}
+                            userName={user?.name || ""}
+                        />
+                    )}
+                </>
+            )}
+
         </div>
     )
 }

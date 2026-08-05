@@ -584,7 +584,6 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                         >
                             {t("restartGame")}
                         </button>
-
                         <ReturnButton
                             setMenuState={setMenuState}
                             menuState={"select"}

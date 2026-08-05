@@ -24,21 +24,19 @@ import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
 import { SimpleCombobox } from "@/components/ui/simpleComboBox";
-import { useUser } from "@/hooks/useUser";
+import QuantitySelector from "@/components/ui/quantitySelector";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
-import { resolve } from "path";
-import { info } from "console";
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
-
+    userId: string;
+    userName: string;
+    rounds: number;
+    setRounds: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTableProps) {
+export default function TwentyOneTableDealer({ setMenuState, userId, userName, rounds, setRounds }: TwentyOneTableProps) {
     const t = useTranslations("twentyOne");
-    const { user } = useUser();
-
-    const [playersList, setPlayersList] = useState<PlayersRequest[]>([])
-
 
     //languaje path
     const locale = useLocale();
@@ -72,7 +70,7 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
 
     //Handler diffcult selection
     const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
-    const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
+    const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(false);
 
     const [textFloatComponent, setTextFloadComponent] = useState<string>("");
 
@@ -84,18 +82,35 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
     const [takeCardButton, setTakeCardButton] = useState<boolean>(true)
     //control if show the button "Stand" or "endRound"
     const [isPlaying, setIsPlaying] = useState<boolean>(true)
+    const [tieCount, setTieCount] = useState<number>(0);
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
         setTakeCardButton(true);
         setRestarGameButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
+
+
+        const players = ([
+            {
+                idPlayer: "dealer",
+                userName: "Dealer",
+            },
+            {
+                idPlayer: userId,
+                userName: userName,
+            },
+        ]);
+
         const res = await fetch("/api/game/twentyOne/startGame", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(playersList),
+            body: JSON.stringify({
+                players: players,
+                rounds: rounds
+            }),
         });
 
         if (!res.ok) {
@@ -127,15 +142,6 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
             ]);
         }
 
-        if (playerTurn?.idPlayer == user?.id) {
-            setGameInfo(prev => [
-                ...prev,
-                {
-                    type: "win",
-                    message: "It's Your turn."
-                }
-            ]);
-        }
         setIsPlaying(true);
         setEndRoundButton(false);
         setRestarGameButton(false);
@@ -170,6 +176,11 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
             setTextFloadComponent("Waiting for dealer play")
             return;
         }
+        if (player.handValue == dealer?.handValue) {
+            setTieCount(prev => prev + 1);
+            setTextFloadComponent(t("tie"));
+            return;
+        }
 
     }, [player]);
 
@@ -192,12 +203,12 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
     };
     const getPlayer = (gameData: GameState) => {
 
-        return gameData?.players.find(p => p.idPlayer === user?.id)
+        return gameData?.players.find(p => p.idPlayer === userId)
 
     }
     //* -------------------------------------------------------------------- */
     const handleTakeCard = async () => {
-        if (!gameData || !user) return;
+        if (!gameData) return;
 
         setTakeCardButton(true);
         const response = await fetch(`/api/game/twentyOne/dealer/play/takeCard`, {
@@ -276,11 +287,9 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
 
             openDialog({
                 title: t("gameResult"),
-                description: `${t(message)}\n${t("score")}: ${playerResponse.score}\n${t("difficult")}: ${difficulties[difficulty][`name_${locale}` as "name_es" | "name_en"]}`,
+                description: ``,
                 status: status,
             });
-
-
             setPendingAction(() => () => {
                 setGameInfo(prev => [
                     ...prev,
@@ -317,13 +326,23 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                 },
                 body: JSON.stringify({
                     gameId: gameData.id,
-                    idPlayer: user?.id
+                    idPlayer: userId
                 })
             }
         ).then(res => res.json());
         //this detect if the dealer take cards
         const dealerInfo = response.players[0];
+        //update the fist dealer card to turn visible
+        setDealer(prevDealer => {
+            if (!prevDealer) return dealerInfo;
 
+            return {
+                ...prevDealer,
+                hand: dealerInfo.hand.slice(0, 2),
+                handValue: calculateHandValue(dealerInfo.hand.slice(0, 2))
+            };
+        });
+        await sleep(1000);
         for (let i = 2; i < dealerInfo.hand.length; i++) {
 
 
@@ -404,47 +423,53 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
 
     useEffect(() => {
         if (openDifficultDialog === false) {
+
+
             startGame();
         }
 
     }, [openDifficultDialog]);
     //create the user playerList when user charge
-    useEffect(() => {
-        if (!user) return;
 
-        setPlayersList([
-            {
-                idPlayer: "dealer",
-                userName: "Dealer",
-            },
-            {
-                idPlayer: user.id,
-                userName: user.name,
-            },
-        ]);
-    }, [user]);
     //update player data and dealer
     useEffect(() => {
-        if (!gameData || !user) return;
+        if (!gameData) return;
 
         setPlayer(gameData.players.find(
-            p => p.idPlayer === user?.id)
+            p => p.idPlayer === userId)
         );
 
-    }, [gameData, user])
+    }, [gameData])
 
     const handleRestartGame = () => {
         setOpenDifficultDialog(true);
     }
+    const sortedPlayers = [...(gameData?.players ?? [])].sort(
+        (a, b) => b.roundsWin - a.roundsWin
+    );
+
+    const maxWins = Math.max(
+        ...(gameData?.players.map(p => p.roundsWin) ?? [0])
+    );
 
     return (
-        <div className="flex flex-col min-h-full bg-zinc-50 dark:bg-black">
+        <div className="flex flex-col h-full bg-zinc-50 dark:bg-black">
 
             {/* MAIN WRAPPER */}
-            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 w-full h-full">
+            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-4 lg:pt-0 sm:p-4 w-full h-full gap-4">
                 {/*LEFT PANEL */}
-                <div className="relative flex flex-1 flex-col items-center justify-center mt-6 w-4/20">
+                <div className="hidden lg:flex relative flex-col items-center justify-center w-1/5 ">
+                    {/* Score y Round */}
+                    <div className="flex flex-row justify-between w-full mb-4 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:w-auto">
 
+                        <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                            {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
+                        </h1>
+                        <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                            Rondas ganadas: {`${player?.roundsWin}`}
+                        </h1>
+
+                    </div>
 
                     <button
                         onClick={handleTakeCard}
@@ -456,30 +481,18 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                     >
                         <Maze />
                     </button>
-
                     <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
                         {t("clickToDraw")}
                     </p>
-                    {/* Score y Round */}
-                    <div className="absolute left-0 top-0 w-full flex justify-between sm:justify-start sm:flex-col sm:w-auto">
 
-
-                        <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
-                        </h1>
-                        <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            Rondas ganadas: {`${player?.roundsWin}`}
-                        </h1>
-
-                    </div>
                 </div>
-                <div className="flex flex-col items-center justify-between w-12/20">
+                <div className="flex flex-col items-center justify-between w-full lg:w-3/5 order-1">
 
                     {/* CENTER */}
                     <div className="flex flex-col items-center justify-center w-full">
                         {/* BOTTOM ---DEALER--- HAND */}
                         <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
-                     dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
+                            dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
 
                             {/* Button over border*/}
 
@@ -491,10 +504,16 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                                 {t("handValue")}: {(dealer?.handValue ?? 0)}
                             </div>
 
-                            <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
+                            <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-4 max-w-full overflow-hidden">
                                 {dealer?.hand.map((card, index) => (
-                                    <div key={index} className="scale-90 sm:scale-100">
-                                        {cardStyle(card)}
+                                    <div key={index} className="scale-75 sm:scale-90 lg:scale-100">
+                                        {card.value == 0 ? (
+                                            <div className="w-24 h-36 bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                                                <Maze />
+                                            </div>
+                                        ) : (
+                                            cardStyle(card)
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -502,7 +521,43 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                         </div>
 
                     </div>
+                    {/* MOBILE DRAW BUTTON */}
+                    <div className="relative flex lg:hidden flex-col items-center my-6 w-full">
 
+                        <div className="w-full flex justify-between px-4 mb-4 text-xl absolute">
+                            <h1 className="font-bold text-gray-800 dark:text-white">
+                                {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
+                            </h1>
+
+                            <h1 className="font-bold text-gray-800 dark:text-white">
+                                Rounds won: {player?.roundsWin}
+                            </h1>
+                        </div>
+                        <div className="h-full w-full flex flex-col items-center ">
+                            <button
+                                onClick={handleTakeCard}
+                                className={`w-20 h-32 rounded overflow-hidden
+        flex items-center justify-center
+        transition duration-200 hover:shadow-lg hover:shadow-gray-400/40
+        hover:scale-105 active:scale-95 disabled:opacity-50 mb-1
+        ${(player?.handValue ?? 0) < 21 ? "animate-breathe" : ""}`}
+                                disabled={
+                                    (player?.handValue ?? 0) >= 21 ||
+                                    takeCardButton
+                                }
+                            >
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Maze />
+                                </div>
+                            </button>
+
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-300">
+                                {t("clickToDraw")}
+                            </p>
+
+                        </div>
+
+                    </div>
                     {/* BOTTOM ---PLAYER--- HAND */}
                     <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
                      dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
@@ -527,7 +582,7 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                                         onClick={handleEndRound}
                                         className={`
                                     px-3 sm:px-4 py-2 text-white rounded-lg
-                                    ${(player?.handValue ?? 0) >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
+                                    ${(!isPlaying && !endRoundButton) ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
                                     ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
                                 `}
                                         disabled={endRoundButton}
@@ -556,9 +611,9 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                         </FloatComponent>
 
 
-                        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
+                        <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-4 max-w-full overflow-hidden">
                             {player?.hand.map((card, index) => (
-                                <div key={index} className="scale-90 sm:scale-100">
+                                <div key={index} className="scale-75 sm:scale-90 lg:scale-100">
                                     {cardStyle(card)}
                                 </div>
                             ))}
@@ -568,13 +623,13 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="w-full lg:w-4/20 mt-6 lg:mt-0 flex flex-col min-h-0">
+                <div className="w-full lg:w-1/5 mt-6 lg:mt-0 flex flex-col min-h-0 order-3">
 
                     <div className="hidden sm:flex flex-1 min-h-0 text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         <InfoGame info={gameInfo} />
                     </div>
 
-                    <div className="flex flex-col gap-2 pb-4 items-center">
+                    <div className=" flex flex-col gap-2 pb-4 items-center">
                         <button
                             onClick={handleRestartGame}
                             className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
@@ -614,7 +669,98 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                                     </p>
                                 </ReturnButton>
                             }
-                        />
+
+                        >
+                            <div className="w-full overflow-x-auto rounded-xl border border-zinc-300 dark:border-zinc-700">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="bg-zinc-100 dark:bg-zinc-800">
+                                            <th className="px-4 py-3 text-left font-bold">
+                                                Player
+                                            </th>
+                                            <th className="px-4 py-3 text-center font-bold">
+                                                Status
+                                            </th>
+                                            <th className="px-4 py-3 text-center font-bold">
+                                                Wins
+                                            </th>
+                                            <th className="px-4 py-3 text-center font-bold">
+                                                Rounds
+                                            </th>
+                                            <th className="px-4 py-3 text-center font-bold">
+                                                Tie
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        {sortedPlayers.map((player, index) => {
+                                            const winners = sortedPlayers.filter(
+                                                p => p.roundsWin === maxWins
+                                            );
+
+                                            const status =
+                                                player.roundsWin === maxWins
+                                                    ? winners.length > 1
+                                                        ? "draw"
+                                                        : "win"
+                                                    : "lose";
+
+                                            const statusText = {
+                                                win: locale === "es" ? "Ganador" : "Winner",
+                                                lose: locale === "es" ? "Perdedor" : "Loser",
+                                                draw: locale === "es" ? "Empate" : "Draw",
+                                            };
+
+
+                                            return (
+                                                <tr
+                                                    key={player.idPlayer}
+                                                    className={` border-t border-zinc-200 dark:border-zinc-700
+                                                        ${index % 2 === 0
+                                                            ? "bg-white dark:bg-zinc-900"
+                                                            : "bg-zinc-50 dark:bg-zinc-800/50"
+                                                        }
+                `}
+                                                >
+                                                    <td className="px-4 py-3 font-medium whitespace-nowrap">
+                                                        {player.userName}
+                                                    </td>
+
+                                                    <td className="px-4 py-3 text-center">
+                                                        <span
+                                                            className={`
+                                                            px-2 py-1 rounded-full text-xs font-bold
+                                                            ${status === "win"
+                                                                    ? "bg-green-500/20 text-green-500"
+                                                                    : status === "lose"
+                                                                        ? "bg-red-500/20 text-red-500"
+                                                                        : "bg-yellow-500/20 text-yellow-500"
+                                                                }
+                        `}
+                                                        >
+                                                            {statusText[status]}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="px-4 py-3 text-center font-bold">
+                                                        {player.roundsWin}
+                                                    </td>
+
+                                                    <td className="px-4 py-3 text-center">
+                                                        {gameData?.countRound}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        {tieCount}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </GameDialog>
 
                         <DialogSelectDifficult
                             open={openDifficultDialog}
@@ -635,7 +781,7 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                                 </div>
                             }
                         >
-                            <>
+                            <div className="flex flex-col w-full h-full gap-5">
                                 <div className="flex flex-col">
                                     <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
                                         Select mode:
@@ -651,7 +797,17 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                                     <div className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white text-center">
                                         <p>{t("difficultyText")}</p>
                                     </div>
+                                    <div className="flex items-center gap-4">
+                                        <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
+                                            Rounds:
+                                        </p>
 
+                                        <QuantitySelector
+                                            value={rounds}
+                                            onChange={setRounds}
+                                        />
+
+                                    </div>
                                     <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
 
                                         {difficulties &&
@@ -695,7 +851,7 @@ export default function TwentyOneTableDealer({ setMenuState }: TwentyOneTablePro
                                     </div>
                                 </div>
 
-                            </>
+                            </div>
                         </DialogSelectDifficult>
 
                     </div>
