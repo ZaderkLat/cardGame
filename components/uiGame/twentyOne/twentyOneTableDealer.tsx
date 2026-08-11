@@ -2,28 +2,22 @@
 
 import { useEffect, useState } from "react";
 
-import { card } from "@/interface/card";
 import cardStyle from "@/components/ObjectsGame/cardStyle";
-import { GameState, LogGame, PlayersRequest, Mode } from "@/interface/gameData";
+import { GameState, LogGame } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
 import GameDialog from "@/components/ui/dialogGameMessaje";
 import { isWinner } from "@/lib/gameEngine/twetyOne/twety_One";
 import ReturnButton from "@/components/uiGame/returnButton";
 import { MenuStatus } from "@/interface/menuStatus";
-import { difficulties, PlayerInfo } from "@/interface/gameData";
+import { PlayerInfo } from "@/interface/gameData";
 import DialogSelectDifficult from "@/components/ui/dialogSelectDifficult";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from "@/components/ui/popover";
+
 import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
-import { SimpleCombobox } from "@/components/ui/simpleComboBox";
+
 import QuantitySelector from "@/components/ui/quantitySelector";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
 
@@ -36,7 +30,7 @@ interface TwentyOneTableProps {
 }
 
 export default function TwentyOneTableDealer({ setMenuState, userId, userName, rounds, setRounds }: TwentyOneTableProps) {
-    const t = useTranslations("twentyOne");
+    const t = useTranslations("twentyOneDealer");
 
     //languaje path
     const locale = useLocale();
@@ -51,12 +45,8 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
         status: "continue" as const,
 
     });
-    //------------------------------//
-    const modes: Mode[] = [
-        { label_es: "Solitario", label_en: "Solo", value: "solo" },
-        { label_es: "Contra Dealer", label_en: "VS Dealer", value: "dealer" }
-    ] as const;
-    const [mode, setMode] = useState("dealer");
+
+
     //------------------------------//
     /*Game Data*/
     const [gameData, setGameData] = useState<GameState | null>(null);
@@ -69,7 +59,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
     //Handler diffcult selection
-    const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
+
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(false);
 
     const [textFloatComponent, setTextFloadComponent] = useState<string>("");
@@ -114,15 +104,13 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
         });
 
         if (!res.ok) {
-            throw new Error("Error al iniciar la partida");
+            throw new Error(t("errorStartGame"));
         }
 
         const response: GameState = await res.json();
         setGameData(response);
         //update dealer information
         setDealer(response.players[0])
-        //find player in turn
-        const playerTurn = response.players.find(p => p.turn == response.turn)
 
         if (response.round === 1) {
             setGameInfo(prev => [
@@ -159,12 +147,11 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
          */
         if (player.status == "blackJack") {
             setTextFloadComponent(t("perfectRound"));
-            //resultRound()
+
             return;
         }
         if (player.status == "lose") {
             setTextFloadComponent(t("youLose"));
-            //resultRound()
 
             return;
         }
@@ -173,7 +160,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
             return;
         }
         if (player.status == "stand") {
-            setTextFloadComponent("Waiting for dealer play")
+            setTextFloadComponent(t("waitingDealer"));
             return;
         }
         if (player.handValue == dealer?.handValue) {
@@ -241,7 +228,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
     const handleEndRound = async () => {
 
         if (!gameData) return;
-        //disable "end round" button
+        //disable "end round" and "take card" button
         setEndRoundButton(true);
         setTakeCardButton(true);
         const response = await fetch(`/api/game/twentyOne/dealer/play/endRound`, {
@@ -269,7 +256,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                 ...prev,
                 {
                     type: "info",
-                    message: "New Round",
+                    message: t("round") + ` ${response.round} ${t("started")}.`,
                 },
             ]
             )
@@ -283,7 +270,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
         }
         else {
 
-            const { status, message } = isWinner(playerResponse.score, difficulty, response.countRound);
+            const { status, message } = isWinner(playerResponse.score, "medium", response.countRound);
 
             openDialog({
                 title: t("gameResult"),
@@ -315,7 +302,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
         setTakeCardButton(true);
         setEndRoundButton(true);
         setIsPlaying(false);
-        setTextFloadComponent("Waiting for dealer play")
+        setTextFloadComponent(t("waitingDealer"));
         await sleep(1000);
         const response: GameState = await fetch(
             "/api/game/twentyOne/dealer/play/dealerPlay",
@@ -350,7 +337,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                 ...prev,
                 {
                     type: "info",
-                    message: `Dealer: ${t("cardTaken")}: ${dealerInfo.hand[i].rank} ${t("of")} ${dealerInfo.hand[i][`club_${locale}` as "club_es" | "club_en"] ?? ""
+                    message: `${t("dealer")}: ${t("cardTaken")}: ${dealerInfo.hand[i].rank} ${t("of")} ${dealerInfo.hand[i][`club_${locale}` as "club_es" | "club_en"] ?? ""
                         }`,
                 },
             ]);
@@ -388,7 +375,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
             ...prev,
             {
                 type: "info",
-                message: "Results:",
+                message: t("results")
             }
         ])
         const dealerWon =
@@ -409,7 +396,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
 
             return {
                 type: (points > 0 ? "win" : "lose") as "win" | "lose",
-                message: `${player.userName}: gano ${points} puntos.`
+                message: `${player.userName}: ${t("won")} ${points} ${t("point")}.`
             };
         });
 
@@ -422,6 +409,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
     //end stament
 
     useEffect(() => {
+        console.log("open" + openDifficultDialog)
         if (openDifficultDialog === false) {
 
 
@@ -453,7 +441,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
     );
 
     return (
-        <div className="flex flex-col h-full bg-zinc-50 dark:bg-black">
+        <div className="flex flex-col flex-1 min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
             <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-4 lg:pt-0 sm:p-4 w-full h-full gap-4">
@@ -466,7 +454,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                             {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
                         </h1>
                         <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            Rondas ganadas: {`${player?.roundsWin}`}
+                            {t("wonRounds")}: {`${player?.roundsWin}`}
                         </h1>
 
                     </div>
@@ -486,9 +474,10 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                     </p>
 
                 </div>
+                {/* CENTER PANEL*/}
                 <div className="flex flex-col items-center justify-between w-full lg:w-3/5 order-1">
 
-                    {/* CENTER */}
+
                     <div className="flex flex-col items-center justify-center w-full">
                         {/* BOTTOM ---DEALER--- HAND */}
                         <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
@@ -530,17 +519,17 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                             </h1>
 
                             <h1 className="font-bold text-gray-800 dark:text-white">
-                                Rounds won: {player?.roundsWin}
+                                {t("wonRounds")}: {player?.roundsWin}
                             </h1>
                         </div>
                         <div className="h-full w-full flex flex-col items-center ">
                             <button
                                 onClick={handleTakeCard}
                                 className={`w-20 h-32 rounded overflow-hidden
-        flex items-center justify-center
-        transition duration-200 hover:shadow-lg hover:shadow-gray-400/40
-        hover:scale-105 active:scale-95 disabled:opacity-50 mb-1
-        ${(player?.handValue ?? 0) < 21 ? "animate-breathe" : ""}`}
+                                    flex items-center justify-center
+                                    transition duration-200 hover:shadow-lg hover:shadow-gray-400/40
+                                    hover:scale-105 active:scale-95 disabled:opacity-50 mb-1
+                                    ${(player?.handValue ?? 0) < 21 ? "animate-breathe" : ""}`}
                                 disabled={
                                     (player?.handValue ?? 0) >= 21 ||
                                     takeCardButton
@@ -575,7 +564,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                                 `}
                                         disabled={endRoundButton}
                                     >
-                                        Stand
+                                        {t("stand")}
                                     </button>
                                 ) : (
                                     <button
@@ -623,33 +612,36 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                 </div>
 
                 {/* RIGHT PANEL */}
-                <div className="w-full lg:w-1/5 mt-6 lg:mt-0 flex flex-col min-h-0 order-3">
+                <div className="w-full pt-6 lg:w-1/5 mt-6 lg:mt-0 flex flex-col min-h-0 h-full overflow-hidden order-3">
+                    <div className="h-full w-full flex flex-col gap-2 overflow-hidden">
 
-                    <div className="hidden sm:flex flex-1 min-h-0 text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
-                        <InfoGame info={gameInfo} />
-                    </div>
+                        <div className="hidden lg:flex flex-1 min-h-0 overflow-hidden text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                            <InfoGame info={gameInfo} />
+                        </div>
 
-                    <div className=" flex flex-col gap-2 pb-4 items-center">
-                        <button
-                            onClick={handleRestartGame}
-                            className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
+                        <div className="flex flex-col gap-2 pb-4 items-center shrink-0">
+                            <button
+                                onClick={handleRestartGame}
+                                className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
                                 ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500 transition-all hover:scale-105'}
                             `}
-                            disabled={restartGameButton}
-                        >
-                            {t("restartGame")}
-                        </button>
+                                disabled={restartGameButton}
+                            >
+                                {t("restartGame")}
+                            </button>
 
-                        <ReturnButton
-                            setMenuState={setMenuState}
-                            menuState={"select"}
-                            className="w-full lg:w-auto dark:bg-gray-500
+                            <ReturnButton
+                                setMenuState={setMenuState}
+                                menuState={"select"}
+                                className="w-full lg:w-auto dark:bg-gray-500
                              dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
-                        >
-                            <p className="text-lg font-bold text-white transition-all hover:scale-105">
-                                {t("exitGame")}
-                            </p>
-                        </ReturnButton>
+                            >
+                                <p className="text-lg font-bold text-white transition-all hover:scale-105">
+                                    {t("exitGame")}
+                                </p>
+                            </ReturnButton>
+                        </div>
+
 
                         <GameDialog
                             open={dialog.open}
@@ -676,19 +668,19 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                                     <thead>
                                         <tr className="bg-zinc-100 dark:bg-zinc-800">
                                             <th className="px-4 py-3 text-left font-bold">
-                                                Player
+                                                {t("player")}
                                             </th>
                                             <th className="px-4 py-3 text-center font-bold">
-                                                Status
+                                                {t("status")}
                                             </th>
                                             <th className="px-4 py-3 text-center font-bold">
-                                                Wins
+                                                {t("wins")}
                                             </th>
                                             <th className="px-4 py-3 text-center font-bold">
-                                                Rounds
+                                                {t("rounds")}
                                             </th>
                                             <th className="px-4 py-3 text-center font-bold">
-                                                Tie
+                                                {t("tie")}
                                             </th>
                                         </tr>
                                     </thead>
@@ -722,7 +714,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                                                             ? "bg-white dark:bg-zinc-900"
                                                             : "bg-zinc-50 dark:bg-zinc-800/50"
                                                         }
-                `}
+                                                    `}
                                                 >
                                                     <td className="px-4 py-3 font-medium whitespace-nowrap">
                                                         {player.userName}
@@ -738,7 +730,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                                                                         ? "bg-red-500/20 text-red-500"
                                                                         : "bg-yellow-500/20 text-yellow-500"
                                                                 }
-                        `}
+                                                            `}
                                                         >
                                                             {statusText[status]}
                                                         </span>
@@ -783,23 +775,10 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                         >
                             <div className="flex flex-col w-full h-full gap-5">
                                 <div className="flex flex-col">
-                                    <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
-                                        Select mode:
-                                    </p>
-                                    <SimpleCombobox
-                                        items={modes}
-                                        value={mode}
-                                        languaje={locale}
-                                        onChange={setMode}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white text-center">
-                                        <p>{t("difficultyText")}</p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
+
+                                    <div className="flex flex-row items-center gap-4">
                                         <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
-                                            Rounds:
+                                            {t("numberOfRounds")}:
                                         </p>
 
                                         <QuantitySelector
@@ -808,47 +787,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
                                         />
 
                                     </div>
-                                    <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
 
-                                        {difficulties &&
-                                            Object.entries(difficulties).map(([key, value]) => (
-                                                <label
-                                                    key={key}
-                                                    className="flex flex-row items-center justify-center sm:justify-start gap-2 cursor-pointer"
-                                                >
-                                                    <Checkbox
-                                                        checked={difficulty === key}
-                                                        onCheckedChange={() => {
-                                                            setDifficulty(key as keyof typeof difficulties);
-                                                        }}
-                                                        className=" border-gray-400 data-[state=checked]:bg-blue-600"
-                                                    />
-
-                                                    <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">
-                                                        <span className="text-sm sm:text-lg font-medium text-gray-800 dark:text-white">
-                                                            {value[`name_${locale}` as keyof typeof value]}
-                                                        </span>
-
-                                                        <Popover>
-                                                            <PopoverTrigger>
-                                                                <span className="text-sm text-gray-500 dark:text-gray-300">
-                                                                    (?)
-                                                                </span>
-                                                            </PopoverTrigger>
-
-                                                            <PopoverContent className="max-w-62.5 sm:max-w-xs">
-                                                                <p className="text-sm">
-                                                                    {value[`description_${locale}` as keyof typeof value]}, {`${t("youNeed")} `}
-                                                                    {value.requerimentPoints *
-                                                                        (gameData?.countRound || 5)}
-                                                                    {` ${t("pointsTo")}.`}
-                                                                </p>
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                    </div>
-                                                </label>
-                                            ))}
-                                    </div>
                                 </div>
 
                             </div>

@@ -25,7 +25,7 @@ interface TwentyOneTableProps {
 
 export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
     const locale = useLocale()
-    const t = useTranslations("twentyOne");
+    const t = useTranslations("twentyOneSelectMode");
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
     const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
     const { user } = useUser();
@@ -47,7 +47,7 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
             <DialogSelectDifficult
                 open={openDifficultDialog}
                 onOpenChange={setOpenDifficultDialog}
-                title={t("selectDifficulty")}
+                title={t("gameSettings")}
                 childrenBottom={
                     <div className="flex justify-center w-full">
                         <ReturnButton
@@ -67,7 +67,7 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
                 <div className="flex flex-col w-full h-full gap-5">
                     <div className="flex flex-col w-full">
                         <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
-                            Select mode:
+                            {t("selectMode")}
                         </p>
                         <SimpleCombobox
                             items={modes}
@@ -78,7 +78,7 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
                     </div>
                     <div className="flex items-center gap-4">
                         <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
-                            Rounds:
+                            {t("numberOfRounds")}:
                         </p>
 
                         <QuantitySelector
@@ -86,9 +86,9 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
                             onChange={setRounds}
                         />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col items-start">
                         <div className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white text-center">
-                            <p>{t("difficultyText")}</p>
+                            <p>{t("difficultyText")}:</p>
                         </div>
 
                         <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">

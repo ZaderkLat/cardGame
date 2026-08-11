@@ -26,15 +26,14 @@ import Maze from "@/components/uiGame/maze";
 import { SimpleCombobox } from "@/components/ui/simpleComboBox";
 import { useUser } from "@/hooks/useUser";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
-import { resolve } from "path";
-import { info } from "console";
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
 
 }
 
 export default function Home({ setMenuState }: TwentyOneTableProps) {
-    const t = useTranslations("twentyOne");
+    const t = useTranslations("twentyOneDealer");
     const { user } = useUser();
 
     const [playersList, setPlayersList] = useState<PlayersRequest[]>([])
@@ -99,7 +98,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         });
 
         if (!res.ok) {
-            throw new Error("Error al iniciar la partida");
+            throw new Error(t("errorStartGame"));
         }
 
         const response: GameState = await res.json();
@@ -132,7 +131,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 ...prev,
                 {
                     type: "win",
-                    message: "It's Your turn."
+                    message: t("yourTurn")
                 }
             ]);
         }
@@ -167,7 +166,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             return;
         }
         if (player.status == "stand") {
-            setTextFloadComponent("Waiting for dealer play")
+            setTextFloadComponent(t("waitingDealer"))
             return;
         }
 
@@ -258,7 +257,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 ...prev,
                 {
                     type: "info",
-                    message: "New Round",
+                    message: t("newRound"),
                 },
             ]
             )
@@ -306,7 +305,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         setTakeCardButton(true);
         setEndRoundButton(true);
         setIsPlaying(false);
-        setTextFloadComponent("Waiting for dealer play")
+        setTextFloadComponent(t("waitingDealer"))
         await sleep(1000);
         const response: GameState = await fetch(
             "/api/game/twentyOne/dealer/play/dealerPlay",
@@ -331,7 +330,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                 ...prev,
                 {
                     type: "info",
-                    message: `Dealer: ${t("cardTaken")}: ${dealerInfo.hand[i].rank} ${t("of")} ${dealerInfo.hand[i][`club_${locale}` as "club_es" | "club_en"] ?? ""
+                    message: `${t("dealer")}: ${t("cardTaken")}: ${dealerInfo.hand[i].rank} ${t("of")} ${dealerInfo.hand[i][`club_${locale}` as "club_es" | "club_en"] ?? ""
                         }`,
                 },
             ]);
@@ -369,7 +368,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
             ...prev,
             {
                 type: "info",
-                message: "Results:",
+                message: t("results"),
             }
         ])
         const dealerWon =
@@ -390,7 +389,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
 
             return {
                 type: (points > 0 ? "win" : "lose") as "win" | "lose",
-                message: `${player.userName}: gano ${points} puntos.`
+                message: t("roundResult", { player: player.userName, points })
             };
         });
 
@@ -415,7 +414,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
         setPlayersList([
             {
                 idPlayer: "dealer",
-                userName: "Dealer",
+                userName: t("dealer"),
             },
             {
                 idPlayer: user.id,
@@ -468,7 +467,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
                         </h1>
                         <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            Rondas ganadas: {`${player?.roundsWin}`}
+                            {t("wonRounds")}: {`${player?.roundsWin}`}
                         </h1>
 
                     </div>
@@ -520,7 +519,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                                 `}
                                         disabled={endRoundButton}
                                     >
-                                        Stand
+                                        {t("stand")}
                                     </button>
                                 ) : (
                                     <button
@@ -637,7 +636,7 @@ export default function Home({ setMenuState }: TwentyOneTableProps) {
                             <>
                                 <div className="flex flex-col">
                                     <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
-                                        Select mode:
+                                        {t("selectMode")}
                                     </p>
                                     <SimpleCombobox
                                         items={modes}

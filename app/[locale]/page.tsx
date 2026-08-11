@@ -19,7 +19,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-full flex-1 bg-zinc-50 dark:bg-black">
+    <div className="flex flex-col min-h-0 h-full flex-1 bg-zinc-50 dark:bg-black">
 
       <title>{t("title")}</title>
       {menuState === "main" && (

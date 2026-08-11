@@ -39,9 +39,6 @@ interface TwentyOneTableSoloProps {
 export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, onChangeDifficulty, setRounds, userId, userName }: TwentyOneTableSoloProps) {
     const t = useTranslations("twentyOne");
 
-    const [players, setPlayers] = useState<PlayersRequest[]>([])
-
-
     //languaje path
     const locale = useLocale();
     //Game State
@@ -105,7 +102,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         });
 
         if (!res.ok) {
-            throw new Error("Error al iniciar la partida");
+            throw new Error(t("errorStartGame"));
         }
 
         const response: GameState = await res.json();
@@ -155,10 +152,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
             setTextFloadComponent(t("youLose"));
             return;
         }
-        if (player.status == "stand") {
-            setTextFloadComponent("Waiting for dealer play")
-            return;
-        }
+
     }, [player]);
 
     //* Control the dialog data and its open and close states */
@@ -304,7 +298,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
 
     return (
-        <div className="flex flex-col h-full bg-zinc-50 dark:bg-black">
+        <div className="flex flex-col flex-1 min-h-0 bg-zinc-50 h-full dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
             <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full h-full">
@@ -404,7 +398,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                 {/* RIGHT PANEL */}
                 <div className="w-full lg:w-1/4 mt-6 lg:mt-0 flex flex-col min-h-0">
 
-                    <div className="hidden sm:flex flex-1 min-h-0 text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                    <div className="hidden lg:flex flex-1 min-h-0 text-xl lg:text-2xl font-bold text-gray-800 dark:text-white mb-4">
                         <InfoGame info={gameInfo} />
                     </div>
 
@@ -453,7 +447,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                         <DialogSelectDifficult
                             open={openDifficultDialog}
                             onOpenChange={setOpenDifficultDialog}
-                            title={t("selectDifficulty")}
+                            title={t("gameSettings")}
                             childrenBottom={
                                 <div className="flex justify-center w-full">
                                     <ReturnButton
@@ -472,12 +466,10 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                             <>
 
                                 <div className="flex flex-col w-full h-full gap-5">
-                                    <div className="text-base sm:text-lg font-bold text-gray-800 dark:text-white text-center">
-                                        <p>{t("difficultyText")}</p>
-                                    </div>
+
                                     <div className="flex items-center gap-4">
                                         <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
-                                            Rounds:
+                                            {t("numberOfRounds")}:
                                         </p>
 
                                         <QuantitySelector
@@ -485,6 +477,9 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                                             onChange={setRounds}
                                         />
 
+                                    </div>
+                                    <div className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
+                                        <p>{t("difficultyText")}: </p>
                                     </div>
                                     <div className="flex flex-row sm:flex-row justify-center border-2 gap-4 sm:gap-6 rounded-lg p-4 w-full">
 
