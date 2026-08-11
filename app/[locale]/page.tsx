@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import TwentyOneTable from "@/components/uiGame/twentyOne/twentyOneTable";
+import TwentyOneTable from "@/components/uiGame/twentyOne/twentyOneTableSolo";
+import TwentyOneSelect from "@/components/uiGame/twentyOne/twentyOneSelectMode";
 import IniMenu from "@/components/uiGame/iniMenu";
 import SelectGameMenu from "@/components/uiGame/selectGameMenu";
 import { MenuStatus } from "@/interface/menuStatus";
@@ -18,14 +19,14 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-full flex-1 bg-zinc-50 dark:bg-black">
+    <div className="flex flex-col min-h-0 h-full flex-1 bg-zinc-50 dark:bg-black">
 
       <title>{t("title")}</title>
       {menuState === "main" && (
         <IniMenu setMenuState={handlerMenu} />
       )}
       {menuState === "select" && <SelectGameMenu setMenuState={handlerMenu} menuState={previousMenuState} />}
-      {menuState === "game_twenty_one" && <TwentyOneTable setMenuState={handlerMenu} />}
+      {menuState === "game_twenty_one" && <TwentyOneSelect setMenuState={handlerMenu} />}
 
 
 

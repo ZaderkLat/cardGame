@@ -21,6 +21,7 @@ export type GameDialogProps = {
     description: string;
     status: "win" | "lose" | "continue";
     backButton: ReactNode;
+    children?: ReactNode;
 
 };
 
@@ -30,7 +31,7 @@ import { useTranslations } from "next-intl";
 function getDialogStyle(status: statusDialog) {
 
     return cn(
-        "max-w-md rounded-2xl p-6 shadow-xl",
+        "rounded-2xl p-6 shadow-xl",
         "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
         "duration-300",
 
@@ -60,12 +61,12 @@ function getDialogStyle(status: statusDialog) {
     );
 }
 
-export default function GameDialog({ title, description, open, status, onOpenChange, backButton }: GameDialogProps) {
+export default function GameDialog({ title, description, open, status, onOpenChange, backButton, children }: GameDialogProps) {
     const t = useTranslations("dialogGameMessaje");
     return (
         <Dialog open={open} onOpenChange={onOpenChange} >
             <DialogContent
-                className={`${getDialogStyle(status)} shine`}
+                className={`${getDialogStyle(status)} shine w-auto max-w-lg sm:max-w-2xl`}
             >
 
                 <DialogHeader className="space-y-3 text-center">
@@ -76,10 +77,13 @@ export default function GameDialog({ title, description, open, status, onOpenCha
 
                     <DialogDescription className="text-zinc-600 dark:text-zinc-400 whitespace-pre-line">
                         {description}
+
                     </DialogDescription>
 
                 </DialogHeader>
-
+                <div className="mt-4">
+                    {children}
+                </div>
 
 
                 <DialogFooter className="mt-4 bg-transparent">

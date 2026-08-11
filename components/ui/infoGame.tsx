@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { LogGame } from "@/interface/gameData";
 
-type Log = {
-    message: string;
-    type?: "info" | "win" | "lose";
-};
 
-export default function GameLog({ info }: { info: Log[] }) {
+export default function GameLog({ info }: { info: LogGame[] }) {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     // Auto-scroll to bottom
@@ -21,37 +18,45 @@ export default function GameLog({ info }: { info: Log[] }) {
     }, [info]);
 
     return (
-        <div
-            ref={containerRef}
-            className="flex-1
-        min-h-0
-        w-full
-        overflow-y-auto
-        font-mono
-        text-sm
-        p-3
-        rounded-lg
-        border
-        dark:border-zinc-700
-        dark:bg-black
-        dark:text-green-400
-        bg-white
-        border-zinc-700
-        text-green-700"
-        >
-            {info.map((log, index) => (
-                <div
-                    key={index}
-                    className={`animate-fadeIn ${log.type === "win"
-                        ? "text-green-400"
-                        : log.type === "lose"
-                            ? "text-red-400"
-                            : "dark:text-zinc-300 text-black"
-                        }`}
-                >
-                    {log.message}
-                </div>
-            ))}
+        <div className="
+            flex-1 min-h-0 rounded-lg border w-full h-full overflow-y-auto dark:border-zinc-700 overflow-hidden
+            ">
+            <div
+                ref={containerRef}
+                className="
+            h-full overflow-y-auto p-3
+            font-mono text-sm
+            dark:bg-black dark:text-green-400
+            bg-white text-green-700
+        "
+            >
+
+                {info.map((log, index) => {
+                    if (log.type === "separate") {
+                        return (
+                            <hr
+                                key={index}
+                                className="my-2 w-full border-zinc-500/50"
+                            />
+                        );
+                    }
+
+                    return (
+                        <div
+                            key={index}
+                            className={`animate-fadeIn ${log.type === "win"
+                                ? "text-green-400"
+                                : log.type === "lose"
+                                    ? "text-red-400"
+                                    : "dark:text-zinc-300 text-black"
+                                }`}
+                        >
+                            {log.message}
+                        </div>
+                    );
+                })}
+
+            </div>
         </div>
     );
 }
