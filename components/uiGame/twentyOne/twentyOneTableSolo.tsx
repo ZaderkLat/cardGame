@@ -34,9 +34,11 @@ interface TwentyOneTableSoloProps {
     setRounds: React.Dispatch<React.SetStateAction<number>>;
     userId: string;
     userName: string;
+    gameTypeId: number
 }
 
-export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, onChangeDifficulty, setRounds, userId, userName }: TwentyOneTableSoloProps) {
+export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, onChangeDifficulty,
+    setRounds, userId, userName, gameTypeId }: TwentyOneTableSoloProps) {
     const t = useTranslations("twentyOne");
 
     //languaje path

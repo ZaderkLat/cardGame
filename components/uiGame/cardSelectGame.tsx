@@ -24,8 +24,10 @@ import { MenuStatus } from "@/interface/menuStatus";
 
 interface CardSelectGameProps {
     name: string;
+    id: number;
     image: string;
     setMenuState: (state: MenuStatus) => void;
+    setGameModeId: (state: number) => void
     menuState: MenuStatus;
     HowToPlay: ComponentType<{
         open21: boolean;
@@ -35,15 +37,20 @@ interface CardSelectGameProps {
 
 export default function CardSelectGame({
     name,
+    id,
     image,
     setMenuState,
     menuState,
     HowToPlay,
+    setGameModeId
 }: CardSelectGameProps) {
     const t = useTranslations("CardSelectGame");
 
     const [open, setOpen] = useState(false);
-
+    const handlerPlay = () => {
+        setGameModeId(id);
+        setMenuState(menuState)
+    }
     return (
         <>
             <Card
@@ -90,15 +97,15 @@ export default function CardSelectGame({
 
                     <Button
                         variant="outline"
-                        onClick={() => setMenuState(menuState)}
+                        onClick={handlerPlay}
                         className="rounded-full px-8 border-gray-300 bg-blue-500 text-white
-                                hover:bg-blue-600 hover:text-white dark:border-zinc-600 dark:bg-transparent
-                                dark:text-white dark:hover:bg-zinc-800 transition-all hover:scale-105"
+                    hover:bg-blue-600 hover:text-white dark:border-zinc-600 dark:bg-transparent
+                    dark:text-white dark:hover:bg-zinc-800 transition-all hover:scale-105"
                     >
                         {t("play")}
                     </Button>
                 </CardFooter>
-            </Card>
+            </Card >
 
             <HowToPlay
                 open21={open}

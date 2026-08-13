@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     if (!gameData) {
         return NextResponse.json({ error: "Game not found" }, { status: 404 })
     }
-    console.log(gameData.players)
+
     const currentRound = gameData.round + 1
 
     if (currentRound > gameData.countRound) {

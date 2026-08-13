@@ -8,21 +8,19 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Check, ChevronDown } from "lucide-react";
-import { Mode } from "@/interface/gameData";
-type Option = Mode;
+
+import { gameModeTypeDTO } from "@/interface/responseDB";
+type Option = gameModeTypeDTO;
 
 type Props = {
     items: Option[];
     value: string;
-    languaje: string
     onChange: (value: string) => void;
 };
 
-export function SimpleCombobox({ items, value, languaje, onChange }: Props) {
+export function SimpleCombobox({ items, value, onChange }: Props) {
     const [open, setOpen] = useState(false);
-
     const selected = items.find(i => i.value === value);
-
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -30,12 +28,12 @@ export function SimpleCombobox({ items, value, languaje, onChange }: Props) {
                     variant="outline"
                     className="w-full justify-between"
                 >
-                    {selected?.[`label_${languaje}` as keyof typeof selected] ?? ""}
+                    {selected?.[`label` as keyof typeof selected] ?? ""}
                     <ChevronDown className="size-4 opacity-60" />
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="w-(--radix-popover-trigger-width) p-1">
+            <PopoverContent className="w-(--radix-popover-trigger-width) p-0 gap-0 space-y-0 overflow-hidden">
                 {items.map(item => (
                     <button
                         key={item.value}
@@ -43,9 +41,9 @@ export function SimpleCombobox({ items, value, languaje, onChange }: Props) {
                             onChange(item.value);
                             setOpen(false);
                         }}
-                        className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left hover:bg-accent"
+                        className="flex w-full items-center rounded-md justify-between px-3 py-2 text-left hover:bg-accent"
                     >
-                        {item[`label_${languaje}` as keyof typeof item]}
+                        {item[`label` as keyof typeof item]}
 
                         {item.value === value && (
                             <Check className="size-4" />

@@ -27,9 +27,11 @@ interface TwentyOneTableProps {
     userName: string;
     rounds: number;
     setRounds: React.Dispatch<React.SetStateAction<number>>;
+    gameTypeId: number
 }
 
-export default function TwentyOneTableDealer({ setMenuState, userId, userName, rounds, setRounds }: TwentyOneTableProps) {
+export default function TwentyOneTableDealer({ setMenuState, userId, userName,
+    rounds, setRounds, gameTypeId }: TwentyOneTableProps) {
     const t = useTranslations("twentyOneDealer");
 
     //languaje path
@@ -409,7 +411,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
     //end stament
 
     useEffect(() => {
-        console.log("open" + openDifficultDialog)
+
         if (openDifficultDialog === false) {
 
 
@@ -441,7 +443,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName, r
     );
 
     return (
-        <div className="flex flex-col flex-1 min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
+        <div className="flex flex-col flex-1 h-full min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
             <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-4 lg:pt-0 sm:p-4 w-full h-full gap-4">

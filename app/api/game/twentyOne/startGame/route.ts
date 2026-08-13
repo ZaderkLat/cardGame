@@ -5,8 +5,6 @@ import type { GameState, PlayerInfo, PlayersRequest } from "@/interface/gameData
 
 export async function POST(request: NextRequest) {
     const { players, rounds } = await request.json();
-
-
     /*getPlayerState return
         lose: if playerHandValue > 21
         stand: if playerHandValue == 21
