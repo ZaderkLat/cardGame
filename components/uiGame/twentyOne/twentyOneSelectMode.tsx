@@ -61,7 +61,7 @@ export default function TwentyOneSelect({ setMenuState, gameModeId }: TwentyOneT
     const currentGameModeTypeId = selectedModeType?.game_mode_type_id;
     return (
 
-        <>
+        <div className="h-full">
 
             <DialogSelectDifficult
                 open={openDifficultDialog}
@@ -198,6 +198,6 @@ export default function TwentyOneSelect({ setMenuState, gameModeId }: TwentyOneT
                 </>
             )}
 
-        </>
+        </div>
     )
 }

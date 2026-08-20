@@ -251,7 +251,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         else {
 
             const { status, message } = isWinner(playerResponse.score, difficulty, response.countRound);
-
+            registerRecord(status, response);
             openDialog({
                 title: t("gameResult"),
                 description: `${t(message)}\n${t("score")}: ${playerResponse.score}\n${t("difficult")}: ${difficulties[difficulty][`name_${locale}` as "name_es" | "name_en"]}`,
@@ -275,7 +275,44 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         }
     }
 
+    const registerRecord = async (status: "win" | "lose", gameData: GameState) => {
+        const statusText: Record<"win" | "lose", { es: string; en: string }> = {
+            win: {
+                es: "Ganó",
+                en: "Win",
+            },
+            lose: {
+                es: "Perdió",
+                en: "Lose",
+            },
+        };
 
+        const response = await fetch("/api/dataBase/record", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                rounds: gameData?.round,
+                gameModeTypeId: gameTypeId,
+
+                properties: {
+                    score: {
+                        es: gameData.players[0].score,
+                        en: gameData.players[0].score,
+                    },
+                    difficult: {
+                        es: difficulties[difficulty].name_es,
+                        en: difficulties[difficulty].name_en,
+                    },
+                    status: {
+                        es: statusText[status].es,
+                        en: statusText[status].en,
+                    },
+                },
+            }),
+        });
+    };
     useEffect(() => {
         if (openDifficultDialog === false) {
             startGame();
@@ -300,7 +337,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
 
     return (
-        <div className="flex flex-col flex-1 min-h-0 bg-zinc-50 h-full dark:bg-black overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 bg-zinc-50 lg:h-full h-fit  dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
             <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full h-full">

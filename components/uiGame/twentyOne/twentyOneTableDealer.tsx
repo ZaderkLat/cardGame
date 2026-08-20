@@ -33,7 +33,7 @@ interface TwentyOneTableProps {
 export default function TwentyOneTableDealer({ setMenuState, userId, userName,
     rounds, setRounds, gameTypeId }: TwentyOneTableProps) {
     const t = useTranslations("twentyOneDealer");
-
+    console.log(gameTypeId)
     //languaje path
     const locale = useLocale();
     //Game State
@@ -76,6 +76,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
     const [isPlaying, setIsPlaying] = useState<boolean>(true)
     const [tieCount, setTieCount] = useState<number>(0);
     //Ask the server to start a new game and get the initial hand and deck
+
     const startGame = async () => {
         setTakeCardButton(true);
         setRestarGameButton(true);
@@ -220,7 +221,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
             ...prev,
             {
                 type: "info",
-                message: `${t("cardTaken")}: ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
+                message: `${player.userName}: ${t("cardTaken")} ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
                     }`,
             },
         ]);
@@ -272,23 +273,13 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
         }
         else {
 
-            const { status, message } = isWinner(playerResponse.score, "medium", response.countRound);
-
             openDialog({
                 title: t("gameResult"),
                 description: ``,
-                status: status,
+                status: "win",
             });
+            registerRecord(response);
             setPendingAction(() => () => {
-                setGameInfo(prev => [
-                    ...prev,
-                    { type: status, message: `${t(message)} ${t("with")} ${playerResponse.score} ${t("points")}.` },
-                ]);
-
-                setGameData(null);
-
-
-
                 startGame();
             });
 
@@ -331,18 +322,20 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
                 handValue: calculateHandValue(dealerInfo.hand.slice(0, 2))
             };
         });
+        const lastCard = response.players[0].hand[1];
+        setGameInfo(prev => [
+            ...prev,
+            {
+                type: "info",
+                message: `${dealer?.userName}: ${t("cardTaken")} ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
+                    }`,
+            },
+        ]);
         await sleep(1000);
         for (let i = 2; i < dealerInfo.hand.length; i++) {
 
 
-            setGameInfo(prev => [
-                ...prev,
-                {
-                    type: "info",
-                    message: `${t("dealer")}: ${t("cardTaken")}: ${dealerInfo.hand[i].rank} ${t("of")} ${dealerInfo.hand[i][`club_${locale}` as "club_es" | "club_en"] ?? ""
-                        }`,
-                },
-            ]);
+
 
             setDealer((prevDealer) => {
                 if (!prevDealer) {
@@ -363,6 +356,14 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
                 };
 
             });
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "info",
+                    message: `${dealer?.userName}: ${t("cardTaken")}: ${dealerInfo.hand[i].rank} ${t("of")} ${dealerInfo.hand[i][`club_${locale}` as "club_es" | "club_en"] ?? ""
+                        }`,
+                },
+            ]);
             await sleep(1000);
 
         }
@@ -442,8 +443,72 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
         ...(gameData?.players.map(p => p.roundsWin) ?? [0])
     );
 
+    const registerRecord = async (gameData: GameState) => {
+
+        const player = getPlayer(gameData);
+        const dealer = gameData.players[0];
+        if (!player || !dealer) return;
+
+        const statusText: Record<"win" | "lose" | "tie", { es: string; en: string }> = {
+            win: {
+                es: "Ganó",
+                en: "Win",
+            },
+            lose: {
+                es: "Perdió",
+                en: "Lose",
+            },
+            tie: {
+                es: "Empate",
+                en: "Tie"
+            }
+        };
+        const status: "win" | "lose" | "tie" =
+            player.roundsWin > dealer.roundsWin
+                ? "win"
+                : player.roundsWin < dealer.roundsWin
+                    ? "lose"
+                    : "tie";
+
+        const response = await fetch("/api/dataBase/record", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                rounds: gameData.round,
+                gameModeTypeId: gameTypeId,
+
+                properties: {
+                    roundsWin: {
+                        es: player.roundsWin,
+                        en: player.roundsWin,
+                    },
+                    dealer: {
+                        es: dealer.userName,
+                        en: dealer.userName
+                    },
+                    tie: {
+                        es: tieCount,
+                        en: tieCount,
+                    },
+                    status: {
+                        es: statusText[status].es,
+                        en: statusText[status].en
+                    },
+                    dealerWins: {
+                        es: dealer.roundsWin,
+                        en: dealer.roundsWin
+                    }
+                },
+            }),
+        });
+
+        const data = await response.json();
+
+    }
     return (
-        <div className="flex flex-col flex-1 h-full min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
+        <div className="flex flex-col flex-1 lg:h-full h-fit min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
             <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-4 lg:pt-0 sm:p-4 w-full h-full gap-4">
