@@ -17,7 +17,7 @@ import { SimpleCombobox } from "../ui/simpleComboBox";
 import { comboBoxItems } from "@/interface/comboBox";
 import { RecordTableColumn, RecordTableRow, RecordTableResponse } from "@/interface/responseDB";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import {
     Table,
     TableBody,
@@ -26,6 +26,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Filter, RotateCcw } from "lucide-react";
+
 interface SelectGameMenuProps {
     menuState: MenuStatus;
     setMenuState: (state: MenuStatus) => void;
@@ -39,7 +48,7 @@ type StatusFilter = "all" | "win" | "lose";
 export default function Record({ setMenuState }: SelectGameMenuProps) {
 
     const locale = useLocale()
-    const t = useTranslations("selectGameMenu");
+    const t = useTranslations("record");
 
     const [comboBoxGameMode, setComboBoxGameMode] = useState<comboBoxItems[]>([]);
     const [gameModeSelected, setGameModeSelected] = useState<string>();
@@ -58,6 +67,15 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
     const [endDate, setEndDate] = useState("");
     const [sortField, setSortField] = useState<SortField>("created_at");
     const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+    const activeFiltersCount = useMemo(() => {
+        let count = 0;
+        if (statusFilter !== "all") count++;
+        if (startDate) count++;
+        if (endDate) count++;
+        if (sortField !== "created_at" || sortDirection !== "desc") count++;
+        return count;
+    }, [statusFilter, startDate, endDate, sortField, sortDirection]);
 
     const normalizeStatusValue = useCallback((value?: string) => value?.trim().toLowerCase() ?? "", []);
 
@@ -204,8 +222,8 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
     }, [gameModeTypeSelected, locale]);
 
     return (
-        <div className="flex items-center justify-center w-full h-full p-4 s">
-            <Card className="relative w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+        <div className="flex h-dvh min-h-0 w-full items-center justify-center p-4">
+            <Card className="relative flex h-full min-h-0 w-full max-w-6xl flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
 
                 <ReturnButton
                     className=" absolute top-1 left-1 border border-gray-300 dark:border-gray-600 hover:bg-gray-100
@@ -217,36 +235,139 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
                     <ArrowLeft />
                 </ReturnButton>
 
-                <CardHeader className="pt-6 pb-6 mb-2 text-center border-b">
+                <CardHeader className="shrink-0 pt-6 pb-6 mb-2 text-center border-b">
                     <CardTitle className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">
                         {t("title")}
                     </CardTitle>
-
                 </CardHeader>
-                <div className="flex w-full h-full flex-row gap-6">
+
+                <div className=" flex w-full flex-row gap-6">
                     {(comboBoxGameMode && comboBoxGameModeType && gameModeTypeSelected) ? (
-                        <div className="flex w-full ml-6 mr-6">
-                            <div className="flex flex-1 flex-col gap-2 ">
-                                <p className="text-sm font-medium">Game Mode:</p>
+                        <div className="flex flex-col w-full ml-6 mr-6">
+                            <div className="flex w-full flex-col gap-4 lg:flex-row">
+                                <div className="flex w-full flex-1 flex-col gap-2">
+                                    <p className="text-sm font-medium">{t("gameMode")}</p>
 
-                                <SimpleCombobox
-                                    items={comboBoxGameMode}
-                                    onChange={setGameModeSelected}
-                                    value={gameModeSelected}
-                                />
+                                    <SimpleCombobox
+                                        items={comboBoxGameMode}
+                                        onChange={setGameModeSelected}
+                                        value={gameModeSelected}
+                                    />
+                                </div>
+
+                                <div className="flex flex-1 flex-col gap-2">
+                                    <p className="text-sm font-medium">{t("gameType")}</p>
+
+                                    <SimpleCombobox
+                                        items={comboBoxGameModeType}
+                                        onChange={setGameModeTypeSelected}
+                                        value={gameModeTypeSelected}
+                                    />
+                                </div>
                             </div>
+                            <Accordion type="single" collapsible className="w-full mt-4">
+                                <AccordionItem value="filters" className="border-b-0">
+                                    <AccordionTrigger className="items-center gap-2 rounded-md border border-gray-300
+                                     bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100
+                                      hover:no-underline dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700">
+                                        <div className="flex items-center gap-2">
+                                            <Filter className="h-4 w-4" />
 
-                            <div className="flex flex-1 flex-col gap-2">
-                                <p className="text-sm font-medium">Game Type:</p>
+                                            <span>{t("filters")}</span>
+                                            {activeFiltersCount > 0 && (
+                                                <span className="ml-1 inline-flex h-5 items-center justify-center rounded-full bg-blue-100 px-2 text-xs font-semibold text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+                                                    {activeFiltersCount}
+                                                </span>
+                                            )}
+                                        </div>
 
-                                <SimpleCombobox
-                                    items={comboBoxGameModeType}
-                                    onChange={setGameModeTypeSelected}
-                                    value={gameModeTypeSelected}
-                                />
-                            </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        {/* Contenedor principal con Scroll vertical y alto máximo */}
+                                        <div className="max-h-25 overflow-y-auto rounded-lg border bg-muted/20 p-4">
+
+                                            {/* Grid adaptativo: 1 col (móvil), 2 cols (tablet 'sm'), 3 cols (pantallas grandes 'lg') */}
+                                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 items-end">
+                                                <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                    {t("status")}
+                                                    <select
+                                                        value={statusFilter}
+                                                        onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+                                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                    >
+                                                        <option value="all">{t("all")}</option>
+                                                        <option value="win">{t("win")}</option>
+                                                        <option value="lose">{t("lose")}</option>
+                                                    </select>
+                                                </label>
+
+                                                <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                    {t("dateFrom")}
+                                                    <input
+                                                        type="date"
+                                                        value={startDate}
+                                                        onChange={(event) => setStartDate(event.target.value)}
+                                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                    />
+                                                </label>
+
+                                                <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                    {t("dateTo")}
+                                                    <input
+                                                        type="date"
+                                                        value={endDate}
+                                                        onChange={(event) => setEndDate(event.target.value)}
+                                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                    />
+                                                </label>
+
+                                                <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                    {t("sortBy")}
+                                                    <select
+                                                        value={sortField}
+                                                        onChange={(event) => setSortField(event.target.value as SortField)}
+                                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                    >
+                                                        <option value="created_at">{t("date")}</option>
+                                                        <option value="rounds">{t("rounds")}</option>
+                                                    </select>
+                                                </label>
+
+                                                <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                                    {t("sortOrder")}
+                                                    <select
+                                                        value={sortDirection}
+                                                        onChange={(event) => setSortDirection(event.target.value as SortDirection)}
+                                                        className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                    >
+                                                        <option value="desc">{t("descending")}</option>
+                                                        <option value="asc">{t("ascending")}</option>
+                                                    </select>
+                                                </label>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setStatusFilter("all");
+                                                        setStartDate("");
+                                                        setEndDate("");
+                                                        setSortField("created_at");
+                                                        setSortDirection("desc");
+                                                    }}
+                                                    className="flex items-center justify-center gap-2 h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                                                >
+                                                    <RotateCcw className="h-4 w-4" />
+                                                    {t("reset")}
+                                                </button>
+
+                                            </div>
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
 
                         </div>
+
                     ) : (
                         <div className="flex w-full ml-6 mr-6">
                             <div className="flex flex-1 flex-col gap-2">
@@ -258,164 +379,100 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
                                 <Skeleton className="h-5 w-24" />
                                 <Skeleton className="h-10 w-full" />
                             </div>
+
                         </div>
                     )}
                 </div>
-                <CardContent className="flex flex-col items-center px-4 sm:px-8 lg:px-12 pb-8">
-                    <div className="mb-6 flex flex-col gap-4 rounded-lg border bg-muted/20 p-4">
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-                            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Estado
-                                <select
-                                    value={statusFilter}
-                                    onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
-                                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
-                                >
-                                    <option value="all">Todos</option>
-                                    <option value="win">Win</option>
-                                    <option value="lose">Lose</option>
-                                </select>
-                            </label>
+                <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 sm:px-8 lg:px-12 pb-8">
 
-                            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Fecha desde
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(event) => setStartDate(event.target.value)}
-                                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
-                                />
-                            </label>
 
-                            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Fecha hasta
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(event) => setEndDate(event.target.value)}
-                                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
-                                />
-                            </label>
+                    <ScrollArea className="min-h-0 min-w-0 flex-1 w-full">
 
-                            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Ordenar por
-                                <select
-                                    value={sortField}
-                                    onChange={(event) => setSortField(event.target.value as SortField)}
-                                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
-                                >
-                                    <option value="created_at">Fecha</option>
-                                    <option value="rounds">Rondas</option>
-                                </select>
-                            </label>
-
-                            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-200">
-                                Orden
-                                <select
-                                    value={sortDirection}
-                                    onChange={(event) => setSortDirection(event.target.value as SortDirection)}
-                                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-500 dark:border-gray-600 dark:bg-gray-800"
-                                >
-                                    <option value="desc">Descendente</option>
-                                    <option value="asc">Ascendente</option>
-                                </select>
-                            </label>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setStatusFilter("all");
-                                    setStartDate("");
-                                    setEndDate("");
-                                    setSortField("created_at");
-                                    setSortDirection("desc");
-                                }}
-                                className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                            >
-                                Reiniciar
-                            </button>
-                        </div>
-                    </div>
-
-                    {recordsLoading ? (
-                        <div className="space-y-2">
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
-                        </div>
-                    ) : filteredRecords.length === 0 ? (
-                        <div className="flex items-center justify-center py-10">
-                            <p className="text-muted-foreground">
-                                No hay registros.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="rounded-md border overflow-x-auto w-full">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-center justify-center">Record ID</TableHead>
-                                        <TableHead className="text-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleSort("rounds")}
-                                                className="mx-auto flex items-center justify-center gap-1 font-semibold"
-                                            >
-                                                Rounds
-                                                {sortField === "rounds" &&
-                                                    (sortDirection === "asc" ? " ↑" : " ↓")}
-                                            </button>
-                                        </TableHead>
-
-                                        <TableHead className="text-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleSort("created_at")}
-                                                className="mx-auto flex items-center justify-center gap-1 font-semibold"
-                                            >
-                                                Fecha
-                                                {sortField === "created_at" &&
-                                                    (sortDirection === "asc" ? " ↑" : " ↓")}
-                                            </button>
-                                        </TableHead>
-
-                                        {recordColumns.map((column) => (
-                                            <TableHead className="text-center justify-center" key={column.key}>
-                                                {column.label}
+                        {recordsLoading ? (
+                            <div className="space-y-2">
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        ) : filteredRecords.length === 0 ? (
+                            <div className="flex items-center justify-center py-10">
+                                <p className="text-muted-foreground">
+                                    {t("noRecords")}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="rounded-md border overflow-x-auto w-full">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="text-center justify-center">{t("recordId")}</TableHead>
+                                            <TableHead className="text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSort("rounds")}
+                                                    className="mx-auto flex items-center justify-center gap-1 font-semibold"
+                                                >
+                                                    {t("rounds")}
+                                                    {sortField === "rounds" &&
+                                                        (sortDirection === "asc" ? " ↑" : " ↓")}
+                                                </button>
                                             </TableHead>
-                                        ))}
-                                    </TableRow>
-                                </TableHeader>
 
-                                <TableBody>
-                                    {filteredRecords.map((record) => (
-                                        <TableRow key={record.record_id}>
-                                            <TableCell className="text-center justify-center">
-                                                {record.record_id}
-                                            </TableCell>
-
-                                            <TableCell className="text-center justify-center">
-                                                {record.rounds}
-                                            </TableCell>
-
-                                            <TableCell className="text-center justify-center">
-                                                {new Date(
-                                                    record.created_at
-                                                ).toLocaleDateString(locale)}
-                                            </TableCell >
+                                            <TableHead className="text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSort("created_at")}
+                                                    className="mx-auto flex items-center justify-center gap-1 font-semibold"
+                                                >
+                                                    {t("date")}
+                                                    {sortField === "created_at" &&
+                                                        (sortDirection === "asc" ? " ↑" : " ↓")}
+                                                </button>
+                                            </TableHead>
 
                                             {recordColumns.map((column) => (
-                                                <TableCell className="text-center justify-center" key={column.key}>
-                                                    {record.properties[column.key] ?? "-"}
-                                                </TableCell>
+                                                <TableHead className="text-center justify-center" key={column.key}>
+                                                    {column.label}
+                                                </TableHead>
                                             ))}
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
+                                    </TableHeader>
+
+                                    <TableBody>
+                                        {filteredRecords.map((record) => (
+                                            <TableRow key={record.record_id}>
+                                                <TableCell className="text-center justify-center">
+                                                    {record.record_id}
+                                                </TableCell>
+
+                                                <TableCell className="text-center justify-center">
+                                                    {record.rounds}
+                                                </TableCell>
+
+                                                <TableCell className="text-center justify-center">
+                                                    {new Date(
+                                                        record.created_at
+                                                    ).toLocaleDateString(locale)}
+                                                </TableCell >
+
+                                                {recordColumns.map((column) => (
+                                                    <TableCell className="text-center justify-center" key={column.key}>
+                                                        {record.properties[column.key] ?? "-"}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                        <ScrollBar orientation="vertical" />
+                        <ScrollBar orientation="horizontal" />
+
+
+                    </ScrollArea>
+
 
                 </CardContent>
 

@@ -70,10 +70,22 @@
         "title": "Game History",
         "gameMode": "Game Mode",
         "gameType": "Game Type",
+        "status": "Status",
+        "all": "All",
+        "win": "Win",
+        "lose": "Lose",
+        "dateFrom": "Date from",
+        "dateTo": "Date to",
+        "sortBy": "Sort by",
+        "sortOrder": "Order",
+        "descending": "Descending",
+        "ascending": "Ascending",
+        "reset": "Reset",
         "noRecords": "No records found.",
         "recordId": "Record ID",
         "rounds": "Rounds",
-        "date": "Date"
+        "date": "Date",
+        "filters": "Filters"
     },
     "twentyOne": {
         "title": "Twenty One Game",

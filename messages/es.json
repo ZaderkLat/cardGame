@@ -70,10 +70,22 @@
         "title": "Historial de partidas",
         "gameMode": "Modo de juego",
         "gameType": "Tipo de juego",
+        "status": "Estado",
+        "all": "Todos",
+        "win": "Victoria",
+        "lose": "Derrota",
+        "dateFrom": "Fecha desde",
+        "dateTo": "Fecha hasta",
+        "sortBy": "Ordenar por",
+        "sortOrder": "Orden",
+        "descending": "Descendente",
+        "ascending": "Ascendente",
+        "reset": "Reiniciar",
         "noRecords": "No hay registros.",
         "recordId": "ID del registro",
         "rounds": "Rondas",
-        "date": "Fecha"
+        "date": "Fecha",
+        "filters": "Filtros"
     },
     "twentyOne": {
         "title": "Juego Twenty One",
