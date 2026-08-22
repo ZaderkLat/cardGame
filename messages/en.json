@@ -66,6 +66,15 @@
         "title": "Select Game",
         "description": "Choose a game to play and have fun!"
     },
+    "record": {
+        "title": "Game History",
+        "gameMode": "Game Mode",
+        "gameType": "Game Type",
+        "noRecords": "No records found.",
+        "recordId": "Record ID",
+        "rounds": "Rounds",
+        "date": "Date"
+    },
     "twentyOne": {
         "title": "Twenty One Game",
         "clickToDraw": "Click to draw a card",

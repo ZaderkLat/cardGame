@@ -66,6 +66,15 @@
         "title": "Selecciona un juego",
         "description": "Elige un juego para divertirte y pasar un buen rato"
     },
+    "record": {
+        "title": "Historial de partidas",
+        "gameMode": "Modo de juego",
+        "gameType": "Tipo de juego",
+        "noRecords": "No hay registros.",
+        "recordId": "ID del registro",
+        "rounds": "Rondas",
+        "date": "Fecha"
+    },
     "twentyOne": {
         "title": "Juego Twenty One",
         "clickToDraw": "Haz clic para robar una carta",

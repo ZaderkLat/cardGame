@@ -39,7 +39,7 @@ interface SelectGameMenuProps {
 export default function Record({ setMenuState }: SelectGameMenuProps) {
 
     const locale = useLocale()
-    const t = useTranslations("selectGameMenu");
+    const t = useTranslations("record");
     const [gameMode, setGameMode] = useState<gameModeDTO[]>([]);
     const [gameModeType, setgameModeType] = useState<gameModeTypeDTO[]>([])
 
@@ -165,7 +165,7 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
                     {(comboBoxGameMode && comboBoxGameModeType && gameModeTypeSelected) ? (
                         <div className="flex w-full ml-6 mr-6">
                             <div className="flex flex-1 flex-col gap-2 ">
-                                <p className="text-sm font-medium">GameMode:</p>
+                                <p className="text-sm font-medium">{t("gameMode")}</p>
 
                                 <SimpleCombobox
                                     items={comboBoxGameMode}
@@ -175,7 +175,7 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
                             </div>
 
                             <div className="flex flex-1 flex-col gap-2">
-                                <p className="text-sm font-medium">Game Type:</p>
+                                <p className="text-sm font-medium">{t("gameType")}</p>
 
                                 <SimpleCombobox
                                     items={comboBoxGameModeType}
@@ -210,7 +210,7 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
                     ) : records.length === 0 ? (
                         <div className="flex items-center justify-center py-10">
                             <p className="text-muted-foreground">
-                                No hay registros.
+                                {t("noRecords")}
                             </p>
                         </div>
                     ) : (
@@ -218,9 +218,9 @@ export default function Record({ setMenuState }: SelectGameMenuProps) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="text-center justify-center">Record ID</TableHead>
-                                        <TableHead className="text-center justify-center">Rounds</TableHead>
-                                        <TableHead className="text-center justify-center">Fecha</TableHead>
+                                        <TableHead className="text-center justify-center">{t("recordId")}</TableHead>
+                                        <TableHead className="text-center justify-center">{t("rounds")}</TableHead>
+                                        <TableHead className="text-center justify-center">{t("date")}</TableHead>
 
                                         {recordColumns.map((column) => (
                                             <TableHead className="text-center justify-center" key={column.key}>
