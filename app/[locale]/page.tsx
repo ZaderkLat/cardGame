@@ -7,7 +7,7 @@ import IniMenu from "@/components/uiGame/iniMenu";
 import SelectGameMenu from "@/components/uiGame/selectGameMenu";
 import { MenuStatus } from "@/interface/menuStatus";
 import { useTranslations } from "next-intl";
-
+import Record from "@/components/uiGame/record";
 export default function Home() {
   const t = useTranslations("Home");
   const [menuState, setMenuState] = useState<MenuStatus>("main");
@@ -26,6 +26,7 @@ export default function Home() {
       {menuState === "main" && (
         <IniMenu setMenuState={handlerMenu} />
       )}
+      {menuState === "record" && <Record setMenuState={handlerMenu} menuState={previousMenuState} />}
       {menuState === "select" && <SelectGameMenu setMenuState={handlerMenu} menuState={previousMenuState} setGameModeId={setGameModeId} />}
       {menuState === "game_twenty_one" && <TwentyOneSelect setMenuState={handlerMenu} gameModeId={gameModeId} />}
 

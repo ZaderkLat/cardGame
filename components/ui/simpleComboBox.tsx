@@ -8,19 +8,23 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Check, ChevronDown } from "lucide-react";
+import { comboBoxItems } from "@/interface/comboBox";
 
 import { gameModeTypeDTO } from "@/interface/responseDB";
-type Option = gameModeTypeDTO;
+type Option = gameModeTypeDTO | comboBoxItems;
 
 type Props = {
     items: Option[];
-    value: string;
+    value?: string;
     onChange: (value: string) => void;
 };
 
 export function SimpleCombobox({ items, value, onChange }: Props) {
     const [open, setOpen] = useState(false);
-    const selected = items.find(i => i.value === value);
+    let selected = items.find(i => i.value === value);
+    if (!selected) {
+        selected = items[0];
+    }
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>

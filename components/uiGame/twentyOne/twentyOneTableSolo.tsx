@@ -293,7 +293,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                rounds: gameData?.round,
+                rounds: gameData?.round - 1,
                 gameModeTypeId: gameTypeId,
 
                 properties: {

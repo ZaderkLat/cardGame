@@ -30,3 +30,29 @@ export interface gameModeTypeResponse {
         value: string;
     }
 }
+
+
+export interface RecordTableProperty {
+    [key: string]: string;
+}
+
+export interface RecordTableRow {
+    record_id: number;
+    rounds: number;
+    created_at: string;
+    properties: RecordTableProperty;
+}
+
+export interface RecordTableColumn {
+    key: string;
+    label: string;
+}
+
+export interface RecordTableResponse {
+    records: RecordTableRow[];
+    columns: RecordTableColumn[];
+}
+
+
+
+

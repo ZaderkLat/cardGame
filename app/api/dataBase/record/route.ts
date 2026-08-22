@@ -1,7 +1,12 @@
 import { createClient } from "@/lib/server"; // Ajusta la ruta a tu cliente servidor
 import { NextRequest, NextResponse } from "next/server";
+import { RecordTableRow, RecordTableColumn } from "@/interface/responseDB";
+
 export async function GET(request: NextRequest) {
+
     const gameModeTypeId = request.nextUrl.searchParams.get("gameModeType");
+    const locale = request.nextUrl.searchParams.get("locale");
+
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -11,19 +16,21 @@ export async function GET(request: NextRequest) {
             { status: 401 }
         );
     }
-
     const { data, error } = await supabase
         .from("record")
         .select(`
-      record_id,
-      rounds,
-      created_at,
-      record_properties (
-        value_en,
-        parameter:parameter_id (
-          value
+        record_id,
+        rounds,
+        created_at,
+        record_properties (
+            value_es,
+            value_en,
+            parameter:parameter_id (
+                value,
+                label_es,
+                label_en
+            )
         )
-      )
     `)
         .eq("user_id", user.id)
         .eq("game_mode_type_id", gameModeTypeId);
@@ -32,8 +39,65 @@ export async function GET(request: NextRequest) {
         console.error("Error fetching user records:", error.message);
         throw error;
     }
-    console.log(data)
-    return data;
+
+    const records: RecordTableRow[] = (data ?? []).map((record) => {
+
+        const properties: Record<string, string> = {};
+
+        record.record_properties.forEach((property) => {
+            const parameter = Array.isArray(property.parameter)
+                ? property.parameter[0]
+                : property.parameter;
+
+            if (!parameter) return;
+
+            const value =
+                locale === "es"
+                    ? property.value_es
+                    : property.value_en;
+
+            properties[parameter.value] = value;
+        });
+
+        return {
+            record_id: record.record_id,
+            rounds: record.rounds,
+            created_at: record.created_at,
+            properties,
+        };
+    });
+    const columns: RecordTableColumn[] = [];
+
+    (data ?? []).forEach((record) => {
+        record.record_properties.forEach((property) => {
+            const parameter = Array.isArray(property.parameter)
+                ? property.parameter[0]
+                : property.parameter;
+
+            if (!parameter) return;
+
+            const key = parameter.value;
+
+            const label =
+                locale === "es"
+                    ? parameter.label_es
+                    : parameter.label_en;
+
+            if (!columns.some(column => column.key === key)) {
+                columns.push({
+                    key,
+                    label,
+                });
+            }
+        });
+    });
+
+    return NextResponse.json({
+        columns,
+        records,
+    });
+
+
 }
 
 

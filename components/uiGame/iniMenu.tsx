@@ -69,8 +69,9 @@ export default function IniMenu({ setMenuState }: IniMenuProps) {
                   </div>
                 ) : (
                   <div className="flex gap-4 w-full mt-4">
-                    <Button className="flex-1 h-10 text-lg border border-zinc-200 shadow-xl hover:bg-zinc-200 hover:scale-105" variant="outline">
-                      {t("historial")}
+                    <Button className="flex-1 h-10 text-lg border border-zinc-200 shadow-xl hover:bg-zinc-200 hover:scale-105" variant="outline"
+                      onClick={() => setMenuState("record")}>
+                      {t("record")}
                     </Button>
                   </div>
                 )}
