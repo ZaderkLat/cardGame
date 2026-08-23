@@ -22,7 +22,7 @@ import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
-
+import { User } from "@/interface/userData";
 import QuantitySelector from "@/components/ui/quantitySelector";
 interface TwentyOneTableSoloProps {
     setMenuState: (state: MenuStatus) => void;
@@ -32,13 +32,12 @@ interface TwentyOneTableSoloProps {
         difficulty: keyof typeof difficulties
     ) => void;
     setRounds: React.Dispatch<React.SetStateAction<number>>;
-    userId: string;
-    userName: string;
+    user: User;
     gameTypeId: number
 }
 
 export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, onChangeDifficulty,
-    setRounds, userId, userName, gameTypeId }: TwentyOneTableSoloProps) {
+    setRounds, user, gameTypeId }: TwentyOneTableSoloProps) {
     const t = useTranslations("twentyOne");
 
     //languaje path
@@ -85,8 +84,8 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
         const players: PlayersRequest[] = [
             {
-                idPlayer: userId,
-                userName: userName,
+                idPlayer: user.id,
+                userName: user.name,
             },
         ];
         setRestarGameButton(true);
@@ -176,7 +175,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     };
     const getPlayer = (gameData: GameState) => {
 
-        return gameData?.players.find(p => p.idPlayer === userId)
+        return gameData?.players.find(p => p.idPlayer === user.id)
 
     }
     //* -------------------------------------------------------------------- */
@@ -228,7 +227,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         }).then(res => res.json()) as GameState;
 
         const playerResponse = getPlayer(response)
-        const player = gameData?.players.find(p => p.idPlayer === userId)
+        const player = gameData?.players.find(p => p.idPlayer === user.id)
 
         if (!playerResponse || !player) return;
 
@@ -276,6 +275,8 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     }
 
     const registerRecord = async (status: "win" | "lose", gameData: GameState) => {
+        //if the user is guest, it can't register a record
+        if (user.isGuest) return;
         const statusText: Record<"win" | "lose", { es: string; en: string }> = {
             win: {
                 es: "Ganó",
@@ -329,7 +330,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     useEffect(() => {
         if (!gameData) return;
         setPlayer(gameData?.players.find(
-            p => p.idPlayer === userId)
+            p => p.idPlayer === user.id)
         );
 
     }, [gameData])

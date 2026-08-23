@@ -20,20 +20,18 @@ import Maze from "@/components/uiGame/maze";
 
 import QuantitySelector from "@/components/ui/quantitySelector";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
-
+import { User } from "@/interface/userData";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
-    userId: string;
-    userName: string;
     rounds: number;
     setRounds: React.Dispatch<React.SetStateAction<number>>;
     gameTypeId: number
+    user: User;
 }
 
-export default function TwentyOneTableDealer({ setMenuState, userId, userName,
+export default function TwentyOneTableDealer({ setMenuState, user,
     rounds, setRounds, gameTypeId }: TwentyOneTableProps) {
     const t = useTranslations("twentyOneDealer");
-    console.log(gameTypeId)
     //languaje path
     const locale = useLocale();
     //Game State
@@ -82,7 +80,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
         setRestarGameButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
-
+        setTieCount(0);
 
         const players = ([
             {
@@ -90,8 +88,8 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
                 userName: "Dealer",
             },
             {
-                idPlayer: userId,
-                userName: userName,
+                idPlayer: user.id,
+                userName: user.name,
             },
         ]);
 
@@ -193,7 +191,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
     };
     const getPlayer = (gameData: GameState) => {
 
-        return gameData?.players.find(p => p.idPlayer === userId)
+        return gameData?.players.find(p => p.idPlayer === user.id)
 
     }
     //* -------------------------------------------------------------------- */
@@ -306,7 +304,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
                 },
                 body: JSON.stringify({
                     gameId: gameData.id,
-                    idPlayer: userId
+                    idPlayer: user.id
                 })
             }
         ).then(res => res.json());
@@ -427,7 +425,7 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
         if (!gameData) return;
 
         setPlayer(gameData.players.find(
-            p => p.idPlayer === userId)
+            p => p.idPlayer === user.id)
         );
 
     }, [gameData])
@@ -444,7 +442,8 @@ export default function TwentyOneTableDealer({ setMenuState, userId, userName,
     );
 
     const registerRecord = async (gameData: GameState) => {
-
+        //if the user is guest, it can't register a record
+        if (user.isGuest) return;
         const player = getPlayer(gameData);
         const dealer = gameData.players[0];
         if (!player || !dealer) return;

@@ -20,6 +20,7 @@ import TwentyOneTableDealer from "./twentyOneTableDealer";
 import { useUser } from "@/hooks/useUser";
 import { gameModeTypeDTO } from "@/interface/responseDB";
 import { Skeleton } from "@/components/ui/skeleton";
+import { User } from "lucide-react";
 
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
@@ -171,27 +172,28 @@ export default function TwentyOneSelect({ setMenuState, gameModeId }: TwentyOneT
 
             {!openDifficultDialog && (
                 <>
-                    {mode === "solo" && (
+                    {!user && (
+                        <div></div>
+                    )}
+                    {(mode === "solo" && user) && (
                         <TwentyOneTableSolo
                             setMenuState={setMenuState}
                             difficulty={difficulty}
                             rounds={rounds}
                             onChangeDifficulty={setDifficulty}
                             setRounds={setRounds}
-                            userId={user?.id || ""}
-                            userName={user?.name || ""}
+                            user={user}
                             gameTypeId={currentGameModeTypeId ?? 0}
 
                         />
                     )}
 
-                    {mode === "dealer" && (
+                    {(mode === "dealer" && user) && (
                         <TwentyOneTableDealer
                             setMenuState={setMenuState}
                             rounds={rounds}
                             setRounds={setRounds}
-                            userId={user?.id || ""}
-                            userName={user?.name || ""}
+                            user={user}
                             gameTypeId={currentGameModeTypeId ?? 0}
                         />
                     )}

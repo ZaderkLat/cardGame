@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server"
-import { getGame, updateGame } from "@/lib/gameEngine/gameStore"
-import {
-    getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn,
-    handlerTurns, getPlayerState, playerById, scoreGame, assingWinner
-} from "@/lib/gameEngine/twetyOne/twety_One"
+import { getGame } from "@/lib/gameEngine/gameStore"
+import { assingWinner } from "@/lib/gameEngine/twetyOne/twety_One"
 
 export async function POST(req: Request) {
     const gameId = await req.json();

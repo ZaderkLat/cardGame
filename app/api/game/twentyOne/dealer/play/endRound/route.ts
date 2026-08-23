@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { scoreGame, updateStorageGame, endRound, getStorageGame, playerInTurn, handlerTurns, isWinner, getPlayerState, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
+import { scoreGame, updateStorageGame, endRound, getStorageGame, playerInTurn, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
 import { GameState } from "@/interface/gameData"
 
 export async function POST(req: Request) {
@@ -18,13 +18,7 @@ export async function POST(req: Request) {
     if (currentRound > gameData.countRound) {
         gameData.statusGame = "finished"
     }
-    /*getPlayerState return
-        lose: if playerHandValue > 21
-        stand: if playerHandValue == 21
-        continue: if playerHandValue < 21
-        blackJack: if playerHandValue == 21 & playerHand.length ==2 
-        NOTE: Only stand is possible in this EndPoint
-    */
+
     const player = playerInTurn(gameData);
 
     if (!player) {

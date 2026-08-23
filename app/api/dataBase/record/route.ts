@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/server"; // Ajusta la ruta a tu cliente servidor
+import { createClient } from "@/lib/server";
 import { NextRequest, NextResponse } from "next/server";
 import { RecordTableRow, RecordTableColumn } from "@/interface/responseDB";
 
