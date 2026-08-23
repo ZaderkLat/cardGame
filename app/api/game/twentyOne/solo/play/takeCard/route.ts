@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, handlerTurns, getPlayerState } from "@/lib/gameEngine/twetyOne/twety_One"
+import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, getPlayerState } from "@/lib/gameEngine/twetyOne/twety_One"
 
 
 export async function POST(req: Request) {
@@ -39,9 +39,6 @@ export async function POST(req: Request) {
 
   game.players = updatedPlayers;
   game.deck = newDeck
-  /* this dont change here
-  game.turn = handlerTurns(game);
-*/
 
   updateStorageGame(gameId, game)
 

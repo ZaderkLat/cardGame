@@ -1,12 +1,10 @@
 import { NextResponse, NextRequest } from "next/server"
 import { randomUUID } from "crypto"
-import { starGame, calculateHandValue, storageGame, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
-import type { GameState, PlayerInfo, PlayersRequest } from "@/interface/gameData"
+import { starGame, storageGame, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
+import type { GameState } from "@/interface/gameData"
 
 export async function POST(request: NextRequest) {
     const { players, rounds } = await request.json();
-
-
     /*getPlayerState return
         lose: if playerHandValue > 21
         stand: if playerHandValue == 21

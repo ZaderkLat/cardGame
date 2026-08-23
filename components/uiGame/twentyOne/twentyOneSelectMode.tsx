@@ -1,7 +1,7 @@
 "use client"
 import DialogSelectDifficult from "@/components/ui/dialogSelectDifficult";
 import ReturnButton from "@/components/uiGame/returnButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Mode } from "@/interface/gameData";
 import { MenuStatus } from "@/interface/menuStatus";
@@ -18,31 +18,51 @@ import {
 import TwentyOneTableSolo from "./twentyOneTableSolo";
 import TwentyOneTableDealer from "./twentyOneTableDealer";
 import { useUser } from "@/hooks/useUser";
+import { gameModeTypeDTO } from "@/interface/responseDB";
+import { Skeleton } from "@/components/ui/skeleton";
+import { User } from "lucide-react";
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
-
+    gameModeId: number
 }
 
-export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
+export default function TwentyOneSelect({ setMenuState, gameModeId }: TwentyOneTableProps) {
     const locale = useLocale()
     const t = useTranslations("twentyOneSelectMode");
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(true);
     const [difficulty, setDifficulty] = useState<keyof typeof difficulties>("medium");
     const { user } = useUser();
     const [rounds, setRounds] = useState<number>(5)
-    const modes: Mode[] = [
-        { label_es: "Solitario", label_en: "Solo", value: "solo" },
-        { label_es: "Contra Dealer", label_en: "VS Dealer", value: "dealer" },
-
-    ] as const;
+    const [modes, setModes] = useState<gameModeTypeDTO[]>([])
     const [mode, setMode] = useState("solo");
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const difficultyDisabled = mode === "dealer";
 
+    useEffect(() => {
+        const fetchModeTypes = async () => {
+            const response = await fetch(
+                `/api/dataBase/gameModeType?gameModeId=${gameModeId}&locale=${locale}`
+            );
 
+            const data = await response.json();
+            if (!data) return;
+            setModes(data);
 
+        }
+        fetchModeTypes()
+    }, [])
+
+    useEffect(() => {
+        if (modes) {
+            setIsLoading(false);
+        }
+    }, [modes])
+    const selectedModeType = modes.find((m) => m.value === mode);
+    const currentGameModeTypeId = selectedModeType?.game_mode_type_id;
     return (
 
-        <div className="h-full w-full">
+        <div className="h-full">
 
             <DialogSelectDifficult
                 open={openDifficultDialog}
@@ -69,12 +89,20 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
                         <p className="text-base sm:text-lg font-bold text-gray-800 pb-4 dark:text-white">
                             {t("selectMode")}
                         </p>
-                        <SimpleCombobox
-                            items={modes}
-                            value={mode}
-                            languaje={locale}
-                            onChange={setMode}
-                        />
+                        {isLoading ? (
+                            <>
+                                <Skeleton className="h-9 w-full rounded-md border border-input px-4 py-2" />
+                            </>
+                        ) : (
+                            <>
+                                <SimpleCombobox
+                                    items={modes}
+                                    value={mode}
+                                    onChange={setMode}
+                                />
+                            </>
+                        )}
+
                     </div>
                     <div className="flex items-center gap-4">
                         <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
@@ -144,26 +172,29 @@ export default function TwentyOneSelect({ setMenuState }: TwentyOneTableProps) {
 
             {!openDifficultDialog && (
                 <>
-                    {mode === "solo" && (
+                    {!user && (
+                        <div></div>
+                    )}
+                    {(mode === "solo" && user) && (
                         <TwentyOneTableSolo
                             setMenuState={setMenuState}
                             difficulty={difficulty}
                             rounds={rounds}
                             onChangeDifficulty={setDifficulty}
                             setRounds={setRounds}
-                            userId={user?.id || ""}
-                            userName={user?.name || ""}
+                            user={user}
+                            gameTypeId={currentGameModeTypeId ?? 0}
 
                         />
                     )}
 
-                    {mode === "dealer" && (
+                    {(mode === "dealer" && user) && (
                         <TwentyOneTableDealer
                             setMenuState={setMenuState}
                             rounds={rounds}
                             setRounds={setRounds}
-                            userId={user?.id || ""}
-                            userName={user?.name || ""}
+                            user={user}
+                            gameTypeId={currentGameModeTypeId ?? 0}
                         />
                     )}
                 </>

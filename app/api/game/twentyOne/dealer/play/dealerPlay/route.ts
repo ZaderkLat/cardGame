@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { getGame, updateGame } from "@/lib/gameEngine/gameStore"
 import {
-  getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn,
-  handlerTurns, getPlayerState, playerById, scoreGame, assingWinner
+  getNewCard, calculateHandValue, playerInTurn, assingWinner
 } from "@/lib/gameEngine/twetyOne/twety_One"
 
 
 export async function POST(req: Request) {
+
   const { gameId, idPlayer } = await req.json()
 
   const game = getGame(gameId)

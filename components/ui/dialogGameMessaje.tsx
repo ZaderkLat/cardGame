@@ -33,7 +33,7 @@ function getDialogStyle(status: statusDialog) {
     return cn(
         "rounded-2xl p-6 shadow-xl",
         "bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800",
-        "duration-300",
+        "duration-300 ",
 
         // Base animation
         "data-[state=open]:animate-in",
@@ -66,10 +66,10 @@ export default function GameDialog({ title, description, open, status, onOpenCha
     return (
         <Dialog open={open} onOpenChange={onOpenChange} >
             <DialogContent
-                className={`${getDialogStyle(status)} shine w-auto max-w-lg sm:max-w-2xl`}
+                className={`${getDialogStyle(status)} shine w-full sm:max-w-lg`}
             >
 
-                <DialogHeader className="space-y-3 text-center">
+                <DialogHeader className="space-y-3 text-center ">
 
                     <DialogTitle className="text-2xl font-bold tracking-tight">
                         {title}
@@ -81,7 +81,7 @@ export default function GameDialog({ title, description, open, status, onOpenCha
                     </DialogDescription>
 
                 </DialogHeader>
-                <div className="mt-4">
+                <div className="mt-4 overflow-auto">
                     {children}
                 </div>
 
@@ -93,8 +93,9 @@ export default function GameDialog({ title, description, open, status, onOpenCha
                         <DialogClose asChild>
                             <Button
                                 className={cn(
-                                    "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg text-lg h-full hover:scale-105",
-                                    open && "animate-pulse-once bg-blue-500 text-white hover:bg-blue-600 dark:hover:bg-blue-700 "
+                                    "active:scale-95 transition-all font-semibold shadow-md hover:shadow-lg text-sm sm:text-lg",
+                                    " h-full hover:scale-105", open && "animate-pulse-once bg-blue-500 text-white",
+                                    "hover:bg-blue-600 dark:hover:bg-blue-700 "
                                 )}
                             >
                                 {t("playAgain")}
