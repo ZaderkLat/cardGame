@@ -510,11 +510,11 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         <div className="flex flex-col flex-1 lg:h-full h-fit min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
-            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-4 lg:pt-0 sm:p-4 w-full h-full gap-4">
+            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-0 w-full h-full gap-4">
                 {/*LEFT PANEL */}
                 <div className="hidden lg:flex relative flex-col items-center justify-center w-1/5 ">
                     {/* Score y Round */}
-                    <div className="flex flex-row justify-between w-full mb-4 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:w-auto">
+                    <div className="flex flex-row absolute justify-between w-full mb-4 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:w-auto">
 
                         <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
                             {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
@@ -527,7 +527,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
                     <button
                         onClick={handleTakeCard}
-                        className={`w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded
+                        className={`w-20 h-32  lg:w-28 lg:h-40 overflow-hidden rounded
                              transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
                               active:scale-95 disabled:opacity-50 
                               ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
@@ -546,22 +546,22 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
                     <div className="flex flex-col items-center justify-center w-full">
                         {/* BOTTOM ---DEALER--- HAND */}
-                        <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
-                            dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
+                        <div className="relative flex flex-col items-center pb-1 lg:pb-6 border-2 border-zinc-400
+                            dark:border-zinc-900 dark:border-2 px-4  lg:px-10 rounded w-full max-w-2xl mt-4">
 
                             {/* Button over border*/}
 
-                            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mt-6">
+                            <h2 className="text-xl mt-2 lg:mt-4 lg:text-2xl font-bold text-gray-800 dark:text-white ">
                                 {t("playerHand")}:
                             </h2>
 
-                            <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mt-2">
+                            <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2">
                                 {t("handValue")}: {(dealer?.handValue ?? 0)}
                             </div>
 
-                            <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-4 max-w-full overflow-hidden">
+                            <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 lg:mt-4 max-w-full overflow-hidden">
                                 {dealer?.hand.map((card, index) => (
-                                    <div key={index} className="scale-75 sm:scale-90 lg:scale-100">
+                                    <div key={index} className="scale-80 lg:scale-100">
                                         {card.value == 0 ? (
                                             <div className="w-24 h-36 bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
                                                 <Maze />
@@ -577,9 +577,9 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
                     </div>
                     {/* MOBILE DRAW BUTTON */}
-                    <div className="relative flex lg:hidden flex-col items-center my-6 w-full">
+                    <div className="relative flex lg:hidden flex-col items-center mt-10 mb-6 w-full">
 
-                        <div className="w-full flex justify-between px-4 mb-4 text-xl absolute">
+                        <div className="w-full flex justify-between px-4 mb-4 -top-8 text-xl absolute">
                             <h1 className="font-bold text-gray-800 dark:text-white">
                                 {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
                             </h1>
@@ -606,16 +606,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 </div>
                             </button>
 
-                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-300">
-                                {t("clickToDraw")}
-                            </p>
-
                         </div>
 
                     </div>
                     {/* BOTTOM ---PLAYER--- HAND */}
-                    <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
-                     dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
+                    <div className="relative flex flex-col items-center pb-1 lg:pb-6  border-2 border-zinc-400
+                     dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl">
 
                         {/* Button over border*/}
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -650,11 +646,11 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
                         </div>
 
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mt-6">
+                        <h2 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white mt-6">
                             {t("playerHand")}:
                         </h2>
 
-                        <div className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mt-2 ">
+                        <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2 ">
                             {t("handValue")}: {(player?.handValue ?? 0)}
                         </div>
 
@@ -666,9 +662,9 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                         </FloatComponent>
 
 
-                        <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-4 max-w-full overflow-hidden">
+                        <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 max-w-full overflow-hidden">
                             {player?.hand.map((card, index) => (
-                                <div key={index} className="scale-75 sm:scale-90 lg:scale-100">
+                                <div key={index} className="scale-80  lg:scale-100">
                                     {cardStyle(card)}
                                 </div>
                             ))}
@@ -719,17 +715,17 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 <ReturnButton
                                     setMenuState={setMenuState}
                                     menuState={"select"}
-                                    className="w-full lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
+                                    className=" lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
                                      dark:hover:bg-red-800 rounded-lg"
                                 >
-                                    <p className="text-lg font-bold text-white">
+                                    <p className="text-sm sm:text-lg font-bold text-white">
                                         {t("exitGame")}
                                     </p>
                                 </ReturnButton>
                             }
 
                         >
-                            <div className="w-full overflow-x-auto rounded-xl border border-zinc-300 dark:border-zinc-700">
+                            <div className="w-full overflow-x-auto overflow-auto rounded-xl border border-zinc-300 dark:border-zinc-700">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="bg-zinc-100 dark:bg-zinc-800">

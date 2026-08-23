@@ -474,10 +474,10 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                                 <ReturnButton
                                     setMenuState={setMenuState}
                                     menuState={"select"}
-                                    className="w-full lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
+                                    className=" lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
                                      dark:hover:bg-red-800 rounded-lg"
                                 >
-                                    <p className="text-lg font-bold text-white">
+                                    <p className="text-sm sm:text-lg font-bold text-white">
                                         {t("exitGame")}
                                     </p>
                                 </ReturnButton>
