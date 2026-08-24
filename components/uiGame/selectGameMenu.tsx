@@ -64,11 +64,11 @@ export default function SelectGameMenu({ setMenuState, setGameModeId }: SelectGa
     }, []);
 
     return (
-        <div className="flex items-center justify-center w-full h-full p-4 s">
+        <div className="flex items-center justify-center w-full h-full p-4">
             <Card className="relative w-full max-w-6xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
 
                 <ReturnButton
-                    className=" absolute top-1 left-1 border border-gray-300 dark:border-gray-600 hover:bg-gray-100
+                    className=" absolute top-0 left-1 border h-1 w-1 border-gray-300 dark:border-gray-600 hover:bg-gray-100
                      dark:hover:bg-gray-700 transition-colors rounded-full
           "
                     setMenuState={setMenuState}
@@ -77,7 +77,7 @@ export default function SelectGameMenu({ setMenuState, setGameModeId }: SelectGa
                     <ArrowLeft />
                 </ReturnButton>
 
-                <CardHeader className="pt-6 pb-6 mb-2 text-center border-b">
+                <CardHeader className="pt-9 sm:pt-6 pb-6 mb-2 text-center border-b">
                     <CardTitle className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">
                         {t("title")}
                     </CardTitle>

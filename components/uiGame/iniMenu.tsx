@@ -15,7 +15,7 @@ import {
   useTranslations
 
 } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation"
 import { Skeleton } from "../ui/skeleton";
 
 interface IniMenuProps {

@@ -29,8 +29,8 @@ export async function updateSession(
         }
     );
 
-    // Si necesitas refrescar la sesión:
-    //await supabase.auth.getClaims();
+
+    await supabase.auth.getClaims();
 
     return supabaseResponse;
 }

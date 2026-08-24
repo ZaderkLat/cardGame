@@ -8,6 +8,7 @@ import SelectGameMenu from "@/components/uiGame/selectGameMenu";
 import { MenuStatus } from "@/interface/menuStatus";
 import { useTranslations } from "next-intl";
 import Record from "@/components/uiGame/record";
+
 export default function Home() {
   const t = useTranslations("Home");
   const [menuState, setMenuState] = useState<MenuStatus>("main");

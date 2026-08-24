@@ -15,11 +15,10 @@ export async function middlewareP(request: NextRequest) {
     const response = NextResponse.next();
     return updateSession(request, response);
   }
-  // Primero deja que next-intl resuelva el idioma
+
   const response = handleI18nRouting(request);
 
-  // Luego actualiza la sesión de Supabase utilizando
-  // la misma respuesta para conservar las cookies.
+
   return await updateSession(request, response);
 }
 
@@ -29,7 +28,7 @@ export const config = {
     // - /api
     // - /_next
     // - /_vercel
-    // - archivos estáticos (favicon.ico, imágenes, etc.)
+    // - (favicon.ico, images, etc.)
     "/((?!api|_next|_vercel|.*\\..*).*)",
   ],
 };

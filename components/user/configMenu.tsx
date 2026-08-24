@@ -48,20 +48,17 @@ export default function ConfigMenu({ username, isGuest }: ConfigMenuProps) {
             {!isGuest ? (
                 <DropdownMenuContent>
                     <DropdownMenuGroup>
-                        <DropdownMenuLabel className="text-center">{t("myAccount")}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-center">{t("configuration")}</DropdownMenuLabel>
+                        {/*<DropdownMenuSeparator />*/}
 
                     </DropdownMenuGroup>
+                    {/*}
                     <DropdownMenuGroup className="flex flex-col items-center ">
                         <DropdownMenuItem className="w-full text-center justify-center">
                             {t("profile")}
                         </DropdownMenuItem>
-
-                        <DropdownMenuItem className="w-full text-center justify-center">
-                            {t("billing")}
-                        </DropdownMenuItem>
                     </DropdownMenuGroup>
-
+                    {*/}
                     <DropdownMenuSeparator />
 
                     <DropdownMenuGroup className="flex justify-center gap-6">
