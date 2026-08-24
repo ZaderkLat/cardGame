@@ -19,53 +19,84 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+const localeMetadata = {
+  es: {
+   appName: "Juego de Cartas",
+   title: "Juego de Cartas - Inicio",
+   description: "Disfruta de partidas rápidas y competitivas de 21, con diferentes modos, historial y una experiencia multilenguaje para jugar desde cualquier dispositivo.",
+   ogTitle: "Juego de Cartas | Juega al 21 online",
+   twitterTitle: "Juego de Cartas | Juega al 21 online",
+  },
+  en: {
+   appName: "Card Game",
+   title: "Card Game - Home",
+   description: "Play fast and competitive 21 card games with different modes, match history, and a multilingual experience designed for desktop and mobile devices.",
+   ogTitle: "Card Game | Play 21 online",
+   twitterTitle: "Card Game | Play 21 online",
+  },
+} as const;
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tudominio.com';
+  const currentLocale = locale === "es" ? localeMetadata.es : localeMetadata.en;
+  const canonicalUrl = new URL(`/${locale}`, baseUrl).toString();
 
   return {
-    metadataBase: new URL(baseUrl),
-    title: {
-      default: locale === 'es' ? 'Mini Juegos - Inicio' : 'Mini Games - Home',
-      template: `%s | ${locale === 'es' ? 'Mi Aplicación' : 'My Application'}`,
-    },
-    description:
-      locale === 'es'
-        ? 'Descripción optimizada para SEO en español.'
-        : 'SEO optimized description in English.',
-    alternates: {
-      canonical: `${baseUrl}/${locale}`,
-      languages: {
-        es: `${baseUrl}/es`,
-        en: `${baseUrl}/en`,
-      },
-    },
-    openGraph: {
-      title: 'Mi Aplicación',
-      description: 'Descripción para redes sociales',
-      url: `${baseUrl}/${locale}`,
-      siteName: 'Mi Aplicación',
-      locale: locale === 'es' ? 'es_ES' : 'en_US',
-      type: 'website',
-      images: [
-        {
-          url: '/og-image.png', // Ubicada en la carpeta public/
-          width: 1200,
-          height: 630,
-          alt: 'Preview de la aplicación',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: 'Mi Aplicación',
-      description: 'Descripción para Twitter / X',
-      images: ['/og-image.png'],
-    },
+   metadataBase: new URL(baseUrl),
+   applicationName: currentLocale.appName,
+   title: {
+     default: currentLocale.title,
+     template: `%s | ${currentLocale.appName}`,
+   },
+   description: currentLocale.description,
+   keywords: [
+     "card game",
+     "21",
+     "casino game",
+     "mini games",
+     "juego de cartas",
+     "online game",
+     "multiplayer",
+   ],
+   alternates: {
+     canonical: canonicalUrl,
+     languages: {
+       es: new URL("/es", baseUrl).toString(),
+       en: new URL("/en", baseUrl).toString(),
+     },
+   },
+   openGraph: {
+     title: currentLocale.ogTitle,
+     description: currentLocale.description,
+     url: canonicalUrl,
+     siteName: currentLocale.appName,
+     locale: locale === "es" ? "es_ES" : "en_US",
+     type: "website",
+     images: [
+       {
+         url: "/21logo.webp",
+         width: 1200,
+         height: 630,
+         alt: currentLocale.appName,
+       },
+     ],
+   },
+   twitter: {
+     card: "summary_large_image",
+     title: currentLocale.twitterTitle,
+     description: currentLocale.description,
+     images: ["/21logo.webp"],
+   },
+   icons: {
+     icon: "/favicon.ico",
+     shortcut: "/favicon.ico",
+   },
   };
 }
 export default async function LocaleLayout({
