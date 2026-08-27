@@ -185,6 +185,10 @@
         "creatingAccount": "Creating account...",
         "alreadyHaveAccount": "Already have an account?",
         "login": "Login",
+        "fieldRequired": "Field required",
+        "invalidEmailFormat": "Invalid email format",
+        "nicknameMinLength": "Username must be at least 3 characters",
+        "passwordMinLength": "Password must be at least 6 characters",
         "passwordsDoNotMatch": "Passwords do not match",
         "unknownError": "An error occurred."
     },
@@ -215,7 +219,9 @@
         "pageTitle": "Card Game",
         "title": "Thank you for signing up!",
         "description": "Check your email to confirm your account.",
-        "content": "You've successfully signed up. Please check your email and confirm your account before signing in."
+        "content": "You've successfully signed up. Please check your email and confirm your account before signing in.",
+        "contentAdvise": "Si ya se registro con anterioridad, revise su bandeja de entrada incluido el spam.",
+        "contentResend": "Si el correo enviado ya no es válido presione: <button>Reenviar correo de confirmación</button>"
     },
     "HowToPlay": {
         "openDialog": "How to Play",
