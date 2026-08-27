@@ -61,7 +61,7 @@ export default function SelectGameMenu({ setMenuState, setGameModeId }: SelectGa
         };
 
         fetchGameModes();
-    }, []);
+    }, [locale]);
 
     return (
         <div className="flex items-center justify-center w-full h-full p-4">

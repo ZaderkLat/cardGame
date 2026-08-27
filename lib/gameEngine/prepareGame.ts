@@ -1,6 +1,5 @@
 import { shuffleDeck, getCards } from "./controllerMaze";
 import { card } from "@/interface/card";
-import { PlayersRequest } from "@/interface/gameData";
 
 export function prepareGame(handSize: number, quantityPlayer: number) {
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from '@/i18n/navigation'
 import { useUser } from "@/hooks/useUser";
 import { createClient } from "@/lib/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,8 +62,9 @@ export function IsLogin() {
             <div className="mt-6 flex flex-col gap-3">
                 <Button
                     onClick={() => handleLogin()}
-                    className="h-12 shadow-xl dark:text-zinc-300 text-lg font-semibold bg-blue-500
-                    hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition-all hover:scale-105"
+                    className="h-12 shadow-xl dark:text-white text-lg font-semibold bg-blue-500
+                    hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
+                     transition-all hover:scale-105"
 
                 >
                     {t("login")}
@@ -72,7 +73,7 @@ export function IsLogin() {
                 <Button
                     type="button"
                     onClick={handleLogOut}
-                    className="h-12 shadow-xl dark:text-zinc-300 text-lg font-semibold bg-red-500
+                    className="h-12 shadow-xl dark:text-white  text-lg font-semibold bg-red-500
                     hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-all hover:scale-105"
                 >
                     {t("logOut")}
@@ -81,7 +82,7 @@ export function IsLogin() {
                 <Button
                     type="button"
                     onClick={handleHome}
-                    className="h-12 shadow-xl dark:text-zinc-300 text-lg font-semibold border-border bg-background
+                    className="h-12 shadow-xl dark:text-white text-lg font-semibold border-border bg-background
                      hover:bg-zinc-200 text-zinc-800 dark:border-input dark:bg-input/30 dark:hover:bg-input/50"
                     variant="animation"
                 >

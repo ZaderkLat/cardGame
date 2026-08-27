@@ -95,7 +95,7 @@ export function getPlayerState(handValue: number, quantityCard: number) {
 
     return "continue";
 }
-export function dealerPlay(playerDealer: PlayerInfo) {
+export function dealerPlay() {
     const difficult = difficulties;
     switch (difficult) {
 

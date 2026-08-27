@@ -3,7 +3,6 @@ import DialogSelectDifficult from "@/components/ui/dialogSelectDifficult";
 import ReturnButton from "@/components/uiGame/returnButton";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Mode } from "@/interface/gameData";
 import { MenuStatus } from "@/interface/menuStatus";
 import { SimpleCombobox } from "@/components/ui/simpleComboBox";
 import QuantitySelector from "@/components/ui/quantitySelector";
@@ -20,7 +19,6 @@ import TwentyOneTableDealer from "./twentyOneTableDealer";
 import { useUser } from "@/hooks/useUser";
 import { gameModeTypeDTO } from "@/interface/responseDB";
 import { Skeleton } from "@/components/ui/skeleton";
-import { User } from "lucide-react";
 
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
@@ -41,23 +39,29 @@ export default function TwentyOneSelect({ setMenuState, gameModeId }: TwentyOneT
 
     useEffect(() => {
         const fetchModeTypes = async () => {
-            const response = await fetch(
-                `/api/dataBase/gameModeType?gameModeId=${gameModeId}&locale=${locale}`
-            );
+            setIsLoading(true);
 
-            const data = await response.json();
-            if (!data) return;
-            setModes(data);
+            try {
+                const response = await fetch(
+                    `/api/dataBase/gameModeType?gameModeId=${gameModeId}&locale=${locale}`
+                );
 
-        }
-        fetchModeTypes()
-    }, [])
+                if (!response.ok) {
+                    throw new Error("Failed to fetch mode types");
+                }
 
-    useEffect(() => {
-        if (modes) {
-            setIsLoading(false);
-        }
-    }, [modes])
+                const data = await response.json();
+                if (!data) return;
+                setModes(data);
+            } catch (error) {
+                console.error("Error fetching mode types:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchModeTypes();
+    }, [gameModeId, locale]);
     const selectedModeType = modes.find((m) => m.value === mode);
     const currentGameModeTypeId = selectedModeType?.game_mode_type_id;
     return (

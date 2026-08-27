@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { createClient } from '@/lib/client'
-import { useRouter } from "next/navigation";
+import { useRouter } from '@/i18n/navigation'
 import { useState } from "react";
 import { ModeToggle } from "../ui/modeToggle";
 import { useTranslations } from "next-intl";

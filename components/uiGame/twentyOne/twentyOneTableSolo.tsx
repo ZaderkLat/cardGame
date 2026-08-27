@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import cardStyle from "@/components/ObjectsGame/cardStyle";
-import { GameState, LogGame, PlayersRequest, Mode } from "@/interface/gameData";
+import { GameState, LogGame, PlayersRequest } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
 import GameDialog from "@/components/ui/dialogGameMessaje";
@@ -24,6 +24,7 @@ import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
 import { User } from "@/interface/userData";
 import QuantitySelector from "@/components/ui/quantitySelector";
+import { error } from "console";
 interface TwentyOneTableSoloProps {
     setMenuState: (state: MenuStatus) => void;
     difficulty: keyof typeof difficulties;
@@ -103,6 +104,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         });
 
         if (!res.ok) {
+            console.error(res.body)
             throw new Error(t("errorStartGame"));
         }
 

@@ -2,7 +2,6 @@
 
 import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import ConfigMenu from "@/components/user/configMenu";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
@@ -10,7 +9,6 @@ import { useTranslations } from "next-intl";
 
 export function TopBar() {
     const { user, loading } = useUser();
-    const router = useRouter();
     const t = useTranslations("topBar")
     const image = "/minigames.webp"
     return (

@@ -24,40 +24,29 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply these headers to all routes in your application
         source: "/:path*",
         headers: [
-
-          ...(isProd
-            ? [
-              {
-                key: "Strict-Transport-Security",
-                value: "max-age=31536000; includeSubDomains; preload",
-              },
-            ]
-            : []),
+          ...(isProd ? [{
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload",
+          }] : []),
           {
-            // Prevent your site from being embedded in iFrames on other domains (Anti-Clickjacking)
+            key: "Content-Security-Policy",
+            value: cspHeader,
+          },
+          {
             key: "X-Frame-Options",
             value: "DENY",
           },
           {
-            // Prevent browsers from MIME-sniffing the response type
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
           {
-            // Control how much referrer information is included with requests
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
           },
           {
-            // Enforce HTTPS connections for 1 year
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains; preload",
-          },
-          {
-            // Disable browser features that your application does not use
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },

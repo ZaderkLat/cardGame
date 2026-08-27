@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/client";
 import { generateGuestId } from "@/lib/generateGuest";
 import { User } from "@/interface/userData";
@@ -13,7 +13,7 @@ type UserContextType = {
 export const UserContext = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   return (
     <UserContext.Provider value={{ user, loading }}>

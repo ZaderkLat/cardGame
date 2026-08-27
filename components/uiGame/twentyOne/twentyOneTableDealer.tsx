@@ -7,7 +7,6 @@ import { GameState, LogGame } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
 import GameDialog from "@/components/ui/dialogGameMessaje";
-import { isWinner } from "@/lib/gameEngine/twetyOne/twety_One";
 import ReturnButton from "@/components/uiGame/returnButton";
 import { MenuStatus } from "@/interface/menuStatus";
 import { PlayerInfo } from "@/interface/gameData";
@@ -443,7 +442,6 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
     const registerRecord = async (gameData: GameState) => {
         //if the user is guest, it can't register a record
-        console.log(user.isGuest, user.name, user.id)
         if (user.isGuest) return;
         const player = getPlayer(gameData);
         const dealer = gameData.players[0];

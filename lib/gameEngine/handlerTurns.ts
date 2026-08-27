@@ -1,4 +1,4 @@
-import { PlayerInfo, GameState } from "@/interface/gameData"
+import { GameState } from "@/interface/gameData"
 
 
 export function playerTurnData(gameData: GameState) {
