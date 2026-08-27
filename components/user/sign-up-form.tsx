@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from '@/i18n/navigation'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -32,7 +32,7 @@ export function SignUpForm({
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
-
+  const locale = useLocale();
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -55,6 +55,7 @@ export function SignUpForm({
           emailRedirectTo: `${window.location.origin}/protected`,
           data: {
             full_name: nickname,
+            locale: locale
           },
         },
       })

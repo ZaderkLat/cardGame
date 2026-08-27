@@ -42,7 +42,9 @@ export function UpdatePasswordForm({
 
       if (error) throw error
 
-      router.push('/protected')
+      await supabase.auth.signOut()
+      router.push('/auth/login')
+
     } catch (error: unknown) {
       setError(
         error instanceof Error

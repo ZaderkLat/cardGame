@@ -10,7 +10,6 @@ const handleI18nRouting = createMiddleware({
 
 export async function middlewareP(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   if (pathname.startsWith("/api")) {
     const response = NextResponse.next();
     return updateSession(request, response);

@@ -261,5 +261,12 @@
     },
     "DialogSelectDifficult": {
         "play": "Play"
+    },
+    "isLogin": {
+        "title": "Session Already Active",
+        "description": "Hello {name}, you already have an active session. Select an option to continue.",
+        "login": "Sign in with another user",
+        "logOut": "Log out",
+        "home": "Return to main menu"
     }
 }

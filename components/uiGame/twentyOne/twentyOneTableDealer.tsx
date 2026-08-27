@@ -443,6 +443,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
     const registerRecord = async (gameData: GameState) => {
         //if the user is guest, it can't register a record
+        console.log(user.isGuest, user.name, user.id)
         if (user.isGuest) return;
         const player = getPlayer(gameData);
         const dealer = gameData.players[0];

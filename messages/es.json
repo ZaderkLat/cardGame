@@ -259,5 +259,12 @@
     },
     "DialogSelectDifficult": {
         "play": "Jugar"
+    },
+    "isLogin": {
+        "title": "Sesión ya iniciada",
+        "description": "Hola {name}, ya tienes una sesión iniciada. Selecciona una opción para continuar.",
+        "login": "Iniciar sesión con otro usuario",
+        "logOut": "Cerrar sesión",
+        "home": "Volver al menú principal"
     }
 }

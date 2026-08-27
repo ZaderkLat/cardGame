@@ -44,7 +44,6 @@ export function LoginForm({
         email,
         password,
       });
-
       if (error) throw error;
 
       router.push('/');

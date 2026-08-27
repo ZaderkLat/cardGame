@@ -43,8 +43,8 @@ export default function IniMenu({ setMenuState }: IniMenuProps) {
           <div className="flex flex-col gap-4">
             <Button
               onClick={() => setMenuState("select")}
-              className="h-12 shadow-xl dark:text-zinc-300 text-lg font-semibold bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-
+              className="h-12 shadow-xl dark:text-zinc-300 text-lg font-semibold bg-blue-500
+               hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 hover:scale-105"
             >
               {t("playButton")}
             </Button>
@@ -57,12 +57,13 @@ export default function IniMenu({ setMenuState }: IniMenuProps) {
               <div>
                 {user?.isGuest ? (
                   <div className="flex gap-4 w-full mt-4">
-                    <Button className="flex-1 h-10 text-lg  border border-zinc-200 shadow-xl hover:bg-zinc-200 " variant="outline"
+                    <Button className="flex-1 h-10 text-lg  border border-zinc-200 shadow-xl hover:bg-zinc-200 hover:scale-105" variant="outline"
                       onClick={() => { router.push("/auth/sign-up") }}>
                       {t("register")}
                     </Button>
 
-                    <Button className="flex-1 h-10 text-lg border border-zinc-200 shadow-xl hover:bg-zinc-200 hover:scale-105" variant="outline"
+                    <Button className="flex-1 h-10 text-lg border border-zinc-200 shadow-xl hover:bg-zinc-200 hover:scale-105"
+                      variant="outline"
                       onClick={() => { router.push("/auth/login") }}>
                       {t("login")}
                     </Button>

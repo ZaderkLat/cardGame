@@ -8,13 +8,29 @@ import {
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("SignUpSuccess");
 
+/*------------metadata--------*/
+type Props = {
+  params: Promise<{ locale: string; slug: string }>;
+};
+const localeMetadata = {
+  es: {
+    title: "MiniJuegos - Cuenta Registrada",
+
+  },
+  en: {
+    title: "MiniGames - Registered Account",
+  },
+} as const;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const currentLocale = locale === "es" ? localeMetadata.es : localeMetadata.en;
   return {
-    title: t("pageTitle"),
+    title: currentLocale.title,
+
   };
 }
+/*----------------------------*/
 
 export default async function Page() {
   const t = await getTranslations("SignUpSuccess");

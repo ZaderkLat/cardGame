@@ -3,12 +3,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-    applicationName: "Card Game",
+    applicationName: "MiniGames",
     title: {
-        default: "Card Game",
-        template: "%s | Card Game",
+        default: "MiniGames",
+        template: "%s | MiniGames",
     },
-    description: "Play 21 card games online with game history, different difficulty levels, and a bilingual experience.",
+    description: "Enjoy quick matches of different minigames, match history, and a multilingual experience designed for desktop and mobile devices.",
     icons: {
         icon: "/favicon.ico",
     },

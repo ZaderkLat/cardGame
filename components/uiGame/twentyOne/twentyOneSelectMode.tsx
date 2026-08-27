@@ -133,7 +133,7 @@ export default function TwentyOneSelect({ setMenuState, gameModeId }: TwentyOneT
                                             onCheckedChange={() => {
                                                 setDifficulty(key as keyof typeof difficulties);
                                             }}
-                                            className=" border-gray-400 data-[state=checked]:bg-blue-600"
+
                                         />
 
                                         <div className="flex flex-row sm:flex-row gap-1 sm:gap-2 items-center text-center">

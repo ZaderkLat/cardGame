@@ -28,6 +28,7 @@ export default function ConfigMenu({ username, isGuest }: ConfigMenuProps) {
     const logoutHandler = async () => {
         const supabase = createClient()
         await supabase.auth.signOut()
+        router.push("/");
     }
     const [open, setOpen] = useState(false);
     return (

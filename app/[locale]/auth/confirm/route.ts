@@ -6,10 +6,26 @@ import { createClient } from '@/lib/server'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
+
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const _next = searchParams.get('next')
-  const next = _next?.startsWith('/') ? _next : '/'
+
+  let next = '/'
+
+  if (_next) {
+    try {
+      const nextUrl = new URL(_next)
+
+      // Solo permitir URLs de tu propio dominio
+      if (nextUrl.origin === request.nextUrl.origin) {
+        next = nextUrl.pathname + nextUrl.search + nextUrl.hash
+      }
+    } catch {
+      // Si no es una URL válida, dejamos "/"
+    }
+  }
+
 
   if (token_hash && type) {
     const supabase = await createClient()
@@ -18,15 +34,13 @@ export async function GET(request: NextRequest) {
       type,
       token_hash,
     })
+
     if (!error) {
-      // redirect user to specified redirect URL or root of app
       redirect(next)
     } else {
-      // redirect the user to an error page with some instructions
-      redirect(`/auth/error?error=${error?.message}`)
+      redirect(`/auth/error?error=${encodeURIComponent(error.message)}`)
     }
   }
 
-  // redirect the user to an error page with some instructions
-  redirect(`/auth/error?error=No token hash or type`)
+  redirect('/auth/error?error=No%20token%20hash%20or%20type')
 }
