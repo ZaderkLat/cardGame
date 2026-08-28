@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Link } from "@/i18n/navigation";
 import { link } from 'fs'
+import { Fascinate } from 'next/font/google'
 
 export function SignUpForm({
   className,
@@ -38,6 +39,8 @@ export function SignUpForm({
   const locale = useLocale();
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendIsLoading, setResendIsLoading] = useState(false)
   // Per-field validation errors (null = no error)
   const [fieldErrors, setFieldErrors] = useState<{
     email: string | null
@@ -79,7 +82,7 @@ export function SignUpForm({
         return null
       case 'password':
         if (!v) return t('fieldRequired')
-        if (v.length < 6) return t('passwordMinLength')
+        if (!/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/.test(v)) return t('passwordFormat')
         return null
       case 'repeatPassword':
         if (!v) return t('fieldRequired')
@@ -99,6 +102,36 @@ export function SignUpForm({
       setFieldErrors((prev) => ({ ...prev, [field]: validateField(field, value) }))
     }, VALIDATION_DELAY)
   }
+
+  const renderError = (
+    field: keyof typeof fieldErrors,
+    className?: string
+  ) => {
+    const message = fieldErrors[field]
+
+    return (
+      <p
+        className={cn(
+          'overflow-hidden text-xs leading-4 transition-all duration-200',
+          message
+            ? 'min-h-4 h-auto translate-y-0 opacity-100 text-red-600 dark:text-red-400'
+            : 'h-4 translate-y-1 opacity-0 text-transparent',
+          className
+        )}
+        aria-live="polite"
+      >
+        {message ?? ' '}
+      </p>
+    )
+  }
+
+  const showRequiredMark = (field: keyof typeof fieldErrors) => Boolean(fieldErrors[field])
+  const isFormReady =
+    email.trim().length > 0 &&
+    nickname.trim().length > 0 &&
+    password.length > 0 &&
+    repeatPassword.length > 0 &&
+    !Object.values(fieldErrors).some(Boolean)
 
   const handleFieldChange = (field: string, value: string) => {
     switch (field) {
@@ -150,11 +183,12 @@ export function SignUpForm({
     }
 
     try {
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/${locale}/protected`,
+          emailRedirectTo: `${window.location.origin}/${locale}/auth/callback/signup`,
           data: {
             full_name: nickname,
             locale: locale
@@ -171,6 +205,7 @@ export function SignUpForm({
     }
   }
   const handlerResendConfirmEmail = async () => {
+    setResendIsLoading(true);
     const supabase = createClient()
     try {
       const { error } = await supabase.auth.resend({
@@ -180,16 +215,19 @@ export function SignUpForm({
           emailRedirectTo: `${window.location.origin}/${locale}/protected`
         }
       })
+
       if (error) throw error
+      setResendSuccess(true);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : t('unknownError'))
-    } finally {
-      setIsLoading(false)
+      setResendSuccess(false);
+      setResendIsLoading(false);
     }
+
   }
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      {true ? (
+      {registerSuccess ? (
         /** Message show when the register is successe */
         <Card>
           <CardHeader>
@@ -204,16 +242,19 @@ export function SignUpForm({
 
           <CardContent>
             <div className='flex flex-col gap-2'>
+
               <p className="text-sm text-muted-foreground">
                 {t2("content")} {t2("contentAdvise")}
               </p>
+
               <p className="text-sm text-muted-foreground">
-                {t2.rich("contentResend", {
+                {t2.rich("contentLogin", {
                   button: (chunks) => (
                     <button
                       type="button"
-                      onClick={handlerResendConfirmEmail}
-                      className="cursor-pointer text-black dark:text-white underline underline-offset-4 transition-opacity hover:opacity-70"
+                      onClick={() => router.push("/auth/login")}
+                      className="cursor-pointer text-black dark:text-white underline underline-offset-4
+                         transition-opacity hover:opacity-70"
 
                     >
                       {chunks}
@@ -221,6 +262,26 @@ export function SignUpForm({
                   ),
                 })}
               </p>
+              {resendSuccess ? (
+                <p className="text-sm text-muted-foreground underline underline-offset-4">
+                  {t2("contentResendSucess")}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t2.rich("contentResend", {
+                    button: (chunks) => (
+                      <button
+                        type="button"
+                        onClick={handlerResendConfirmEmail}
+                        className="cursor-pointer text-black dark:text-white underline underline-offset-4 transition-opacity hover:opacity-70"
+                        disabled={resendIsLoading}
+                      >
+                        {chunks}
+                      </button>
+                    ),
+                  })}
+                </p>
+              )}
             </div>
 
           </CardContent>
@@ -239,10 +300,13 @@ export function SignUpForm({
 
           <CardContent>
             <form onSubmit={handleSignUp}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">
+              <div className="flex flex-col gap-1">
+                <div className="grid gap-1">
+                  <Label htmlFor="email" className="text-sm font-medium">
                     {t('email')}
+                    {showRequiredMark('email') && (
+                      <span className="ml-1 text-red-600 dark:text-red-400">*</span>
+                    )}
                   </Label>
 
                   <Input
@@ -251,18 +315,23 @@ export function SignUpForm({
                     placeholder={t('emailPlaceholder')}
                     required
                     value={email}
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    className={cn(
+                      fieldErrors.email &&
+                      'border-red-500 focus-visible:ring-red-500 dark:border-red-400 dark:focus-visible:ring-red-400'
+                    )}
                     onChange={(e) => handleFieldChange('email', e.target.value)}
                   />
 
-                  {/* error placeholder - reserve space so layout doesn't jump */}
-                  <p className="min-h-5 text-sm text-red-500 mt-1" aria-live="polite">
-                    {fieldErrors.email ?? '\u00A0'}
-                  </p>
+                  {renderError('email')}
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="nickname">
+                <div className="grid gap-1">
+                  <Label htmlFor="nickname" className="text-sm font-medium">
                     {t('nickname')}
+                    {showRequiredMark('nickname') && (
+                      <span className="ml-1 text-red-600 dark:text-red-400">*</span>
+                    )}
                   </Label>
 
                   <Input
@@ -271,17 +340,23 @@ export function SignUpForm({
                     placeholder={t('nicknamePlaceholder')}
                     required
                     value={nickname}
+                    aria-invalid={Boolean(fieldErrors.nickname)}
+                    className={cn(
+                      fieldErrors.nickname &&
+                      'border-red-500 focus-visible:ring-red-500 dark:border-red-400 dark:focus-visible:ring-red-400'
+                    )}
                     onChange={(e) => handleFieldChange('nickname', e.target.value)}
                   />
 
-                  <p className="min-h-5 text-sm text-red-500 mt-1" aria-live="polite">
-                    {fieldErrors.nickname ?? '\u00A0'}
-                  </p>
+                  {renderError('nickname')}
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="password">
+                <div className="grid gap-1">
+                  <Label htmlFor="password" className="text-sm font-medium">
                     {t('password')}
+                    {showRequiredMark('password') && (
+                      <span className="ml-1 text-red-600 dark:text-red-400">*</span>
+                    )}
                   </Label>
 
                   <Input
@@ -289,17 +364,23 @@ export function SignUpForm({
                     type="password"
                     required
                     value={password}
+                    aria-invalid={Boolean(fieldErrors.password)}
+                    className={cn(
+                      fieldErrors.password &&
+                      'border-red-500 focus-visible:ring-red-500 dark:border-red-400 dark:focus-visible:ring-red-400'
+                    )}
                     onChange={(e) => handleFieldChange('password', e.target.value)}
                   />
 
-                  <p className="min-h-5 text-sm text-red-500 mt-1" aria-live="polite">
-                    {fieldErrors.password ?? '\u00A0'}
-                  </p>
+                  {renderError('password', 'max-w-[22rem] break-words')}
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="repeat-password">
+                <div className="grid gap-1">
+                  <Label htmlFor="repeat-password" className="text-sm font-medium">
                     {t('repeatPassword')}
+                    {showRequiredMark('repeatPassword') && (
+                      <span className="ml-1 text-red-600 dark:text-red-400">*</span>
+                    )}
                   </Label>
 
                   <Input
@@ -307,12 +388,15 @@ export function SignUpForm({
                     type="password"
                     required
                     value={repeatPassword}
+                    aria-invalid={Boolean(fieldErrors.repeatPassword)}
+                    className={cn(
+                      fieldErrors.repeatPassword &&
+                      'border-red-500 focus-visible:ring-red-500 dark:border-red-400 dark:focus-visible:ring-red-400'
+                    )}
                     onChange={(e) => handleFieldChange('repeatPassword', e.target.value)}
                   />
 
-                  <p className="min-h-5 text-sm text-red-500 mt-1" aria-live="polite">
-                    {fieldErrors.repeatPassword ?? '\u00A0'}
-                  </p>
+                  {renderError('repeatPassword')}
                 </div>
 
                 {error && (
@@ -324,7 +408,7 @@ export function SignUpForm({
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isLoading || !isFormReady}
                 >
                   {isLoading
                     ? t('creatingAccount')

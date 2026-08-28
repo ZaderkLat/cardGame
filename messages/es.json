@@ -186,7 +186,7 @@
         "fieldRequired": "Campo requerido",
         "invalidEmailFormat": "Formato de correo inválido",
         "nicknameMinLength": "Nombre de usuario debe tener al menos 3 caracteres",
-        "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+        "passwordFormat": "La contraseña debe tener al menos 8 caracteres, una mayúscula y un carácter especial",
         "passwordsDoNotMatch": "Las contraseñas no coinciden",
         "unknownError": "Ha ocurrido un error."
     },
@@ -219,7 +219,9 @@
         "description": "Revisa tu correo electrónico para confirmar tu cuenta.",
         "content": "Te has registrado correctamente. Antes de iniciar sesión, revisa tu correo electrónico y confirma tu cuenta.",
         "contentAdvise": "Si ya se registro con anterioridad, revise su bandeja de entrada incluido el spam.",
-        "contentResend": "Si el correo enviado ya no es válido presione: <button>Reenviar correo de confirmación</button>"
+        "contentResend": "Si el correo enviado ya no es válido presione: <button>Reenviar correo de confirmación</button>",
+        "contentLogin": "Si ya esta registrado presione: <button>Iniciar Sesión</button>",
+        "contentResendSucess": "Correo de confirmación reenviado correctamente, revise su bandeja de entrada."
     },
     "HowToPlay": {
         "openDialog": "Cómo jugar",

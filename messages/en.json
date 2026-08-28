@@ -188,7 +188,7 @@
         "fieldRequired": "Field required",
         "invalidEmailFormat": "Invalid email format",
         "nicknameMinLength": "Username must be at least 3 characters",
-        "passwordMinLength": "Password must be at least 6 characters",
+        "passwordFormat": "Password must be at least 8 characters, include one uppercase letter and one special character",
         "passwordsDoNotMatch": "Passwords do not match",
         "unknownError": "An error occurred."
     },
@@ -220,8 +220,10 @@
         "title": "Thank you for signing up!",
         "description": "Check your email to confirm your account.",
         "content": "You've successfully signed up. Please check your email and confirm your account before signing in.",
-        "contentAdvise": "Si ya se registro con anterioridad, revise su bandeja de entrada incluido el spam.",
-        "contentResend": "Si el correo enviado ya no es válido presione: <button>Reenviar correo de confirmación</button>"
+        "contentAdvise": "If you have already registered, please check your inbox, including your spam folder.",
+        "contentResend": "If the email you received is no longer valid, click: <button>Resend confirmation email</button>",
+        "contentLogin": "If you are already registered, click: <button>Log In</button>",
+        "contentResendSucess": ""
     },
     "HowToPlay": {
         "openDialog": "How to Play",
