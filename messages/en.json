@@ -276,5 +276,10 @@
         "login": "Sign in with another user",
         "logOut": "Log out",
         "home": "Return to main menu"
+    },
+    "AccountRegister": {
+        "title": "Account registered successfully!",
+        "description": "Your email address has been confirmed and your account is now active. You can start using the application.",
+        "backMenu": "Go to home"
     }
 }
