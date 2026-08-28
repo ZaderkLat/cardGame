@@ -274,5 +274,10 @@
         "login": "Iniciar sesión con otro usuario",
         "logOut": "Cerrar sesión",
         "home": "Volver al menú principal"
+    },
+    "AccountRegister": {
+        "title": "¡Cuenta registrada correctamente!",
+        "description": "Tu correo electrónico ha sido confirmado y tu cuenta ya está activa. Ya puedes comenzar a utilizar la aplicación.",
+        "backMenu": "Ir al inicio"
     }
 }

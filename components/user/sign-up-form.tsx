@@ -17,8 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Link } from "@/i18n/navigation";
-import { link } from 'fs'
-import { Fascinate } from 'next/font/google'
+
 
 export function SignUpForm({
   className,
@@ -184,7 +183,7 @@ export function SignUpForm({
 
     try {
 
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -197,7 +196,7 @@ export function SignUpForm({
       })
       if (error) throw error
       setRegisterSuccess(true);
-      //router.push('/auth/sign-up-success')
+
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : t('unknownError'))
     } finally {
@@ -206,13 +205,14 @@ export function SignUpForm({
   }
   const handlerResendConfirmEmail = async () => {
     setResendIsLoading(true);
+    console.log("entra")
     const supabase = createClient()
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
         options: {
-          emailRedirectTo: `${window.location.origin}/${locale}/protected`
+          emailRedirectTo: `${window.location.origin}/${locale}/auth/callback/signup`
         }
       })
 
@@ -262,7 +262,7 @@ export function SignUpForm({
                   ),
                 })}
               </p>
-              {resendSuccess ? (
+              {(resendSuccess) ? (
                 <p className="text-sm text-muted-foreground underline underline-offset-4">
                   {t2("contentResendSucess")}
                 </p>
@@ -273,7 +273,8 @@ export function SignUpForm({
                       <button
                         type="button"
                         onClick={handlerResendConfirmEmail}
-                        className="cursor-pointer text-black dark:text-white underline underline-offset-4 transition-opacity hover:opacity-70"
+                        className="cursor-pointer text-black dark:text-white underline underline-offset-4 transition-opacity
+                         hover:opacity-70 disabled:cursor-wait disabled:opacity-50 disabled:no-underline"
                         disabled={resendIsLoading}
                       >
                         {chunks}

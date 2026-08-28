@@ -55,6 +55,7 @@ export async function updateSession(
     const updatePasswordPath = `/${locale}/auth/update-password`;
     const isLoginPath = `/${locale}/auth/is-login`;
     const protectedPath = `/${locale}/protected`;
+    const accountRegisterPath = `/${locale}/auth/account-register`
 
     // Routes accessible without authentication
     const publicAuthRoutes = [
@@ -69,6 +70,7 @@ export async function updateSession(
         signUpSuccessPath,
         updatePasswordPath,
         protectedPath,
+        accountRegisterPath
     ];
 
     const isPublicAuthRoute = publicAuthRoutes.includes(pathname);
