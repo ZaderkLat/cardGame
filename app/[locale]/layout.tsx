@@ -4,7 +4,8 @@ import { ThemeProvider } from "@/providers/themeProvider";
 import { UserProvider } from "@/providers/userProvider";
 import { TopBar } from "@/components/ui/topBar";
 import { Toaster } from "@/components/ui/sonner";
-
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { NextIntlClientProvider } from "next-intl";
 
 import { notFound } from "next/navigation";
@@ -137,6 +138,8 @@ export default async function LocaleLayout({
               <main className="flex-1 min-h-0 flex flex-col">
                 {children}
                 <Toaster />
+                <Analytics />
+                <SpeedInsights />
               </main>
             </UserProvider>
           </ThemeProvider>
