@@ -9,11 +9,11 @@ const withNextIntl = createNextIntlPlugin();
 // External services like Supabase or Google Fonts must be declared here.
 const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline';
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:;
     font-src 'self';
-    connect-src 'self' https://*.supabase.co wss://*.supabase.co;
+    connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
