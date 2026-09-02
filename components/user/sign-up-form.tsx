@@ -205,7 +205,6 @@ export function SignUpForm({
   }
   const handlerResendConfirmEmail = async () => {
     setResendIsLoading(true);
-    console.log("entra")
     const supabase = createClient()
     try {
       const { error } = await supabase.auth.resend({
