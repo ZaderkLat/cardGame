@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       images: [
         {
-          url: "/21logo.webp",
+          url: `${baseUrl}/minigames.webp`,
           width: 1200,
           height: 630,
           alt: currentLocale.appName,
@@ -92,11 +92,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: currentLocale.twitterTitle,
       description: currentLocale.description,
-      images: ["/21logo.webp"],
+      images: [`${baseUrl}/minigames.webp`],
     },
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/favicon.ico",
+      icon: `${baseUrl}/favicon.ico`,
+      shortcut: `${baseUrl}/favicon.ico`,
     },
   };
 }
