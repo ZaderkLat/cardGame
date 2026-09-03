@@ -20,6 +20,8 @@ import Maze from "@/components/uiGame/maze";
 import QuantitySelector from "@/components/ui/quantitySelector";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
 import { User } from "@/interface/userData";
+
+import { motion } from "motion/react";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
     rounds: number;
@@ -557,20 +559,31 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                             <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2">
                                 {t("handValue")}: {(dealer?.handValue ?? 0)}
                             </div>
+                            <motion.div layout>
+                                <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 lg:mt-4 max-w-full overflow-hidden">
+                                    {dealer?.hand.map((card, index) => (
+                                        <motion.div
+                                            key={index}
+                                            layout
+                                            transition={{
+                                                type: "spring",
+                                                stiffness: 300,
+                                                damping: 25,
+                                            }}
+                                            className="scale-80 lg:scale-100"
+                                        >
+                                            {card.value == 0 ? (
+                                                <div className="w-24 h-36 bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                                                    <Maze />
+                                                </div>
+                                            ) : (
+                                                cardStyle(card)
+                                            )}
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
 
-                            <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 lg:mt-4 max-w-full overflow-hidden">
-                                {dealer?.hand.map((card, index) => (
-                                    <div key={index} className="scale-80 lg:scale-100">
-                                        {card.value == 0 ? (
-                                            <div className="w-24 h-36 bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
-                                                <Maze />
-                                            </div>
-                                        ) : (
-                                            cardStyle(card)
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
 
                         </div>
 
@@ -660,14 +673,26 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                             </div>
                         </FloatComponent>
 
+                        {/*player cards*/}
+                        <motion.div layout>
+                            <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 max-w-full overflow-hidden">
+                                {player?.hand.map((card, index) => (
+                                    <motion.div
+                                        key={index}
+                                        layout
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 300,
+                                            damping: 25,
+                                        }}
+                                        className="scale-80 lg:scale-100"
+                                    >
+                                        {cardStyle(card)}
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
 
-                        <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 max-w-full overflow-hidden">
-                            {player?.hand.map((card, index) => (
-                                <div key={index} className="scale-80  lg:scale-100">
-                                    {cardStyle(card)}
-                                </div>
-                            ))}
-                        </div>
 
                     </div>
                 </div>
