@@ -28,6 +28,8 @@ export const config = {
     // - /_next
     // - /_vercel
     // - (favicon.ico, images, etc.)
-    "/((?!api|_next|_vercel|.*\\..*).*)",
+    // - robots
+    // - sitemap
+    "/((?!api|_next|_vercel|robots\\.txt|sitemap\\.xml|.*\\..*).*)",
   ],
 };
