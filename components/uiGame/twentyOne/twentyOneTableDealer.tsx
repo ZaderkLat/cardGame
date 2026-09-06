@@ -16,12 +16,11 @@ import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
-
+import { useRef } from "react";
 import QuantitySelector from "@/components/ui/quantitySelector";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
 import { User } from "@/interface/userData";
-
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
     rounds: number;
@@ -46,8 +45,9 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         status: "continue" as const,
 
     });
-
-
+    const [drawnCard, setDrawnCard] = useState<any>(null);
+    const [isFlippingCard, setIsFlippingCard] = useState(false);
+    const [isDealingCard, setIsDealingCard] = useState(false);
     //------------------------------//
     /*Game Data*/
     const [gameData, setGameData] = useState<GameState | null>(null);
@@ -74,8 +74,23 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     //control if show the button "Stand" or "endRound"
     const [isPlaying, setIsPlaying] = useState<boolean>(true)
     const [tieCount, setTieCount] = useState<number>(0);
-    //Ask the server to start a new game and get the initial hand and deck
+    const [placeholderCard, setPlaceholderCard] = useState<boolean>(false);
+    /** References for animations */
+    const deckRef = useRef<HTMLButtonElement>(null);
+    const deckRefCenter = useRef<HTMLButtonElement>(null);
+    const handRef = useRef<HTMLDivElement>(null);
+    const centerRef = useRef<HTMLDivElement>(null);
+    /**--------------------------------------------- */
+    const [cardPosition, setCardPosition] = useState({
+        x: 0,
+        y: 0,
+    });
 
+    const [handPosition, setHandPosition] = useState({
+        x: 0,
+        y: 0,
+    });
+    //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
         setTakeCardButton(true);
         setRestarGameButton(true);
@@ -197,35 +212,98 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     }
     //* -------------------------------------------------------------------- */
     const handleTakeCard = async () => {
+
         if (!gameData) return;
+        const deckElement =
+            deckRef.current && deckRef.current.offsetWidth > 0
+                ? deckRef.current
+                : deckRefCenter.current;
 
+        if (!deckElement || !centerRef.current) return;
+        setPlaceholderCard(true);
+        await sleep(50);
+        const deckRect = deckElement.getBoundingClientRect();
+        const centerRect = centerRef.current.getBoundingClientRect();
+
+        const cardWidth = window.innerWidth >= 1024 ? 100 : 68;
+        const cardHeight = window.innerWidth >= 1024 ? 148 : 116;
+
+        setHandPosition({
+            x: centerRect.left + (centerRect.width / 2) - (cardWidth / 2) + 2,
+            y: centerRect.top + (centerRect.height / 2) - (cardHeight / 2 - 2),
+        });
+
+        setCardPosition({
+            x: deckRect.left,
+            y: deckRect.top,
+        });
+
+
+        setIsDealingCard(true);
         setTakeCardButton(true);
-        const response = await fetch(`/api/game/twentyOne/dealer/play/takeCard`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                gameId: gameData.id,
-            })
-        }).then(res => res.json()) as GameState;
-        setGameData(response);
-        const player = getPlayer(response);
 
-        if (!player) return;
+        try {
+            const responsePromise = fetch(
+                `/api/game/twentyOne/dealer/play/takeCard`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        gameId: gameData.id,
+                    }),
+                }
+            ).then(async (res) => {
+                if (!res.ok) {
+                    throw new Error("Error al tomar la carta");
+                }
 
-        const lastCard = player.hand.at(-1);
+                return await res.json() as GameState;
+            });
 
-        setGameInfo(prev => [
-            ...prev,
-            {
-                type: "info",
-                message: `${player.userName}: ${t("cardTaken")} ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
-                    }`,
-            },
-        ]);
-        setTakeCardButton(false);
+            // Animation and response are awaited in parallel,
+            //  ensuring the card is dealt visually before updating the game state.
+            const [response] = await Promise.all([
+                responsePromise,
+                new Promise(resolve => setTimeout(resolve, 300)),
+            ]);
 
+            const player = getPlayer(response);
+
+            if (!player) return;
+
+            const lastCard = player.hand.at(-1);
+            setDrawnCard(lastCard);
+
+            await sleep(400);
+
+            setIsFlippingCard(true);
+
+            await sleep(500);
+
+            setGameData(response);
+
+            setIsFlippingCard(false);
+            setIsDealingCard(false);
+
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "info",
+                    message: `${player.userName}: ${t("cardTaken")} ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
+                        }`,
+                },
+            ]);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsFlippingCard(false);
+            setIsDealingCard(false);
+            setTakeCardButton(false);
+            setPlaceholderCard(false);
+        }
     };
     const handleEndRound = async () => {
 
@@ -508,380 +586,476 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
     }
     return (
-        <div className="flex flex-col flex-1 lg:h-full h-fit min-h-0 bg-zinc-50 dark:bg-black overflow-hidden">
+        <>
+            <div className="flex flex-col flex-1 w-full lg:h-full h-fit min-h-0 overflow-hidden">
 
-            {/* MAIN WRAPPER */}
-            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-0 w-full h-full gap-4">
-                {/*LEFT PANEL */}
-                <div className="hidden lg:flex relative flex-col items-center justify-center w-1/5 ">
-                    {/* Score y Round */}
-                    <div className="flex flex-row absolute justify-between w-full mb-4 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:w-auto">
+                <div className="flex h-full w-full flex-col flex-1 bg-zinc-50 dark:bg-black ">
 
-                        <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
-                        </h1>
-                        <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            {t("wonRounds")}: {`${player?.roundsWin}`}
-                        </h1>
+                    {/* MAIN WRAPPER */}
+                    <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-0 w-full h-full gap-4 ">
+                        {/*LEFT PANEL */}
+                        <div className="hidden lg:flex relative flex-col items-center justify-center w-1/5 ">
+                            {/* Score y Round */}
+                            <div className="flex flex-row absolute justify-between w-full mb-4 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:w-auto">
 
-                    </div>
+                                <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                                    {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
+                                </h1>
+                                <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                                    {t("wonRounds")}: {`${player?.roundsWin}`}
+                                </h1>
 
-                    <button
-                        onClick={handleTakeCard}
-                        className={`w-20 h-32  lg:w-28 lg:h-40 overflow-hidden rounded
-                             transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
-                              active:scale-95 disabled:opacity-50 
-                              ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
-                        disabled={(player?.handValue ?? 0) >= 21 || takeCardButton}
-                    >
-                        <Maze />
-                    </button>
-                    <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
-                        {t("clickToDraw")}
-                    </p>
-
-                </div>
-                {/* CENTER PANEL*/}
-                <div className="flex flex-col items-center justify-between w-full lg:w-3/5 order-1">
-
-
-                    <div className="flex flex-col items-center justify-center w-full">
-                        {/* BOTTOM ---DEALER--- HAND */}
-                        <div className="relative flex flex-col items-center pb-1 lg:pb-6 border-2 border-zinc-400
-                            dark:border-zinc-900 dark:border-2 px-4  lg:px-10 rounded w-full max-w-2xl mt-4">
-
-                            {/* Button over border*/}
-
-                            <h2 className="text-xl mt-2 lg:mt-4 lg:text-2xl font-bold text-gray-800 dark:text-white ">
-                                {t("playerHand")}:
-                            </h2>
-
-                            <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2">
-                                {t("handValue")}: {(dealer?.handValue ?? 0)}
                             </div>
-                            <motion.div layout>
-                                <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 lg:mt-4 max-w-full overflow-hidden">
-                                    {dealer?.hand.map((card, index) => (
+                            <div className="relative">
+                                <button
+                                    ref={deckRef}
+                                    onClick={handleTakeCard}
+                                    className={`w-20 h-32 lg:w-28 lg:h-40 overflow-hidden rounded
+                                transition duration-200 hover:shadow-lg hover:shadow-gray-400/40
+                                hover:scale-105 active:scale-95 disabled:opacity-50
+                                ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
+                                    disabled={
+                                        (player?.handValue ?? 0) >= 21 || takeCardButton
+                                    }
+                                >
+                                    <Maze />
+                                </button>
+                            </div>
+
+                            <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
+                                {t("clickToDraw")}
+                            </p>
+
+                        </div>
+                        {/* CENTER PANEL*/}
+                        <div
+
+                            className="flex flex-col items-center justify-between w-full lg:w-3/5 order-1 relative">
+
+
+                            <div className="flex flex-col items-center justify-center w-full">
+                                {/* BOTTOM ---DEALER--- HAND */}
+                                <div className="relative flex flex-col items-center pb-1 lg:pb-6 border-2 border-zinc-400
+                                    dark:border-zinc-900 dark:border-2 px-4  lg:px-10 rounded w-full max-w-2xl mt-4">
+
+                                    {/* Button over border*/}
+
+                                    <h2 className="text-xl mt-2 lg:mt-4 lg:text-2xl font-bold text-gray-800 dark:text-white ">
+                                        {t("dealerHand")}:
+                                    </h2>
+
+                                    <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2">
+                                        {t("handValue")}: {(dealer?.handValue ?? 0)}
+                                    </div>
+                                    <div className="w-full overflow-x-auto overflow-y-hidden">
                                         <motion.div
-                                            key={index}
                                             layout
-                                            transition={{
-                                                type: "spring",
-                                                stiffness: 300,
-                                                damping: 25,
-                                            }}
-                                            className="scale-80 lg:scale-100"
+                                            className="flex flex-row justify-center gap-1 sm:gap-4 mt-0 px-2 w-max min-w-full"
                                         >
-                                            {card.value == 0 ? (
-                                                <div className="w-24 h-36 bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
-                                                    <Maze />
-                                                </div>
-                                            ) : (
-                                                cardStyle(card)
-                                            )}
+                                            {dealer?.hand.map((card, index) => (
+                                                <motion.div
+                                                    key={index}
+                                                    layout
+                                                    transition={{
+                                                        type: "spring",
+                                                        stiffness: 300,
+                                                        damping: 25,
+                                                    }}
+                                                    className="scale-80 lg:scale-100"
+                                                >
+                                                    {card.value == 0 ? (
+                                                        <div className="w-24 h-36 bg-white rounded-xl shadow-lg border border-gray-300 overflow-hidden">
+                                                            <Maze />
+                                                        </div>
+                                                    ) : (
+                                                        cardStyle(card)
+                                                    )}
+                                                </motion.div>
+                                            ))}
                                         </motion.div>
-                                    ))}
+                                    </div>
+
+
                                 </div>
-                            </motion.div>
 
 
-                        </div>
 
-                    </div>
-                    {/* MOBILE DRAW BUTTON */}
-                    <div className="relative flex lg:hidden flex-col items-center mt-10 mb-6 w-full">
+                            </div>
+                            <FloatComponent isVisible={(player?.handValue ?? 0) >= 21 || !isPlaying}
+                                position=" top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-90 opacity-80">
+                                <div className="text-center text-2xl">
+                                    <span>{textFloatComponent}</span>
+                                </div>
+                            </FloatComponent>
 
-                        <div className="w-full flex justify-between px-4 mb-4 -top-8 text-xl absolute">
-                            <h1 className="font-bold text-gray-800 dark:text-white">
-                                {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
-                            </h1>
+                            {/* MOBILE DRAW BUTTON */}
+                            <div className="relative flex lg:hidden flex-col items-center mt-10 mb-6 w-full">
 
-                            <h1 className="font-bold text-gray-800 dark:text-white">
-                                {t("wonRounds")}: {player?.roundsWin}
-                            </h1>
-                        </div>
-                        <div className="h-full w-full flex flex-col items-center ">
-                            <button
-                                onClick={handleTakeCard}
-                                className={`w-20 h-32 rounded overflow-hidden
+                                <div className="w-full flex justify-between px-4 mb-4 -top-8 text-xl absolute">
+                                    <h1 className="font-bold text-gray-800 dark:text-white">
+                                        {t("round")}: {`${gameData?.round} / ${gameData?.countRound}`}
+                                    </h1>
+
+                                    <h1 className="font-bold text-gray-800 dark:text-white">
+                                        {t("wonRounds")}: {player?.roundsWin}
+                                    </h1>
+                                </div>
+                                <div className="h-full w-full flex flex-col items-center ">
+                                    <button
+                                        ref={deckRefCenter}
+                                        onClick={handleTakeCard}
+                                        className={`w-20 h-32 rounded overflow-hidden
                                     flex items-center justify-center
                                     transition duration-200 hover:shadow-lg hover:shadow-gray-400/40
                                     hover:scale-105 active:scale-95 disabled:opacity-50 mb-1
                                     ${(player?.handValue ?? 0) < 21 ? "animate-breathe" : ""}`}
-                                disabled={
-                                    (player?.handValue ?? 0) >= 21 ||
-                                    takeCardButton
-                                }
-                            >
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <Maze />
+                                        disabled={
+                                            (player?.handValue ?? 0) >= 21 ||
+                                            takeCardButton
+                                        }
+                                    >
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <Maze />
+                                        </div>
+                                    </button>
+
                                 </div>
-                            </button>
 
-                        </div>
+                            </div>
+                            {/* BOTTOM ---PLAYER--- HAND */}
+                            <div
+                                ref={handRef}
+                                className="relative flex flex-col items-center pb-1 lg:pb-6  border-2 border-zinc-400
+                                    dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl
+                                    ">
 
-                    </div>
-                    {/* BOTTOM ---PLAYER--- HAND */}
-                    <div className="relative flex flex-col items-center pb-1 lg:pb-6  border-2 border-zinc-400
-                     dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl">
-
-                        {/* Button over border*/}
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                            {
-                                isPlaying ? (
-                                    <button
-                                        onClick={handleDealer}
-                                        className={`
+                                {/* Button over border*/}
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                                    {
+                                        isPlaying ? (
+                                            <button
+                                                onClick={handleDealer}
+                                                className={`
                                     px-3 sm:px-4 py-2 text-white rounded-lg
                                     ${(player?.handValue ?? 0) >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
                                     ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
                                 `}
-                                        disabled={endRoundButton}
-                                    >
-                                        {t("stand")}
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleEndRound}
-                                        className={`
+                                                disabled={endRoundButton}
+                                            >
+                                                {t("stand")}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleEndRound}
+                                                className={`
                                     px-3 sm:px-4 py-2 text-white rounded-lg
                                     ${(!isPlaying && !endRoundButton) ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
                                     ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
                                 `}
-                                        disabled={endRoundButton}
-                                    >
-                                        {t("endRound")}
-                                    </button>
-                                )
-                            }
+                                                disabled={endRoundButton}
+                                            >
+                                                {t("endRound")}
+                                            </button>
+                                        )
+                                    }
 
 
-                        </div>
+                                </div>
 
-                        <h2 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white mt-6">
-                            {t("playerHand")}:
-                        </h2>
+                                <h2 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white mt-6">
+                                    {t("playerHand")}:
+                                </h2>
 
-                        <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2 ">
-                            {t("handValue")}: {(player?.handValue ?? 0)}
-                        </div>
+                                <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2 ">
+                                    {t("handValue")}: {(player?.handValue ?? 0)}
+                                </div>
 
-                        <FloatComponent isVisible={(player?.handValue ?? 0) >= 21 || !isPlaying}
-                            position=" top-38 left-1/2 -translate-x-1/2 z-50 w-70 opacity-80">
-                            <div className="text-center">
-                                <span>{textFloatComponent}</span>
-                            </div>
-                        </FloatComponent>
 
-                        {/*player cards*/}
-                        <motion.div layout>
-                            <div className="flex flex-wrap justify-center gap-1 sm:gap-4 mt-0 max-w-full overflow-hidden">
-                                {player?.hand.map((card, index) => (
+
+                                {/*player cards*/}
+                                <div className="w-full overflow-x-auto overflow-y-hidden">
                                     <motion.div
-                                        key={index}
                                         layout
-                                        transition={{
-                                            type: "spring",
-                                            stiffness: 300,
-                                            damping: 25,
-                                        }}
-                                        className="scale-80 lg:scale-100"
+                                        className="flex flex-row justify-center items-center gap-1 sm:gap-4 mt-0 px-2 w-max min-w-full"
                                     >
-                                        {cardStyle(card)}
+                                        {player?.hand.map((card, index) => (
+                                            <motion.div
+                                                key={index}
+                                                layout
+                                                transition={{
+                                                    type: "spring",
+                                                    stiffness: 300,
+                                                    damping: 25,
+                                                }}
+                                                className="shrink-0 scale-80 lg:scale-100"
+                                            >
+                                                {cardStyle(card)}
+                                            </motion.div>
+                                        ))}
+                                        {/* Placeholder for empty card slots */}
+                                        <div
+                                            ref={centerRef}
+                                            className={` ${placeholderCard ? "" : "hidden"} lg:w-24 lg:h-36 w-18 h-30 bg-transparent 
+                                        rounded-xl shadow-lg border  overflow-hidden lg:ml-0 ml-2`}>
+
+                                        </div>
+
                                     </motion.div>
-                                ))}
+                                </div>
+
+
+
                             </div>
-                        </motion.div>
-
-
-                    </div>
-                </div>
-
-                {/* RIGHT PANEL */}
-                <div className="w-full pt-6 lg:w-1/5 mt-6 lg:mt-0 flex flex-col min-h-0 h-full overflow-hidden order-3">
-                    <div className="h-full w-full flex flex-col gap-2 overflow-hidden">
-
-                        <div className="hidden lg:flex flex-1 min-h-0 overflow-hidden text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
-                            <InfoGame info={gameInfo} />
                         </div>
 
-                        <div className="flex flex-col gap-2 pb-4 items-center shrink-0">
-                            <button
-                                onClick={handleRestartGame}
-                                className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
+                        {/* RIGHT PANEL */}
+                        <div className="w-full lg:pt-6 pt-0 lg:w-1/5 mt-0 flex flex-col min-h-0 h-full overflow-hidden order-3">
+                            <div className="h-full w-full flex flex-col gap-2 overflow-hidden">
+
+                                <div className="hidden lg:flex flex-1 min-h-0 overflow-hidden text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
+                                    <InfoGame info={gameInfo} />
+                                </div>
+
+                                <div className="flex flex-col gap-2 pb-4 items-center shrink-0">
+                                    <button
+                                        onClick={handleRestartGame}
+                                        className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
                                 ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500 transition-all hover:scale-105'}
                             `}
-                                disabled={restartGameButton}
-                            >
-                                {t("restartGame")}
-                            </button>
+                                        disabled={restartGameButton}
+                                    >
+                                        {t("restartGame")}
+                                    </button>
 
-                            <ReturnButton
-                                setMenuState={setMenuState}
-                                menuState={"select"}
-                                className="w-full lg:w-auto dark:bg-gray-500
-                             dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
-                            >
-                                <p className="text-lg font-bold text-white transition-all hover:scale-105">
-                                    {t("exitGame")}
-                                </p>
-                            </ReturnButton>
-                        </div>
-
-
-                        <GameDialog
-                            open={dialog.open}
-                            onOpenChange={handleOpenChange}
-                            title={dialog.title}
-                            description={dialog.description}
-                            status={dialog.status}
-                            backButton={
-                                <ReturnButton
-                                    setMenuState={setMenuState}
-                                    menuState={"select"}
-                                    className=" lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
-                                     dark:hover:bg-red-800 rounded-lg"
-                                >
-                                    <p className="text-sm sm:text-lg font-bold text-white">
-                                        {t("exitGame")}
-                                    </p>
-                                </ReturnButton>
-                            }
-
-                        >
-                            <div className="w-full overflow-x-auto overflow-auto rounded-xl border border-zinc-300 dark:border-zinc-700">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-zinc-100 dark:bg-zinc-800">
-                                            <th className="px-4 py-3 text-left font-bold">
-                                                {t("player")}
-                                            </th>
-                                            <th className="px-4 py-3 text-center font-bold">
-                                                {t("status")}
-                                            </th>
-                                            <th className="px-4 py-3 text-center font-bold">
-                                                {t("wins")}
-                                            </th>
-                                            <th className="px-4 py-3 text-center font-bold">
-                                                {t("rounds")}
-                                            </th>
-                                            <th className="px-4 py-3 text-center font-bold">
-                                                {t("tie")}
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        {sortedPlayers.map((player, index) => {
-                                            const winners = sortedPlayers.filter(
-                                                p => p.roundsWin === maxWins
-                                            );
-
-                                            const status =
-                                                player.roundsWin === maxWins
-                                                    ? winners.length > 1
-                                                        ? "draw"
-                                                        : "win"
-                                                    : "lose";
-
-                                            const statusText = {
-                                                win: locale === "es" ? "Ganador" : "Winner",
-                                                lose: locale === "es" ? "Perdedor" : "Loser",
-                                                draw: locale === "es" ? "Empate" : "Draw",
-                                            };
-
-
-                                            return (
-                                                <tr
-                                                    key={player.idPlayer}
-                                                    className={` border-t border-zinc-200 dark:border-zinc-700
-                                                        ${index % 2 === 0
-                                                            ? "bg-white dark:bg-zinc-900"
-                                                            : "bg-zinc-50 dark:bg-zinc-800/50"
-                                                        }
-                                                    `}
-                                                >
-                                                    <td className="px-4 py-3 font-medium whitespace-nowrap">
-                                                        {player.userName}
-                                                    </td>
-
-                                                    <td className="px-4 py-3 text-center">
-                                                        <span
-                                                            className={`
-                                                            px-2 py-1 rounded-full text-xs font-bold
-                                                            ${status === "win"
-                                                                    ? "bg-green-500/20 text-green-500"
-                                                                    : status === "lose"
-                                                                        ? "bg-red-500/20 text-red-500"
-                                                                        : "bg-yellow-500/20 text-yellow-500"
-                                                                }
-                                                            `}
-                                                        >
-                                                            {statusText[status]}
-                                                        </span>
-                                                    </td>
-
-                                                    <td className="px-4 py-3 text-center font-bold">
-                                                        {player.roundsWin}
-                                                    </td>
-
-                                                    <td className="px-4 py-3 text-center">
-                                                        {gameData?.countRound}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-center">
-                                                        {tieCount}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </GameDialog>
-
-                        <DialogSelectDifficult
-                            open={openDifficultDialog}
-                            onOpenChange={setOpenDifficultDialog}
-                            title={t("selectDifficulty")}
-                            childrenBottom={
-                                <div className="flex justify-center w-full">
                                     <ReturnButton
                                         setMenuState={setMenuState}
-                                        menuState="select"
-                                        className="w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-900
+                                        menuState={"select"}
+                                        className="w-full lg:w-auto dark:bg-gray-500
+                             dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
+                                    >
+                                        <p className="text-lg font-bold text-white transition-all hover:scale-105">
+                                            {t("exitGame")}
+                                        </p>
+                                    </ReturnButton>
+                                </div>
+
+
+                                <GameDialog
+                                    open={dialog.open}
+                                    onOpenChange={handleOpenChange}
+                                    title={dialog.title}
+                                    description={dialog.description}
+                                    status={dialog.status}
+                                    backButton={
+                                        <ReturnButton
+                                            setMenuState={setMenuState}
+                                            menuState={"select"}
+                                            className=" lg:w-auto transition-all hover:scale-105 bg-red-500 dark:bg-red-700 hover:bg-red-600
+                                     dark:hover:bg-red-800 rounded-lg"
+                                        >
+                                            <p className="text-sm sm:text-lg font-bold text-white">
+                                                {t("exitGame")}
+                                            </p>
+                                        </ReturnButton>
+                                    }
+
+                                >
+                                    <div className="w-full overflow-x-auto overflow-auto rounded-xl border border-zinc-300 dark:border-zinc-700">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="bg-zinc-100 dark:bg-zinc-800">
+                                                    <th className="px-4 py-3 text-left font-bold">
+                                                        {t("player")}
+                                                    </th>
+                                                    <th className="px-4 py-3 text-center font-bold">
+                                                        {t("status")}
+                                                    </th>
+                                                    <th className="px-4 py-3 text-center font-bold">
+                                                        {t("wins")}
+                                                    </th>
+                                                    <th className="px-4 py-3 text-center font-bold">
+                                                        {t("rounds")}
+                                                    </th>
+                                                    <th className="px-4 py-3 text-center font-bold">
+                                                        {t("tie")}
+                                                    </th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+
+                                                {sortedPlayers.map((player, index) => {
+                                                    const winners = sortedPlayers.filter(
+                                                        p => p.roundsWin === maxWins
+                                                    );
+
+                                                    const status =
+                                                        player.roundsWin === maxWins
+                                                            ? winners.length > 1
+                                                                ? "draw"
+                                                                : "win"
+                                                            : "lose";
+
+                                                    const statusText = {
+                                                        win: locale === "es" ? "Ganador" : "Winner",
+                                                        lose: locale === "es" ? "Perdedor" : "Loser",
+                                                        draw: locale === "es" ? "Empate" : "Draw",
+                                                    };
+
+
+                                                    return (
+                                                        <tr
+                                                            key={player.idPlayer}
+                                                            className={` border-t border-zinc-200 dark:border-zinc-700
+                                                        ${index % 2 === 0
+                                                                    ? "bg-white dark:bg-zinc-900"
+                                                                    : "bg-zinc-50 dark:bg-zinc-800/50"
+                                                                }
+                                                    `}
+                                                        >
+                                                            <td className="px-4 py-3 font-medium whitespace-nowrap">
+                                                                {player.userName}
+                                                            </td>
+
+                                                            <td className="px-4 py-3 text-center">
+                                                                <span
+                                                                    className={`
+                                                            px-2 py-1 rounded-full text-xs font-bold
+                                                            ${status === "win"
+                                                                            ? "bg-green-500/20 text-green-500"
+                                                                            : status === "lose"
+                                                                                ? "bg-red-500/20 text-red-500"
+                                                                                : "bg-yellow-500/20 text-yellow-500"
+                                                                        }
+                                                            `}
+                                                                >
+                                                                    {statusText[status]}
+                                                                </span>
+                                                            </td>
+
+                                                            <td className="px-4 py-3 text-center font-bold">
+                                                                {player.roundsWin}
+                                                            </td>
+
+                                                            <td className="px-4 py-3 text-center">
+                                                                {gameData?.countRound}
+                                                            </td>
+                                                            <td className="px-4 py-3 text-center">
+                                                                {tieCount}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </GameDialog>
+
+                                <DialogSelectDifficult
+                                    open={openDifficultDialog}
+                                    onOpenChange={setOpenDifficultDialog}
+                                    title={t("selectDifficulty")}
+                                    childrenBottom={
+                                        <div className="flex justify-center w-full">
+                                            <ReturnButton
+                                                setMenuState={setMenuState}
+                                                menuState="select"
+                                                className="w-full bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-900
                                         text-white rounded-lg  font-bold
                                         transition-all hover:scale-105"
 
-                                    >
-                                        {t("exitGame")}
-                                    </ReturnButton>
-                                </div>
-                            }
-                        >
-                            <div className="flex flex-col w-full h-full gap-5">
-                                <div className="flex flex-col">
+                                            >
+                                                {t("exitGame")}
+                                            </ReturnButton>
+                                        </div>
+                                    }
+                                >
+                                    <div className="flex flex-col w-full h-full gap-5">
+                                        <div className="flex flex-col">
 
-                                    <div className="flex flex-row items-center gap-4">
-                                        <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
-                                            {t("numberOfRounds")}:
-                                        </p>
+                                            <div className="flex flex-row items-center gap-4">
+                                                <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
+                                                    {t("numberOfRounds")}:
+                                                </p>
 
-                                        <QuantitySelector
-                                            value={rounds}
-                                            onChange={setRounds}
-                                        />
+                                                <QuantitySelector
+                                                    value={rounds}
+                                                    onChange={setRounds}
+                                                />
+
+                                            </div>
+
+                                        </div>
 
                                     </div>
-
-                                </div>
+                                </DialogSelectDifficult>
 
                             </div>
-                        </DialogSelectDifficult>
-
+                        </div>
                     </div>
-                </div>
+                </div >
+
             </div>
-        </div >
+
+            <AnimatePresence>
+                {isDealingCard && (
+                    <motion.div
+                        className="fixed z-9999 lg:w-24 lg:h-36 w-18 h-30 pointer-events-none"
+                        style={{
+                            perspective: 1000,
+                        }}
+                        initial={{
+                            left: cardPosition.x,
+                            top: cardPosition.y,
+                        }}
+                        animate={{
+                            left: handPosition.x,
+                            top: handPosition.y,
+                        }}
+                        transition={{
+                            duration: 0.5,
+                            ease: "easeInOut",
+                        }}
+                    >
+                        <motion.div
+                            className="relative w-full h-full"
+                            style={{
+                                transformStyle: "preserve-3d",
+                            }}
+                            animate={{
+                                rotateY: isFlippingCard ? 180 : 0,
+                            }}
+                            transition={{
+                                duration: 0.5,
+                                ease: "easeInOut",
+                            }}
+                        >
+                            {/* PARTE TRASERA */}
+                            <div
+                                className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
+                                style={{
+                                    backfaceVisibility: "hidden",
+                                }}
+                            >
+                                <Maze />
+                            </div>
+
+                            {/* PARTE FRONTAL */}
+                            <div
+                                className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
+                                style={{
+                                    backfaceVisibility: "hidden",
+                                    transform: "rotateY(180deg)",
+                                }}
+                            >
+                                {drawnCard && cardStyle(drawnCard)}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
     );
+
 }
+

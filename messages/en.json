@@ -16,6 +16,7 @@
         "clickToDraw": "Click to draw a card",
         "playerHand": "Player Hand",
         "handValue": "Hand Value",
+        "dealerHand": "Dealer Hand",
         "endRound": "End Round",
         "restartGame": "Restart Game",
         "exitGame": "Exit Game",

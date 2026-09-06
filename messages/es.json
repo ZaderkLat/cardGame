@@ -15,6 +15,7 @@
         "title": "twentyOneDealer",
         "clickToDraw": "Haz clic para robar una carta",
         "playerHand": "Mano del jugador",
+        "dealerHand": "Mano del dealer",
         "handValue": "Valor de la mano",
         "endRound": "Terminar ronda",
         "restartGame": "Reiniciar juego",
