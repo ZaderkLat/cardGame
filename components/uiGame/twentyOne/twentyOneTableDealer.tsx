@@ -32,7 +32,7 @@ interface TwentyOneTableProps {
 export default function TwentyOneTableDealer({ setMenuState, user,
     rounds, setRounds, gameTypeId }: TwentyOneTableProps) {
     const t = useTranslations("twentyOneDealer");
-    //languaje path
+    // language path
     const locale = useLocale();
     //Game State
 
@@ -59,7 +59,14 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-    //Handler diffcult selection
+    // Function index (quick lookup):
+    // - startGame: initialize the game and request initial hands from server
+    // - handleTakeCard: player draws a card (handles animation + backend request)
+    // - handleDealer: triggers the dealer's play sequence (animations + logic)
+    // - handleEndRound: ends the current round and advances the game
+    // - animateDealerCard: animate a single dealer card being dealt
+    // - registerRecord: persist the final game record to the database
+    // Handler difficult selection
 
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(false);
 
@@ -124,7 +131,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     const [isDealerHiddenCardFlipping, setIsDealerHiddenCardFlipping] = useState(false);
     const [dealerHiddenCardRevealed, setDealerHiddenCardRevealed] =
         useState(false);
-    //----------------------------------------------------------//
+    // ---------------------- Layout & refs end / Game actions ----------------------
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
         setTakeCardButton(true);
@@ -258,7 +265,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 });
             });
         });
-    //* -------------------------------------------------------------------- */
+    // ---------------------- Helper utilities ----------------------
     const handleTakeCard = async () => {
         if (!gameData) return;
 
@@ -273,12 +280,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             setTakeCardButton(true);
 
             // --------------------------------------------------
-            // 1. Mostrar placeholder
+            // 1. Show placeholder
             // --------------------------------------------------
 
             setPlaceholderCard(true);
 
-            // Esperamos a que React renderice el placeholder
+            // Wait for React to render the placeholder
             await nextFrame();
 
             const scrollElement = playerScrollRef.current;
@@ -288,7 +295,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             }
 
             // --------------------------------------------------
-            // 2. Hacer scroll hacia la DERECHA
+            // 2. Scroll to the RIGHT
             // --------------------------------------------------
 
             scrollElement.scrollTo({
@@ -297,7 +304,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             });
 
             // --------------------------------------------------
-            // 3. Esperar a que el scroll avance
+            // 3. Wait for the scroll to progress
             // --------------------------------------------------
 
             await new Promise<void>((resolve) => {
@@ -324,11 +331,11 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 requestAnimationFrame(waitForScroll);
             });
 
-            // Un frame adicional para asegurar el layout
+            // One additional frame to ensure layout stabilization
             await nextFrame();
 
             // --------------------------------------------------
-            // 4. Obtener posiciones REALES
+            // 4. Capture actual positions
             // --------------------------------------------------
 
             const deckRect =
@@ -338,7 +345,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 centerRef.current.getBoundingClientRect();
 
             // --------------------------------------------------
-            // 5. Guardar posición y tamaño REAL del placeholder
+            // 5. Save real position and size of the placeholder
             // --------------------------------------------------
 
             setCardPosition({
@@ -357,13 +364,13 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             });
 
             // --------------------------------------------------
-            // 6. Comenzar animación
+            // 6. Start animation
             // --------------------------------------------------
 
             setIsDealingCard(true);
 
             // --------------------------------------------------
-            // 7. Pedir la carta al backend
+            // 7. Request card from backend
             // --------------------------------------------------
 
             const responsePromise = fetch(
@@ -388,7 +395,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 return response.json();
             });
 
-            // Esperamos que la carta viaje visualmente
+            // Wait for the card animation to complete visually
             const [response] = await Promise.all([
                 responsePromise,
                 new Promise((resolve) =>
@@ -397,7 +404,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             ]);
 
             // --------------------------------------------------
-            // 8. Obtener carta real
+            // 8. Obtain the actual card
             // --------------------------------------------------
 
             const updatedPlayer = getPlayer(response);
@@ -414,19 +421,13 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             setDrawnCard(lastCard);
 
             // --------------------------------------------------
-            // 9. Dar un pequeño tiempo antes del flip
+            // 9. Give a short delay before the flip
             // --------------------------------------------------
 
             await sleep(100);
 
             setIsFlippingCard(true);
-
-            // Duración del flip
             await sleep(500);
-
-            // --------------------------------------------------
-            // 10. Actualizar el estado real
-            // --------------------------------------------------
 
             setGameData(response);
 
@@ -458,12 +459,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         const scrollElement = dealerScrollRef.current;
 
-        // Mostrar placeholder
+        // Show placeholder
         setDealerPlaceholder(true);
 
         await nextFrame();
 
-        // Llevar el scroll del dealer hacia la derecha
+        // Scroll dealer's hand to the right
         scrollElement.scrollTo({
             left: scrollElement.scrollWidth,
             behavior: "smooth",
@@ -522,7 +523,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         setIsDealerDealing(true);
 
-        // Esperar a que llegue la carta
+        // Wait for the card to arrive
         await sleep(500);
 
         // Flip
@@ -530,7 +531,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         await sleep(500);
 
-        // Terminar animación
+        // End Animation
         setIsDealerFlipping(false);
         setIsDealerDealing(false);
         setDealerPlaceholder(false);
@@ -598,7 +599,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         }
     }
 
-    /** ----------------DEALER PLAY--------------------*/
+    // ---------------- DEALER PLAY (animations & dealer flow) ----------------
     const sleep = (ms: number) =>
         new Promise(resolve => setTimeout(resolve, ms));
 
@@ -610,7 +611,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         setIsPlaying(false);
         setTextFloadComponent(t("waitingDealer"));
 
-        // Asegurarnos de que la segunda carta empieza oculta
+        // Ensure the second card starts hidden
         setDealerHiddenCardRevealed(false);
         setIsDealerHiddenCardFlipping(false);
 
@@ -633,7 +634,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         const dealerInfo = response.players[0];
 
         // -----------------------------------------
-        // 1. MOSTRAR LAS DOS CARTAS
+        // 1. SHOW THE TWO CARDS
         // -----------------------------------------
         setIsDealerHiddenCardFlipping(true);
         setDealer({
@@ -644,19 +645,18 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             )
         });
 
-        // Esperamos para que el usuario vea
-        // las dos cartas, con la segunda oculta.
+        // Wait so the user can see the two cards, with the second one hidden.
         await sleep(700);
 
 
-        // La carta queda permanentemente descubierta
+        // The card remains permanently revealed
         setDealerHiddenCardRevealed(true);
         setIsDealerHiddenCardFlipping(false);
 
         await sleep(700);
 
         // -----------------------------------------
-        // 3. CARTAS ADICIONALES
+        // 3. ADDITIONAL CARDS
         // -----------------------------------------
 
         for (let i = 2; i < dealerInfo.hand.length; i++) {
@@ -665,7 +665,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
             await animateDealerCard(card);
 
-            // Agregar la carta a la mano real
+            // Add the card to the real hand
             setDealer(prev => {
                 if (!prev) return dealerInfo;
 
@@ -744,8 +744,8 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             ...roundMessages
         ]);
     }
-    /** ----------------DEALER PLAY--------------------*/
-    //end stament
+    // ---------------- DEALER PLAY (summary) ----------------
+    // End statement
 
     useEffect(() => {
 
@@ -756,7 +756,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         }
 
     }, [openDifficultDialog]);
-    //create the user playerList when user charge
+    // Create the user player list when the user loads
 
     //update player data and dealer
     useEffect(() => {
@@ -854,7 +854,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                     <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 pt-0 w-full h-full gap-4 ">
                         {/*LEFT PANEL */}
                         <div className="hidden lg:flex relative flex-col items-center justify-center w-1/5 ">
-                            {/* Score y Round */}
+                            {/* Score and Round */}
                             <div className="flex flex-row absolute justify-between w-full mb-4 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:w-auto">
 
                                 <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">
@@ -978,7 +978,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                                 </motion.div>
                                             ))}
 
-                                            {/* TARGET DE LA ANIMACIÓN DEL DEALER */}
+                                            {/* DEALER ANIMATION TARGET */}
                                             {dealerPlaceholder && (
                                                 <motion.div
                                                     layout
@@ -1359,7 +1359,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 ease: "easeInOut",
                             }}
                         >
-                            {/* PARTE TRASERA */}
+                            {/* BACK */}
                             <div
                                 className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
                                 style={{
@@ -1369,7 +1369,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 <Maze />
                             </div>
 
-                            {/* PARTE FRONTAL */}
+                            {/* FRONT */}
                             <div
                                 className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
                                 style={{
@@ -1418,7 +1418,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 ease: "easeInOut",
                             }}
                         >
-                            {/* REVERSO */}
+                            {/* BACK */}
                             <div
                                 className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
                                 style={{
@@ -1428,7 +1428,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 <Maze />
                             </div>
 
-                            {/* FRENTE */}
+                            {/* FRONT */}
                             <div
                                 className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
                                 style={{
