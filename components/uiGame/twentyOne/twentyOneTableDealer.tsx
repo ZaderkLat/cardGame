@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import cardStyle from "@/components/ObjectsGame/cardStyle";
 import { GameState, LogGame } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
@@ -20,7 +18,11 @@ import { useRef } from "react";
 import QuantitySelector from "@/components/ui/quantitySelector";
 import { calculateHandValue } from "@/lib/gameEngine/twetyOne/twety_One";
 import { User } from "@/interface/userData";
-import { AnimatePresence, motion } from "motion/react";
+import { PlayerHand } from "@/components/uiGame/twentyOne/playerHand";
+import FlyingCard from "@/components/uiGame/twentyOne/animationMazeToHand";
+import { useCardDealAnimation } from "@/hooks/useCardDealAnimation";
+import { DealerHand } from "@/components/uiGame/twentyOne/dealerHand";
+
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
     rounds: number;
@@ -81,57 +83,26 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     //control if show the button "Stand" or "endRound"
     const [isPlaying, setIsPlaying] = useState<boolean>(true)
     const [tieCount, setTieCount] = useState<number>(0);
-    const [placeholderCard, setPlaceholderCard] = useState<boolean>(false);
     /** References for animations */
     const deckRef = useRef<HTMLButtonElement>(null);
     const deckRefCenter = useRef<HTMLButtonElement>(null);
     const handRef = useRef<HTMLDivElement>(null);
-    const centerRef = useRef<HTMLDivElement>(null);
-    const dealerScrollRef = useRef<HTMLDivElement>(null);
-    const playerScrollRef = useRef<HTMLDivElement>(null);
-    /**--------------------------------------------- */
-    const [cardPosition, setCardPosition] = useState({
-        x: 0,
-        y: 0,
-    });
 
-    const [handPosition, setHandPosition] = useState({
-        x: 0,
-        y: 0,
-    });
-    const [cardSize, setCardSize] = useState({
-        width: 0,
-        height: 0,
-    });
-
-
-    // Dealer Animations
-    const dealerCenterRef = useRef<HTMLDivElement>(null);
-    const [dealerCardPosition, setDealerCardPosition] = useState({
-        x: 0,
-        y: 0,
-    });
-
-    const [dealerHandPosition, setDealerHandPosition] = useState({
-        x: 0,
-        y: 0,
-    });
-
-    const [dealerCardSize, setDealerCardSize] = useState({
-        width: 0,
-        height: 0,
-    });
 
     const [dealerDrawnCard, setDealerDrawnCard] = useState<any>(null);
 
     const [isDealerDealing, setIsDealerDealing] = useState(false);
     const [isDealerFlipping, setIsDealerFlipping] = useState(false);
 
-    const [dealerPlaceholder, setDealerPlaceholder] = useState(false);
+
     const [isDealerHiddenCardFlipping, setIsDealerHiddenCardFlipping] = useState(false);
     const [dealerHiddenCardRevealed, setDealerHiddenCardRevealed] =
         useState(false);
     // ---------------------- Layout & refs end / Game actions ----------------------
+
+    /**Card Deal Animation */
+    const playerAnimation = useCardDealAnimation();
+    const dealerAnimation = useCardDealAnimation();
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
         setTakeCardButton(true);
@@ -140,7 +111,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         setTakeCardButton(true);
         setDealerHiddenCardRevealed(false);
         setIsDealerHiddenCardFlipping(false);
-        setDealerPlaceholder(false);
+
         setIsDealerDealing(false);
         setIsDealerFlipping(false);
         setTieCount(0);
@@ -257,20 +228,13 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         return gameData?.players.find(p => p.idPlayer === user.id)
 
     }
-    const nextFrame = () =>
-        new Promise<void>((resolve) => {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    resolve();
-                });
-            });
-        });
-    // ---------------------- Helper utilities ----------------------
+
+
     const handleTakeCard = async () => {
         if (!gameData) return;
 
         const deckElement =
-            deckRef.current && deckRef.current.offsetWidth > 0
+            deckRef.current?.offsetWidth
                 ? deckRef.current
                 : deckRefCenter.current;
 
@@ -278,100 +242,11 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         try {
             setTakeCardButton(true);
+            setEndRoundButton(true);
 
-            // --------------------------------------------------
-            // 1. Show placeholder
-            // --------------------------------------------------
-
-            setPlaceholderCard(true);
-
-            // Wait for React to render the placeholder
-            await nextFrame();
-
-            const scrollElement = playerScrollRef.current;
-
-            if (!scrollElement || !centerRef.current) {
-                throw new Error("No se encontró el contenedor de la mano");
-            }
-
-            // --------------------------------------------------
-            // 2. Scroll to the RIGHT
-            // --------------------------------------------------
-
-            scrollElement.scrollTo({
-                left: scrollElement.scrollWidth,
-                behavior: "smooth",
-            });
-
-            // --------------------------------------------------
-            // 3. Wait for the scroll to progress
-            // --------------------------------------------------
-
-            await new Promise<void>((resolve) => {
-                const start = performance.now();
-
-                const waitForScroll = () => {
-                    const elapsed = performance.now() - start;
-
-                    const maxScroll =
-                        scrollElement.scrollWidth -
-                        scrollElement.clientWidth;
-
-                    const reachedRight =
-                        Math.abs(scrollElement.scrollLeft - maxScroll) < 2;
-
-                    if (reachedRight || elapsed >= 400) {
-                        resolve();
-                        return;
-                    }
-
-                    requestAnimationFrame(waitForScroll);
-                };
-
-                requestAnimationFrame(waitForScroll);
-            });
-
-            // One additional frame to ensure layout stabilization
-            await nextFrame();
-
-            // --------------------------------------------------
-            // 4. Capture actual positions
-            // --------------------------------------------------
-
-            const deckRect =
-                deckElement.getBoundingClientRect();
-
-            const centerRect =
-                centerRef.current.getBoundingClientRect();
-
-            // --------------------------------------------------
-            // 5. Save real position and size of the placeholder
-            // --------------------------------------------------
-
-            setCardPosition({
-                x: deckRect.left,
-                y: deckRect.top,
-            });
-
-            setHandPosition({
-                x: centerRect.left,
-                y: centerRect.top,
-            });
-
-            setCardSize({
-                width: centerRect.width,
-                height: centerRect.height,
-            });
-
-            // --------------------------------------------------
-            // 6. Start animation
-            // --------------------------------------------------
+            await playerAnimation.prepareAnimation(deckElement);
 
             setIsDealingCard(true);
-
-            // --------------------------------------------------
-            // 7. Request card from backend
-            // --------------------------------------------------
 
             const responsePromise = fetch(
                 "/api/game/twentyOne/dealer/play/takeCard",
@@ -385,156 +260,74 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                         idPlayer: player?.idPlayer,
                     }),
                 }
-            ).then(async (response) => {
-                if (!response.ok) {
-                    throw new Error(
-                        `HTTP error ${response.status}`
-                    );
-                }
+            ).then(res => res.json());
 
-                return response.json();
-            });
-
-            // Wait for the card animation to complete visually
             const [response] = await Promise.all([
                 responsePromise,
-                new Promise((resolve) =>
-                    setTimeout(resolve, 500)
-                ),
+                sleep(500),
             ]);
 
-            // --------------------------------------------------
-            // 8. Obtain the actual card
-            // --------------------------------------------------
-
             const updatedPlayer = getPlayer(response);
+
             if (!updatedPlayer) return;
-            const lastCard =
-                updatedPlayer.hand.at(-1);
+
+            const lastCard = updatedPlayer.hand.at(-1);
 
             if (!lastCard) {
-                throw new Error(
-                    "El servidor no devolvió una carta"
-                );
+                throw new Error("El servidor no devolvió una carta");
             }
 
             setDrawnCard(lastCard);
 
-            // --------------------------------------------------
-            // 9. Give a short delay before the flip
-            // --------------------------------------------------
-
             await sleep(100);
 
             setIsFlippingCard(true);
+
             await sleep(500);
 
             setGameData(response);
 
             setIsFlippingCard(false);
             setIsDealingCard(false);
-            setPlaceholderCard(false);
+
+            playerAnimation.reset();
 
         } catch (error) {
-            console.error(
-                "Error al tomar carta:",
-                error
-            );
+            console.error("Error al tomar carta:", error);
 
             setIsFlippingCard(false);
             setIsDealingCard(false);
-            setPlaceholderCard(false);
+
+            playerAnimation.reset();
 
         } finally {
             setTakeCardButton(false);
+            setEndRoundButton(false);
         }
     };
     const animateDealerCard = async (card: any) => {
         const deckElement =
-            deckRef.current && deckRef.current.offsetWidth > 0
+            deckRef.current?.offsetWidth
                 ? deckRef.current
                 : deckRefCenter.current;
 
-        if (!deckElement || !dealerScrollRef.current) return;
+        if (!deckElement) return;
 
-        const scrollElement = dealerScrollRef.current;
-
-        // Show placeholder
-        setDealerPlaceholder(true);
-
-        await nextFrame();
-
-        // Scroll dealer's hand to the right
-        scrollElement.scrollTo({
-            left: scrollElement.scrollWidth,
-            behavior: "smooth",
-        });
-
-        await new Promise<void>((resolve) => {
-            const start = performance.now();
-
-            const waitForScroll = () => {
-                const elapsed = performance.now() - start;
-
-                const maxScroll =
-                    scrollElement.scrollWidth -
-                    scrollElement.clientWidth;
-
-                const reachedRight =
-                    Math.abs(scrollElement.scrollLeft - maxScroll) < 2;
-
-                if (reachedRight || elapsed >= 400) {
-                    resolve();
-                    return;
-                }
-
-                requestAnimationFrame(waitForScroll);
-            };
-
-            requestAnimationFrame(waitForScroll);
-        });
-
-        await nextFrame();
-
-        const deckRect =
-            deckElement.getBoundingClientRect();
-
-        const targetRect =
-            dealerCenterRef.current?.getBoundingClientRect();
-
-        if (!targetRect) return;
-
-        setDealerCardPosition({
-            x: deckRect.left,
-            y: deckRect.top,
-        });
-
-        setDealerHandPosition({
-            x: targetRect.left,
-            y: targetRect.top,
-        });
-
-        setDealerCardSize({
-            width: targetRect.width,
-            height: targetRect.height,
-        });
+        await dealerAnimation.prepareAnimation(deckElement);
 
         setDealerDrawnCard(card);
-
         setIsDealerDealing(true);
 
-        // Wait for the card to arrive
         await sleep(500);
 
-        // Flip
         setIsDealerFlipping(true);
 
         await sleep(500);
 
-        // End Animation
         setIsDealerFlipping(false);
         setIsDealerDealing(false);
-        setDealerPlaceholder(false);
+
+        dealerAnimation.reset();
     };
     const handleEndRound = async () => {
 
@@ -572,8 +365,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             ]
             )
             setDealerHiddenCardRevealed(false)
-            await nextFrame();
-            setIsDealerHiddenCardFlipping(false);
+
             setIsDealerHiddenCardFlipping(false);
             setIsDealerDealing(false);
             setIsDealerFlipping(false);
@@ -906,93 +698,14 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                     <div className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white mt-2">
                                         {t("handValue")}: {(dealer?.handValue ?? 0)}
                                     </div>
-                                    <div
-                                        ref={dealerScrollRef}
-                                        className="w-full overflow-x-auto overflow-y-hidden"
-                                    >
-                                        <motion.div
-                                            layout
-                                            className="flex flex-row justify-center gap-1 sm:gap-4 mt-0 px-2 w-max min-w-full"
-                                        >
-
-                                            {dealer?.hand.map((card, index) => (
-                                                <motion.div
-                                                    key={index}
-                                                    layout
-                                                    transition={{
-                                                        type: "spring",
-                                                        stiffness: 300,
-                                                        damping: 25,
-                                                    }}
-                                                    className="shrink-0"
-                                                >
-                                                    {index === 1 ? (
-                                                        <motion.div
-                                                            className="relative w-18 h-27 lg:w-24 lg:h-36"
-                                                            style={{
-                                                                perspective: 1000,
-                                                            }}
-                                                        >
-                                                            <motion.div
-                                                                className="relative w-full h-full"
-                                                                style={{
-                                                                    transformStyle: "preserve-3d",
-                                                                }}
-                                                                animate={{
-                                                                    rotateY:
-                                                                        isDealerHiddenCardFlipping ||
-                                                                            dealerHiddenCardRevealed
-                                                                            ? 180
-                                                                            : 0,
-                                                                }}
-                                                                transition={{
-                                                                    duration: 0.5,
-                                                                    ease: "easeInOut",
-                                                                }}
-                                                            >
-                                                                {/* BACK */}
-                                                                <div
-                                                                    className="absolute inset-0 rounded-xl overflow-hidden shadow-lg"
-                                                                    style={{
-                                                                        backfaceVisibility: "hidden",
-                                                                    }}
-                                                                >
-                                                                    <Maze />
-                                                                </div>
-
-                                                                {/* FRONT */}
-                                                                <div
-                                                                    className="absolute inset-0 rounded-xl overflow-hidden shadow-lg"
-                                                                    style={{
-                                                                        backfaceVisibility: "hidden",
-                                                                        transform: "rotateY(180deg)",
-                                                                    }}
-                                                                >
-                                                                    {cardStyle(card)}
-                                                                </div>
-                                                            </motion.div>
-                                                        </motion.div>
-                                                    ) : (
-                                                        cardStyle(card)
-                                                    )}
-                                                </motion.div>
-                                            ))}
-
-                                            {/* DEALER ANIMATION TARGET */}
-                                            {dealerPlaceholder && (
-                                                <motion.div
-                                                    layout
-                                                    className="shrink-0"
-                                                >
-                                                    <div
-                                                        ref={dealerCenterRef}
-                                                        className="w-18 h-27 lg:w-24 lg:h-36 bg-transparent rounded-xl shadow-lg border overflow-hidden"
-                                                    />
-                                                </motion.div>
-                                            )}
-
-                                        </motion.div>
-                                    </div>
+                                    <DealerHand
+                                        dealerHand={dealer?.hand || []}
+                                        placeholderCard={dealerAnimation.placeholder}
+                                        dealerScrollRef={dealerAnimation.scrollRef}
+                                        centerRef={dealerAnimation.targetRef}
+                                        isHiddenCardFlipping={isDealerHiddenCardFlipping}
+                                        hiddenCardRevealed={dealerHiddenCardRevealed}
+                                    />
 
 
                                 </div>
@@ -1055,10 +768,10 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                             <button
                                                 onClick={handleDealer}
                                                 className={`
-                                    px-3 sm:px-4 py-2 text-white rounded-lg
-                                    ${(player?.handValue ?? 0) >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
-                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
-                                `}
+                                                    px-3 sm:px-4 py-2 text-white rounded-lg
+                                                    ${(player?.handValue ?? 0) >= 21 ? 'animate-breathe' : ''} hover:shadow-[0_0_20px_rgba(192,192,192,0.8)] 
+                                                    ${endRoundButton ? 'bg-red-800' : 'bg-red-500'} transition-all hover:scale-105
+                                                `}
                                                 disabled={endRoundButton}
                                             >
                                                 {t("stand")}
@@ -1092,44 +805,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
 
                                 {/*player cards*/}
-                                <div
-                                    ref={playerScrollRef}
-                                    className="w-full overflow-x-auto overflow-y-hidden"
-                                >
-                                    <motion.div
-                                        layout
-                                        className="flex flex-row justify-center items-center gap-2 sm:gap-4 mt-0 px-2 w-max min-w-full"
-                                    >
-                                        {player?.hand.map((card, index) => (
-                                            <motion.div
-                                                key={index}
-                                                layout
-                                                transition={{
-                                                    type: "spring",
-                                                    stiffness: 300,
-                                                    damping: 25,
-                                                }}
-                                                className="shrink-0 "
-                                            >
-                                                {cardStyle(card)}
-                                            </motion.div>
-                                        ))}
-
-                                        {placeholderCard && (
-                                            <motion.div
-                                                layout
-                                                className="shrink-0"
-                                            >
-                                                <div
-                                                    ref={centerRef}
-                                                    className="w-18 h-27 lg:w-24 lg:h-36 bg-transparent rounded-xl shadow-lg border overflow-hidden"
-                                                />
-                                            </motion.div>
-                                        )}
-                                    </motion.div>
-                                </div>
-
-
+                                <PlayerHand
+                                    playerHand={player?.hand || []}
+                                    placeholderCard={playerAnimation.placeholder}
+                                    playerScrollRef={playerAnimation.scrollRef}
+                                    centerRef={playerAnimation.targetRef}
+                                />
 
                             </div>
                         </div>
@@ -1323,126 +1004,19 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
             </div>
 
-            <AnimatePresence>
-                {isDealingCard && (
-                    <motion.div
-                        className="fixed z-9999 pointer-events-none
-    "
-                        style={{
-                            perspective: 1000,
-                            width: cardSize.width,
-                            height: cardSize.height,
-                        }}
-                        initial={{
-                            left: cardPosition.x,
-                            top: cardPosition.y,
-                        }}
-                        animate={{
-                            left: handPosition.x,
-                            top: handPosition.y,
-                        }}
-                        transition={{
-                            duration: 0.5,
-                            ease: "easeInOut",
-                        }}
-                    >
-                        <motion.div
-                            className="relative w-full h-full"
-                            style={{
-                                transformStyle: "preserve-3d",
-                            }}
-                            animate={{
-                                rotateY: isFlippingCard ? 180 : 0,
-                            }}
-                            transition={{
-                                duration: 0.5,
-                                ease: "easeInOut",
-                            }}
-                        >
-                            {/* BACK */}
-                            <div
-                                className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
-                                style={{
-                                    backfaceVisibility: "hidden",
-                                }}
-                            >
-                                <Maze />
-                            </div>
+            <FlyingCard
+                isDealing={isDealingCard}
+                isFlipping={isFlippingCard}
+                card={drawnCard}
+                animation={playerAnimation}
+            />
 
-                            {/* FRONT */}
-                            <div
-                                className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
-                                style={{
-                                    backfaceVisibility: "hidden",
-                                    transform: "rotateY(180deg)",
-                                }}
-                            >
-                                {drawnCard && cardStyle(drawnCard)}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <AnimatePresence>
-                {isDealerDealing && (
-                    <motion.div
-                        className="fixed z-9999 pointer-events-none"
-                        style={{
-                            perspective: 1000,
-                            width: dealerCardSize.width,
-                            height: dealerCardSize.height,
-                        }}
-                        initial={{
-                            left: dealerCardPosition.x,
-                            top: dealerCardPosition.y,
-                        }}
-                        animate={{
-                            left: dealerHandPosition.x,
-                            top: dealerHandPosition.y,
-                        }}
-                        transition={{
-                            duration: 0.5,
-                            ease: "easeInOut",
-                        }}
-                    >
-                        <motion.div
-                            className="relative w-full h-full"
-                            style={{
-                                transformStyle: "preserve-3d",
-                            }}
-                            animate={{
-                                rotateY: isDealerFlipping ? 180 : 0,
-                            }}
-                            transition={{
-                                duration: 0.5,
-                                ease: "easeInOut",
-                            }}
-                        >
-                            {/* BACK */}
-                            <div
-                                className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
-                                style={{
-                                    backfaceVisibility: "hidden",
-                                }}
-                            >
-                                <Maze />
-                            </div>
-
-                            {/* FRONT */}
-                            <div
-                                className="absolute inset-0 w-full h-full rounded-xl overflow-hidden shadow-xl"
-                                style={{
-                                    backfaceVisibility: "hidden",
-                                    transform: "rotateY(180deg)",
-                                }}
-                            >
-                                {dealerDrawnCard &&
-                                    cardStyle(dealerDrawnCard)}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <FlyingCard
+                isDealing={isDealerDealing}
+                isFlipping={isDealerFlipping}
+                card={dealerDrawnCard}
+                animation={dealerAnimation}
+            />
         </>
     );
 

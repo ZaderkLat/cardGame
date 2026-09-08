@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import cardStyle from "@/components/ObjectsGame/cardStyle";
+import { AnimatePresence, motion } from "motion/react";
 import { GameState, LogGame, PlayersRequest } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
@@ -24,7 +24,10 @@ import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
 import { User } from "@/interface/userData";
 import QuantitySelector from "@/components/ui/quantitySelector";
-import { error } from "console";
+import { PlayerHand } from "@/components/uiGame/twentyOne/playerHand";
+import FlyingCard from "@/components/uiGame/twentyOne/animationMazeToHand";
+import { useCardDealAnimation } from "@/hooks/useCardDealAnimation";
+import { useRef } from "react";
 interface TwentyOneTableSoloProps {
     setMenuState: (state: MenuStatus) => void;
     difficulty: keyof typeof difficulties;
@@ -76,10 +79,22 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     const [endRoundButton, setEndRoundButton] = useState<boolean>(false);
     //disable "restart game" button
     const [restartGameButton, setRestarGameButton] = useState<boolean>(false);
+    const [endGameButton, setEndGameButton] = useState<boolean>(false);
     //disable takeCark button
     const [takeCardButton, setTakeCardButton] = useState<boolean>(false)
+    /** References for animations */
+    const deckRef = useRef<HTMLButtonElement>(null);
 
+    /** Card deal animation */
+    const playerAnimation = useCardDealAnimation();
 
+    const [drawnCard, setDrawnCard] = useState<any>(null);
+    const [isDealingCard, setIsDealingCard] = useState(false);
+    const [isFlippingCard, setIsFlippingCard] = useState(false);
+    const [pointsAnimation, setPointsAnimation] = useState<{
+        points: number;
+        id: number;
+    } | null>(null);
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
 
@@ -92,6 +107,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         setRestarGameButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
+        setEndGameButton(true);
         const res = await fetch("/api/game/twentyOne/startGame", {
             method: "POST",
             headers: {
@@ -134,6 +150,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         setEndRoundButton(false);
         setRestarGameButton(false);
         setTakeCardButton(false);
+        setEndGameButton(false);
 
     }
 
@@ -180,44 +197,115 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         return gameData?.players.find(p => p.idPlayer === user.id)
 
     }
+    const sleep = (ms: number) =>
+        new Promise(resolve => setTimeout(resolve, ms));
     //* -------------------------------------------------------------------- */
     const handleTakeCard = async () => {
+
         if (!gameData) return;
+
+        const deckElement = deckRef.current;
+        if (!deckElement) {
+            console.log("Deck element not found");
+            return;
+        }
+
+        setRestarGameButton(true);
+        setEndGameButton(true);
         setTakeCardButton(true);
         setEndRoundButton(true);
-        const response = await fetch(`/api/game/twentyOne/solo/play/takeCard`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                gameId: gameData.id,
-            })
-        }).then(res => res.json()) as GameState;
-        setGameData(response);
-        const player = getPlayer(response);
 
-        if (!player) return;
+        try {
+            // Preparamos posición inicial, destino y tamaño
+            await playerAnimation.prepareAnimation(deckElement);
 
-        const lastCard = player.hand.at(-1);
+            // Mostramos la carta volando
+            setIsDealingCard(true);
 
-        setGameInfo(prev => [
-            ...prev,
-            {
-                type: "info",
-                message: `${t("cardTaken")}: ${lastCard?.rank} ${t("of")} ${lastCard?.[`club_${locale}` as "club_es" | "club_en"] ?? ""
-                    }`,
-            },
-        ]);
-        setTakeCardButton(false);
-        setEndRoundButton(false);
+            const responsePromise = fetch(
+                `/api/game/twentyOne/solo/play/takeCard`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        gameId: gameData.id,
+                    }),
+                }
+            ).then(res => res.json()) as Promise<GameState>;
 
+            // Dejamos que la carta tenga tiempo de llegar
+            const [response] = await Promise.all([
+                responsePromise,
+                sleep(500),
+            ]);
+
+
+            const playerResponse = getPlayer(response);
+
+
+            if (!playerResponse) {
+                setIsDealingCard(false);
+                playerAnimation.reset();
+                return;
+            }
+
+            const lastCard = playerResponse.hand.at(-1);
+
+            setDrawnCard(lastCard);
+
+            // Volteamos la carta cuando ya llegó a la mano
+            await sleep(100);
+
+            setIsFlippingCard(true);
+
+            // Tiempo de la animación de flip
+            await sleep(500);
+
+            // Actualizamos la mano real después del flip
+            setGameData(response);
+
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "info",
+                    message: `${t("cardTaken")}: ${lastCard?.rank} ${t("of")
+                        } ${lastCard?.[
+                        `club_${locale}` as "club_es" | "club_en"
+                        ] ?? ""
+                        }`,
+                },
+            ]);
+
+            // Limpiamos la animación
+            setIsFlippingCard(false);
+            setIsDealingCard(false);
+            playerAnimation.reset();
+
+        } catch (error) {
+            console.error("Error taking card:", error);
+
+            setIsFlippingCard(false);
+            setIsDealingCard(false);
+            playerAnimation.reset();
+
+            setTakeCardButton(false);
+            setEndRoundButton(false);
+        } finally {
+            setTakeCardButton(false);
+            setRestarGameButton(false);
+            setEndGameButton(false);
+            setEndRoundButton(false);
+        }
     };
+
     const handleEndRound = async () => {
         //disable "end round" button
         setEndRoundButton(true);
         setTakeCardButton(true);
-
+        setRestarGameButton(true);
+        setEndGameButton(true);
         if (!gameData) return;
 
         const response = await fetch(`/api/game/twentyOne/solo/play/endRound`, {
@@ -234,19 +322,43 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         if (!playerResponse || !player) return;
 
         if (playerResponse.score > player.score) {
-            setGameInfo(prev => [...prev, { type: "win", message: `${t("round")} ${response.round - 1} ${t("scoreObtained")}: ${playerResponse.score - player.score}` }]);
+
+            const pointsGained = playerResponse.score - player.score;
+
+            setPointsAnimation({
+                points: pointsGained,
+                id: Date.now(),
+            });
+            setTimeout(() => {
+                setPointsAnimation(null);
+            }, 1000);
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "win",
+                    message: `${t("round")} ${response.round - 1} ${t("scoreObtained")}: ${pointsGained}`
+                }
+            ]);
+
         } else {
-            setGameInfo(prev => [...prev, { type: "lose", message: `${t("round")}  ${response.round - 1} ${t("noScore")}.` }]);
+            setGameInfo(prev => [
+                ...prev,
+                {
+                    type: "lose",
+                    message: `${t("round")} ${response.round - 1} ${t("noScore")}.`
+                }
+            ]);
         }
 
 
         //* control the dialog when the game ends*/
         if (response.statusGame !== "finished") {
-            //after I make the system to select the difficulty level
 
             setGameData(response);
             setEndRoundButton(false);
             setTakeCardButton(false);
+            setRestarGameButton(false);
+            setEndGameButton(false);
 
         }
         else {
@@ -267,9 +379,6 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                 ]);
 
                 setGameData(null);
-
-
-
                 startGame();
             });
 
@@ -340,13 +449,13 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
 
     return (
-        <div className="flex flex-col flex-1 min-h-0 bg-zinc-50 lg:h-full h-fit  dark:bg-black overflow-hidden">
+        <div className="flex flex-col flex-1 min-h-0 h-full bg-zinc-50 dark:bg-black overflow-hidden">
 
             {/* MAIN WRAPPER */}
-            <div className="flex flex-col lg:flex-row flex-1 justify-center p-2 gap-4 w-full h-full">
+            <div className="flex flex-col lg:flex-row flex-1 min-h-0 w-full p-2 gap-4">
 
                 {/* CENTER */}
-                <div className="flex flex-col items-center justify-center w-full">
+                <div className="flex flex-col items-center justify-center flex-1 min-h-0 w-full">
 
                     {/* TOP BAR */}
                     <div className="flex justify-between w-full px-2 relative">
@@ -382,8 +491,9 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                         </FloatComponent>
 
                         <button
+                            ref={deckRef}
                             onClick={handleTakeCard}
-                            className={`w-20 h-32 sm:w-24 sm:h-36 lg:w-28 lg:h-40 overflow-hidden rounded
+                            className={`w-28 h-40 overflow-hidden rounded
                              transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
                               active:scale-95 disabled:opacity-50 
                               ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
@@ -391,6 +501,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                         >
                             <Maze />
                         </button>
+
 
                         <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
                             {t("clickToDraw")}
@@ -403,8 +514,44 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                     <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
                      dark:border-zinc-900 dark:border-2 px-4 sm:px-6 lg:px-10 rounded w-full max-w-2xl mt-6">
 
+
                         {/* Button over border*/}
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                            <AnimatePresence>
+                                {pointsAnimation && (
+                                    <motion.div
+                                        key={pointsAnimation.id}
+                                        initial={{
+                                            opacity: 0,
+                                            x: 0,
+                                            y: 5,
+                                            scale: 0.5,
+                                        }}
+                                        animate={{
+                                            opacity: 1,
+                                            x: 15,
+                                            y: -50,
+                                            scale: 1.1,
+                                        }}
+                                        exit={{
+                                            opacity: 0,
+                                            x: 60,
+                                            y: -35,
+                                            scale: 0.8,
+                                        }}
+                                        transition={{
+                                            duration: 0.8,
+                                            ease: "easeOut",
+                                        }}
+                                        className="absolute left-full ml-2 pointer-events-none
+                       text-xl sm:text-2xl lg:text-3xl
+                       font-bold text-green-500 dark:text-green-400
+                       whitespace-nowrap"
+                                    >
+                                        +{pointsAnimation.points}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                             <button
                                 onClick={handleEndRound}
                                 className={`
@@ -426,13 +573,12 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                             {t("handValue")}: {(player?.handValue ?? 0)}
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-4">
-                            {player?.hand.map((card, index) => (
-                                <div key={index} className="scale-90 sm:scale-100">
-                                    {cardStyle(card)}
-                                </div>
-                            ))}
-                        </div>
+                        <PlayerHand
+                            playerHand={player?.hand || []}
+                            placeholderCard={playerAnimation.placeholder}
+                            playerScrollRef={playerAnimation.scrollRef}
+                            centerRef={playerAnimation.targetRef}
+                        />
 
                     </div>
                 </div>
@@ -445,6 +591,8 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                     </div>
 
                     <div className="flex flex-col gap-2 pb-4 items-center">
+
+
                         <button
                             onClick={handleRestartGame}
                             className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
@@ -458,8 +606,9 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                         <ReturnButton
                             setMenuState={setMenuState}
                             menuState={"select"}
-                            className="w-full lg:w-auto dark:bg-gray-500
-                             dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
+                            className={`w-full lg:w-auto dark:bg-gray-500 dark:hover:bg-gray-600 text-white bg-gray-400
+                                 rounded-lg hover:bg-gray-600 ${endGameButton ? 'dark:bg-gray-700 bg-gray-600' : 'transition-all hover:scale-105'}`}
+                            disabled={endGameButton}
                         >
                             <p className="text-lg font-bold text-white transition-all hover:scale-105">
                                 {t("exitGame")}
@@ -573,6 +722,12 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                     </div>
                 </div>
             </div>
+            <FlyingCard
+                isDealing={isDealingCard}
+                isFlipping={isFlippingCard}
+                card={drawnCard}
+                animation={playerAnimation}
+            />
         </div>
     );
 }
