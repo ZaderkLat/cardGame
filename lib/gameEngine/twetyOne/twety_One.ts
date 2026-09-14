@@ -214,13 +214,13 @@ export function isWinner(score: number, difficulty: keyof typeof difficulties, t
     //response with label name in messages/en.json|es.json
     if (isWin) {
         return {
-            message: "youWin",
+            message: "win",
             status: "win" as const,
 
         }
     } else {
         return {
-            message: "youLose",
+            message: "lose",
             status: "lose" as const,
 
         }

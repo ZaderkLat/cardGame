@@ -43,7 +43,7 @@ export function PlayerHand({ playerHand, placeholderCard, playerScrollRef, cente
                     >
                         <div
                             ref={centerRef}
-                            className="w-18 h-27 lg:w-24 lg:h-36 bg-transparent rounded-xl shadow-lg border overflow-hidden"
+                            className="w-18 h-27 lg:w-24 lg:h-36 bg-transparent rounded-xl shadow-lg overflow-hidden"
                         />
                     </motion.div>
                 )}

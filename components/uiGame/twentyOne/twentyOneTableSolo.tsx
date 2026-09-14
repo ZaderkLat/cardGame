@@ -18,7 +18,6 @@ import {
     PopoverContent,
     PopoverTrigger
 } from "@/components/ui/popover";
-import FloatComponent from "@/components/ui/floatComponent";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
@@ -28,6 +27,9 @@ import { PlayerHand } from "@/components/uiGame/twentyOne/playerHand";
 import FlyingCard from "@/components/uiGame/twentyOne/animationMazeToHand";
 import { useCardDealAnimation } from "@/hooks/useCardDealAnimation";
 import { useRef } from "react";
+import AnimationFloatingLabel from "@/components/uiGame/twentyOne/animationFloatingLabel";
+import { statusStyles } from "@/interface/gameData";
+
 interface TwentyOneTableSoloProps {
     setMenuState: (state: MenuStatus) => void;
     difficulty: keyof typeof difficulties;
@@ -72,9 +74,15 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     //Handler diffcult selection
 
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(false);
-
-    const [textFloatComponent, setTextFloadComponent] = useState<string>("");
-
+    /**Handler the floating text component */
+    const [floatStyle, setFloatStyle] = useState({
+        text: "",
+        color: "",
+        background: "",
+        border: "",
+        shadow: "",
+    });
+    /**------------------------------------------------------------------ */
     //disable "end round" button
     const [endRoundButton, setEndRoundButton] = useState<boolean>(false);
     //disable "restart game" button
@@ -155,25 +163,14 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     }
 
     useEffect(() => {
+        if (!player || player.status === "continue" || player.status === "stand") return;
 
-        if (!player) return;
+        setFloatStyle({
+            text: t(`${player.status}`),
+            ...statusStyles[player.status],
+        });
 
-        if (player.status == "blackJack") {
-            setTextFloadComponent(t("perfectRound"));
-            return;
-        }
-
-        if (player.status == "win") {
-            setTextFloadComponent(t("youWin"));
-            return;
-        }
-
-        if (player.status == "lose") {
-            setTextFloadComponent(t("youLose"));
-            return;
-        }
-
-    }, [player]);
+    }, [player, t]);
 
     //* Control the dialog data and its open and close states */
     const openDialog = (data: Omit<dialogData, "open">) => {
@@ -482,33 +479,50 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                     </div>
 
                     {/* CARD BUTTON AREA */}
+
                     <div className="relative flex flex-1 flex-col items-center justify-center mt-6 w-full">
-                        <FloatComponent isVisible={(player?.handValue ?? 0) >= 21}
-                            position="z-50 w-70">
-                            <div className="text-center">
-                                <span>{textFloatComponent}</span>
-                            </div>
-                        </FloatComponent>
 
-                        <button
-                            ref={deckRef}
-                            onClick={handleTakeCard}
-                            className={`w-28 h-40 overflow-hidden rounded
-                             transition duration-200 hover:shadow-lg hover:shadow-gray-400/40 hover:scale-105
-                              active:scale-95 disabled:opacity-50 
-                              ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
-                            disabled={(player?.handValue ?? 0) >= 21 || takeCardButton}
-                        >
-                            <Maze />
-                        </button>
+                        {/* Botón de sacar carta */}
+                        <div className="relative">
 
+                            <button
+                                ref={deckRef}
+                                onClick={handleTakeCard}
+                                className={`
+                w-28 h-40 overflow-hidden rounded
+                transition duration-200
+                hover:shadow-lg hover:shadow-gray-400/40
+                hover:scale-105
+                active:scale-95
+                disabled:opacity-50
+                ${(player?.handValue ?? 0) < 21 ? "animate-breathe" : ""}
+            `}
+                                disabled={
+                                    (player?.handValue ?? 0) >= 21 ||
+                                    takeCardButton
+                                }
+                            >
+                                <Maze />
+                            </button>
+
+                            <AnimationFloatingLabel
+                                show={!((player?.handValue ?? 0) < 21)}
+                                text={floatStyle.text}
+                                color={floatStyle.color}
+                                background={floatStyle.background}
+                                border={floatStyle.border}
+                                shadow={floatStyle.shadow}
+                            />
+
+                        </div>
 
                         <p className="mt-2 text-xs sm:text-sm text-gray-500 dark:text-gray-300">
                             {t("clickToDraw")}
                         </p>
 
-
                     </div>
+
+
 
                     {/* BOTTOM PLAYER HAND */}
                     <div className="relative flex flex-col items-center pb-6 border-2 border-zinc-400
@@ -517,6 +531,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
                         {/* Button over border*/}
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+
                             <AnimatePresence>
                                 {pointsAnimation && (
                                     <motion.div
@@ -728,6 +743,6 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                 card={drawnCard}
                 animation={playerAnimation}
             />
-        </div>
+        </div >
     );
 }

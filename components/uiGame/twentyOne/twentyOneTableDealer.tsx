@@ -9,8 +9,7 @@ import ReturnButton from "@/components/uiGame/returnButton";
 import { MenuStatus } from "@/interface/menuStatus";
 import { PlayerInfo } from "@/interface/gameData";
 import DialogSelectDifficult from "@/components/ui/dialogSelectDifficult";
-
-import FloatComponent from "@/components/ui/floatComponent";
+import AnimationFloatingLabel from "@/components/uiGame/twentyOne/animationFloatingLabel";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import Maze from "@/components/uiGame/maze";
@@ -22,7 +21,7 @@ import { PlayerHand } from "@/components/uiGame/twentyOne/playerHand";
 import FlyingCard from "@/components/uiGame/twentyOne/animationMazeToHand";
 import { useCardDealAnimation } from "@/hooks/useCardDealAnimation";
 import { DealerHand } from "@/components/uiGame/twentyOne/dealerHand";
-
+import { statusStyles } from "@/interface/gameData";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
     rounds: number;
@@ -58,7 +57,14 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     const [player, setPlayer] = useState<PlayerInfo>();
     const [dealer, setDealer] = useState<PlayerInfo>();
 
-
+    const [floatStyle, setFloatStyle] = useState({
+        text: "",
+        color: "",
+        background: "",
+        border: "",
+        shadow: "",
+    });
+    const [showMessaje, setShowMessaje] = useState(false);
     const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
     // Function index (quick lookup):
@@ -71,13 +77,10 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     // Handler difficult selection
 
     const [openDifficultDialog, setOpenDifficultDialog] = useState<boolean>(false);
-
-    const [textFloatComponent, setTextFloadComponent] = useState<string>("");
-
     //disable "end round" button
     const [endRoundButton, setEndRoundButton] = useState<boolean>(true);
     //disable "restart game" button
-    const [restartGameButton, setRestarGameButton] = useState<boolean>(true);
+    const [gameControlsDisabled, setGameControlsDisabled] = useState(true);
     //disable takeCark button
     const [takeCardButton, setTakeCardButton] = useState<boolean>(true)
     //control if show the button "Stand" or "endRound"
@@ -106,12 +109,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
         setTakeCardButton(true);
-        setRestarGameButton(true);
+        setGameControlsDisabled(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
         setDealerHiddenCardRevealed(false);
         setIsDealerHiddenCardFlipping(false);
-
+        setShowMessaje(false);
         setIsDealerDealing(false);
         setIsDealerFlipping(false);
         setTieCount(0);
@@ -167,44 +170,36 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         setIsPlaying(true);
         setEndRoundButton(false);
-        setRestarGameButton(false);
+        setGameControlsDisabled(false);
         setTakeCardButton(false);
 
+    }
+    const floatMessage = () => {
+        if (!player || player.status === "continue") return;
+
+        if (player.handValue == dealer?.handValue) {
+            setTieCount(prev => prev + 1);
+            setFloatStyle({
+                text: t("tie"),
+                ...statusStyles["push"],
+            });
+
+        } else {
+            setFloatStyle({
+                text: t(`${player.status}`),
+                ...statusStyles[player.status],
+            });
+        }
+
+        const show = player.status == "win" || player.status == "lose" || player.status == "blackJack" || player.status == "push";
+        setShowMessaje(show);
     }
 
     useEffect(() => {
 
-        if (!player) return;
+        floatMessage();
 
-        /**
-         * resultRound is used when the player have a blackjack or lose, because en both cases
-         * the dealer don't play, the victory (black jack) and lose (hand value > 21) is automatic
-         */
-        if (player.status == "blackJack") {
-            setTextFloadComponent(t("perfectRound"));
-
-            return;
-        }
-        if (player.status == "lose") {
-            setTextFloadComponent(t("youLose"));
-
-            return;
-        }
-        if (player.status == "win") {
-            setTextFloadComponent(t("youWin"));
-            return;
-        }
-        if (player.status == "stand") {
-            setTextFloadComponent(t("waitingDealer"));
-            return;
-        }
-        if (player.handValue == dealer?.handValue) {
-            setTieCount(prev => prev + 1);
-            setTextFloadComponent(t("tie"));
-            return;
-        }
-
-    }, [player]);
+    }, [player, t]);
 
     //* Control the dialog data and its open and close states */
     const openDialog = (data: Omit<dialogData, "open">) => {
@@ -241,6 +236,8 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         if (!deckElement) return;
 
         try {
+            setGameControlsDisabled(true);
+            setEndRoundButton(true);
             setTakeCardButton(true);
             setEndRoundButton(true);
 
@@ -303,6 +300,8 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         } finally {
             setTakeCardButton(false);
             setEndRoundButton(false);
+            setGameControlsDisabled(false);
+            setEndRoundButton(false);
         }
     };
     const animateDealerCard = async (card: any) => {
@@ -333,6 +332,8 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         if (!gameData) return;
         //disable "end round" and "take card" button
+        setEndRoundButton(true);
+        setTakeCardButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
         const response = await fetch(`/api/game/twentyOne/dealer/play/endRound`, {
@@ -374,6 +375,8 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             setEndRoundButton(false);
             setTakeCardButton(false);
             setIsPlaying(true);
+            setEndRoundButton(false);
+            setTakeCardButton(false);
 
         }
         else {
@@ -396,13 +399,22 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         new Promise(resolve => setTimeout(resolve, ms));
 
     const handleDealer = async () => {
-        if (!gameData) return;
-
-        setTakeCardButton(true);
+        if (!gameData || !player) return;
+        setGameControlsDisabled(true);
         setEndRoundButton(true);
-        setIsPlaying(false);
-        setTextFloadComponent(t("waitingDealer"));
+        setTakeCardButton(true);
 
+        setIsPlaying(false);
+
+
+        if (player.handValue < 21) {
+            setFloatStyle({
+                text: (t("stand")),
+                ...statusStyles["stand"],
+            });
+        }
+
+        setShowMessaje(true);
         // Ensure the second card starts hidden
         setDealerHiddenCardRevealed(false);
         setIsDealerHiddenCardFlipping(false);
@@ -498,6 +510,10 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         resultMessage(response);
 
         setGameData(response);
+        setEndRoundButton(false);
+
+        setGameControlsDisabled(false);
+        floatMessage();
     };
 
     const resultMessage = (response: GameState) => {
@@ -658,13 +674,15 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
                             </div>
                             <div className="relative">
+
+
                                 <button
                                     ref={deckRef}
                                     onClick={handleTakeCard}
                                     className={`w-20 h-32 lg:w-28 lg:h-40 overflow-hidden rounded
                                 transition duration-200 hover:shadow-lg hover:shadow-gray-400/40
                                 hover:scale-105 active:scale-95 disabled:opacity-50
-                                ${(player?.handValue ?? 0) < 21 ? 'animate-breathe' : ''}`}
+                                ${((player?.handValue ?? 0) < 21) && !takeCardButton ? 'animate-breathe' : ''}`}
                                     disabled={
                                         (player?.handValue ?? 0) >= 21 || takeCardButton
                                     }
@@ -713,12 +731,14 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
 
                             </div>
-                            <FloatComponent isVisible={(player?.handValue ?? 0) >= 21 || !isPlaying}
-                                position=" top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-90 opacity-80">
-                                <div className="text-center text-2xl">
-                                    <span>{textFloatComponent}</span>
-                                </div>
-                            </FloatComponent>
+                            <AnimationFloatingLabel
+                                show={showMessaje}
+                                text={floatStyle.text}
+                                color={floatStyle.color}
+                                background={floatStyle.background}
+                                border={floatStyle.border}
+                                shadow={floatStyle.shadow}
+                            />
 
                             {/* MOBILE DRAW BUTTON */}
                             <div className="relative flex lg:hidden flex-col items-center mt-10 mb-6 w-full">
@@ -774,7 +794,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                                 `}
                                                 disabled={endRoundButton}
                                             >
-                                                {t("stand")}
+                                                {t("standButton")}
                                             </button>
                                         ) : (
                                             <button
@@ -786,7 +806,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 `}
                                                 disabled={endRoundButton}
                                             >
-                                                {t("endRound")}
+                                                {t("endRoundButton")}
                                             </button>
                                         )
                                     }
@@ -826,21 +846,28 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                                 <div className="flex flex-col gap-2 pb-4 items-center shrink-0">
                                     <button
                                         onClick={handleRestartGame}
-                                        className={`w-full lg:w-auto px-3 py-1  text-white rounded hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
-                                ${restartGameButton ? 'bg-blue-800' : 'bg-blue-500 transition-all hover:scale-105'}
-                            `}
-                                        disabled={restartGameButton}
+                                        className={`w-full lg:w-auto px-3 py-1 text-white rounded
+                                                hover:shadow-[0_0_20px_rgba(59,130,246,0.8)]
+                                            ${gameControlsDisabled
+                                                ? "bg-blue-800"
+                                                : "bg-blue-500 transition-all hover:scale-105"
+                                            }`}
+                                        disabled={gameControlsDisabled}
                                     >
                                         {t("restartGame")}
                                     </button>
 
                                     <ReturnButton
                                         setMenuState={setMenuState}
-                                        menuState={"select"}
-                                        className="w-full lg:w-auto dark:bg-gray-500
-                             dark:hover:bg-gray-600 text-white bg-gray-400 rounded-lg hover:bg-gray-600"
+                                        menuState="select"
+                                        className={`w-full lg:w-auto rounded-lg text-white
+                                                ${gameControlsDisabled
+                                                ? "dark:bg-gray-700 bg-gray-600"
+                                                : "dark:bg-gray-500 dark:hover:bg-gray-600 bg-gray-400 hover:bg-gray-600 transition-all hover:scale-105"
+                                            }`}
+                                        disabled={gameControlsDisabled}
                                     >
-                                        <p className="text-lg font-bold text-white transition-all hover:scale-105">
+                                        <p className="text-lg font-bold text-white">
                                             {t("exitGame")}
                                         </p>
                                     </ReturnButton>
