@@ -22,6 +22,7 @@ import FlyingCard from "@/components/uiGame/twentyOne/animationMazeToHand";
 import { useCardDealAnimation } from "@/hooks/useCardDealAnimation";
 import { DealerHand } from "@/components/uiGame/twentyOne/dealerHand";
 import { statusStyles } from "@/interface/gameData";
+import { nextFrame } from "@/lib/utils";
 interface TwentyOneTableProps {
     setMenuState: (state: MenuStatus) => void;
     rounds: number;
@@ -106,8 +107,41 @@ export default function TwentyOneTableDealer({ setMenuState, user,
     /**Card Deal Animation */
     const playerAnimation = useCardDealAnimation();
     const dealerAnimation = useCardDealAnimation();
+    //It's function is control the animation velocity, only chance in dealing of cards {startGame and handlerEndRound}
+    const [cardFlylingDuration, setCardFlylingDuration] = useState<number>(0.5);
     //Ask the server to start a new game and get the initial hand and deck
+    const updatePlayerWithoutCards = (gameData: GameState) => {
+
+        if (!gameData) return;
+
+        const playerInfo = getPlayer(gameData);
+        if (!playerInfo) return;
+
+        setPlayer({
+            ...playerInfo,
+            hand: [],
+            handValue: 0,
+            status: "continue"
+        });
+    }
+    const updatePlayerStatus = (gameData: GameState) => {
+
+        if (!gameData) return;
+
+        const playerInfo = getPlayer(gameData);
+        if (!playerInfo) return;
+
+        setPlayer(prev => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                status: playerInfo.status
+            };
+        });
+    }
     const startGame = async () => {
+
         setTakeCardButton(true);
         setGameControlsDisabled(true);
         setEndRoundButton(true);
@@ -144,11 +178,23 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         if (!res.ok) {
             throw new Error(t("errorStartGame"));
         }
-
+        setCardFlylingDuration(0.3);
         const response: GameState = await res.json();
-        setGameData(response);
-        //update dealer information
-        setDealer(response.players[0])
+
+        const playerInfo = getPlayer(response)
+
+        if (!playerInfo) return;
+
+        // player without cards
+        updatePlayerWithoutCards(response);
+
+        // Dealer normal
+        setDealer(response.players[0]);
+
+        // add cards one by one
+        await addPlayerCards(response)
+        //update player's status
+        updatePlayerStatus(response);
 
         if (response.round === 1) {
             setGameInfo(prev => [
@@ -167,12 +213,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 }
             ]);
         }
-
+        setGameData(response);
         setIsPlaying(true);
         setEndRoundButton(false);
         setGameControlsDisabled(false);
         setTakeCardButton(false);
-
+        setCardFlylingDuration(0.5);
     }
     const floatMessage = () => {
         if (!player || player.status === "continue") return;
@@ -286,7 +332,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
             setIsFlippingCard(false);
             setIsDealingCard(false);
-
+            setPlayer(updatedPlayer)
             playerAnimation.reset();
 
         } catch (error) {
@@ -328,14 +374,17 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         dealerAnimation.reset();
     };
+
     const handleEndRound = async () => {
 
         if (!gameData) return;
+        setCardFlylingDuration(0.3);
         //disable "end round" and "take card" button
         setEndRoundButton(true);
         setTakeCardButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
+
         const response = await fetch(`/api/game/twentyOne/dealer/play/endRound`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -343,10 +392,6 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 gameId: gameData.id,
             })
         }).then(res => res.json()) as GameState;
-
-
-        const playerResponse = getPlayer(response)
-        if (!playerResponse) return;
         //* control the dialog when the game ends*/
         if (response.statusGame !== "finished") {
             setGameInfo(prev => [
@@ -366,18 +411,26 @@ export default function TwentyOneTableDealer({ setMenuState, user,
             ]
             )
             setDealerHiddenCardRevealed(false)
-
+            setShowMessaje(false);
             setIsDealerHiddenCardFlipping(false);
             setIsDealerDealing(false);
             setIsDealerFlipping(false);
-            setGameData(response);
-            setDealer(response.players[0])
+
             setEndRoundButton(false);
             setTakeCardButton(false);
             setIsPlaying(true);
             setEndRoundButton(false);
             setTakeCardButton(false);
+            setGameData(response);
 
+
+
+            setDealer(response.players[0])
+
+            updatePlayerWithoutCards(response);
+
+            await addPlayerCards(response)
+            setCardFlylingDuration(0.5);
         }
         else {
 
@@ -393,10 +446,10 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
         }
     }
-
-    // ---------------- DEALER PLAY (animations & dealer flow) ----------------
     const sleep = (ms: number) =>
         new Promise(resolve => setTimeout(resolve, ms));
+
+    // ---------------- DEALER PLAY (animations & dealer flow) ----------------
 
     const handleDealer = async () => {
         if (!gameData || !player) return;
@@ -510,6 +563,12 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         resultMessage(response);
 
         setGameData(response);
+        const playerInfo = getPlayer(response)
+
+        if (!playerInfo) return;
+
+        setPlayer(playerInfo);
+
         setEndRoundButton(false);
 
         setGameControlsDisabled(false);
@@ -553,7 +612,6 @@ export default function TwentyOneTableDealer({ setMenuState, user,
         ]);
     }
     // ---------------- DEALER PLAY (summary) ----------------
-    // End statement
 
     useEffect(() => {
 
@@ -565,16 +623,63 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
     }, [openDifficultDialog]);
     // Create the user player list when the user loads
+    const animatePlayerCard = async (card: any) => {
+        const deckElement =
+            deckRef.current?.offsetWidth
+                ? deckRef.current
+                : deckRefCenter.current;
 
-    //update player data and dealer
-    useEffect(() => {
-        if (!gameData) return;
+        if (!deckElement) return;
 
-        setPlayer(gameData.players.find(
-            p => p.idPlayer === user.id)
+        await playerAnimation.prepareAnimation(deckElement);
+
+        setDrawnCard(card);
+        setIsDealingCard(true);
+
+        await sleep(500);
+
+        setIsFlippingCard(true);
+
+        await sleep(500);
+
+        setIsFlippingCard(false);
+        setIsDealingCard(false);
+
+        playerAnimation.reset();
+    };
+    const addPlayerCard = async (card: any) => {
+        await animatePlayerCard(card);
+
+        setPlayer(prev => {
+            if (!prev) return prev;
+
+            const updatedHand = [
+                ...prev.hand,
+                card,
+            ];
+
+            return {
+                ...prev,
+                hand: updatedHand,
+                handValue: calculateHandValue(updatedHand),
+            };
+        });
+
+        await sleep(10);
+    };
+    const addPlayerCards = async (gameData: GameState) => {
+        const playerInfo = gameData.players.find(
+            p => p.idPlayer === user.id
         );
 
-    }, [gameData])
+        if (!playerInfo) return;
+
+        for (const card of playerInfo.hand.slice(0, 2)) {
+            await addPlayerCard(card);
+        }
+    };
+    //update player data and dealer
+
 
     const handleRestartGame = () => {
         setOpenDifficultDialog(true);
@@ -1036,6 +1141,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
                 isFlipping={isFlippingCard}
                 card={drawnCard}
                 animation={playerAnimation}
+                duration={cardFlylingDuration}
             />
 
             <FlyingCard

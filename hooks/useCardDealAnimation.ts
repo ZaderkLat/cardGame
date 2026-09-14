@@ -41,10 +41,10 @@ export function useCardDealAnimation() {
             throw new Error("No se encontró el scroll");
         }
 
-        // 1. Mostrar placeholder
+        // 1. Show placeholder
         setPlaceholder(true);
 
-        // 2. Esperar a que React lo renderice
+        // 2. Wait next react render
         await nextFrame();
 
         const scrollElement = scrollRef.current;
@@ -53,13 +53,13 @@ export function useCardDealAnimation() {
             throw new Error("No se encontró el target");
         }
 
-        // 3. Scroll hacia la derecha
+        // 3. Scroll to the right
         scrollElement.scrollTo({
             left: scrollElement.scrollWidth,
             behavior: "smooth",
         });
 
-        // 4. Esperar a que termine el scroll
+        // 4. Wait for the scroll finished
         await new Promise<void>((resolve) => {
             const start = performance.now();
 
@@ -86,17 +86,17 @@ export function useCardDealAnimation() {
             requestAnimationFrame(waitForScroll);
         });
 
-        // 5. Esperar estabilización del layout
+        // 5. Wait next react render, again
         await nextFrame();
 
-        // 6. Obtener posiciones reales
+        // 6. Get real positions
         const deckRect =
             deckElement.getBoundingClientRect();
 
         const targetRect =
             targetRef.current.getBoundingClientRect();
 
-        // 7. Guardarlas
+        // 7. Save positions
         setStartPosition({
             x: deckRect.left,
             y: deckRect.top,

@@ -8,6 +8,7 @@ interface FlyingCardProps {
     isDealing: boolean;
     isFlipping: boolean;
     card: any;
+    duration?: number
     animation: {
         startPosition: {
             x: number;
@@ -29,6 +30,7 @@ export default function FlyingCard({
     isFlipping,
     card,
     animation: { startPosition, endPosition, size },
+    duration = 0.5
 }: FlyingCardProps) {
     return (
         <AnimatePresence>
@@ -49,7 +51,7 @@ export default function FlyingCard({
                         top: endPosition.y,
                     }}
                     transition={{
-                        duration: 0.5,
+                        duration: duration,
                         ease: "easeInOut",
                     }}
                 >
@@ -62,7 +64,7 @@ export default function FlyingCard({
                             rotateY: isFlipping ? 180 : 0,
                         }}
                         transition={{
-                            duration: 0.5,
+                            duration: duration,
                             ease: "easeInOut",
                         }}
                     >

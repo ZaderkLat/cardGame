@@ -22,6 +22,7 @@ export function PlayerHand({ playerHand, placeholderCard, playerScrollRef, cente
                 className="flex flex-row justify-center items-center gap-2 sm:gap-4 mt-0 px-2 w-max min-w-full"
             >
                 {playerHand.map((card, index) => (
+
                     <motion.div
                         key={index}
                         layout
@@ -34,6 +35,7 @@ export function PlayerHand({ playerHand, placeholderCard, playerScrollRef, cente
                     >
                         {cardStyle(card)}
                     </motion.div>
+
                 ))}
 
                 {placeholderCard && (
