@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { scoreGame, updateStorageGame, getStorageGame, playerInTurn } from "@/lib/gameEngine/twetyOne/twety_One"
+import { scoreGame, updateStorageGame, getStorageGame, playerInTurn } from "@/lib/gameEngine/twentyOne/twenty_One"
 import { GameState } from "@/interface/gameData"
 
 export async function POST(req: Request) {

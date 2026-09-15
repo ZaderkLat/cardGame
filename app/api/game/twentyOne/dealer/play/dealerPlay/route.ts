@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { getGame, updateGame } from "@/lib/gameEngine/gameStore"
 import {
   getNewCard, calculateHandValue, playerInTurn, assingWinner
-} from "@/lib/gameEngine/twetyOne/twety_One"
+} from "@/lib/gameEngine/twentyOne/twenty_One"
 
 
 export async function POST(req: Request) {

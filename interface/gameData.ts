@@ -52,3 +52,47 @@ export const dealears = {
   Valeria: { id: "dealer", name: "Valeria", value: 1 },
   Fernanda: { id: "dealer", name: "Fernanda", value: 1.3 }
 }
+//Styles for the floating text component, which is used to show the status of the player in the game.
+export const statusStyles = {
+  continue: {
+    color: "",
+    background: "",
+    border: "",
+    shadow: "",
+  },
+
+  stand: {
+    color: "text-blue-500 dark:text-blue-400",
+    background: "bg-blue-500/10 dark:bg-blue-950/70",
+    border: "border-blue-400/40 dark:border-blue-700/50",
+    shadow: "shadow-[0_0_20px_rgba(59,130,246,0.25)]",
+  },
+
+  lose: {
+    color: "text-red-500 dark:text-red-400",
+    background: "bg-red-500/10 dark:bg-red-950/70",
+    border: "border-red-400/40 dark:border-red-700/50",
+    shadow: "shadow-[0_0_20px_rgba(239,68,68,0.25)]",
+  },
+
+  win: {
+    color: "text-green-500 dark:text-green-400",
+    background: "bg-green-500/10 dark:bg-green-950/70",
+    border: "border-green-400/40 dark:border-green-700/50",
+    shadow: "shadow-[0_0_20px_rgba(34,197,94,0.25)]",
+  },
+
+  blackJack: {
+    color: "text-yellow-500 dark:text-yellow-400",
+    background: "bg-yellow-500/10 dark:bg-yellow-950/70",
+    border: "border-yellow-400/40 dark:border-yellow-700/50",
+    shadow: "shadow-[0_0_20px_rgba(234,179,8,0.25)]",
+  },
+
+  push: {
+    color: "text-purple-500 dark:text-purple-400",
+    background: "bg-purple-500/10 dark:bg-purple-950/70",
+    border: "border-purple-400/40 dark:border-purple-700/50",
+    shadow: "shadow-[0_0_20px_rgba(168,85,247,0.25)]",
+  },
+};

@@ -8,13 +8,15 @@ interface ReturnButtonProps {
     menuState: MenuStatus;
     children?: React.ReactNode;
     className?: string;
+    disabled?: boolean;
 }
 
-export default function ReturnButton({ setMenuState, menuState, children, className }: ReturnButtonProps) {
+export default function ReturnButton({ setMenuState, menuState, children, className, disabled }: ReturnButtonProps) {
     return (
         <button
             onClick={() => setMenuState(menuState)}
             className={`min-w-10 min-h-10 top-4 left-4  p-2 ${className}`}
+            disabled={disabled}
         >
 
             {children}
