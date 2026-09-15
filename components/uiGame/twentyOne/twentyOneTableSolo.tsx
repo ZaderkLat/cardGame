@@ -7,7 +7,7 @@ import { GameState, LogGame, PlayersRequest } from "@/interface/gameData";
 import { dialogData } from "@/interface/dialog";
 import InfoGame from "@/components/ui/infoGame";
 import GameDialog from "@/components/ui/dialogGameMessaje";
-import { isWinner } from "@/lib/gameEngine/twetyOne/twety_One";
+import { isWinner } from "@/lib/gameEngine/twentyOne/twenty_One";
 import ReturnButton from "@/components/uiGame/returnButton";
 import { MenuStatus } from "@/interface/menuStatus";
 import { difficulties, PlayerInfo } from "@/interface/gameData";
@@ -29,6 +29,7 @@ import { useCardDealAnimation } from "@/hooks/useCardDealAnimation";
 import { useRef } from "react";
 import AnimationFloatingLabel from "@/components/uiGame/twentyOne/animationFloatingLabel";
 import { statusStyles } from "@/interface/gameData";
+import { calculateHandValue } from "@/lib/gameEngine/twentyOne/twenty_One";
 
 interface TwentyOneTableSoloProps {
     setMenuState: (state: MenuStatus) => void;
@@ -45,7 +46,7 @@ interface TwentyOneTableSoloProps {
 export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, onChangeDifficulty,
     setRounds, user, gameTypeId }: TwentyOneTableSoloProps) {
     const t = useTranslations("twentyOne");
-
+    const [cardFlylingDuration, setCardFlylingDuration] = useState<number>(0.5);
     //languaje path
     const locale = useLocale();
     //Game State
@@ -103,9 +104,41 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         points: number;
         id: number;
     } | null>(null);
+
+
+    const updatePlayerWithoutCards = (gameData: GameState) => {
+
+        if (!gameData) return;
+
+        const playerInfo = getPlayer(gameData);
+        if (!playerInfo) return;
+
+        setPlayer({
+            ...playerInfo,
+            hand: [],
+            handValue: 0,
+            status: "continue"
+        });
+    }
+    const updatePlayerStatus = (gameData: GameState) => {
+
+        if (!gameData) return;
+
+        const playerInfo = getPlayer(gameData);
+        if (!playerInfo) return;
+
+        setPlayer(prev => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                status: playerInfo.status
+            };
+        });
+    }
     //Ask the server to start a new game and get the initial hand and deck
     const startGame = async () => {
-
+        setCardFlylingDuration(0.3)
         const players: PlayersRequest[] = [
             {
                 idPlayer: user.id,
@@ -134,8 +167,15 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
         const response: GameState = await res.json();
 
-        setGameData(response);
+        const playerInfo = getPlayer(response)
+        if (!playerInfo) return;
 
+        // player without cards
+        updatePlayerWithoutCards(response);
+        // add cards one by one
+        await addPlayerCards(response)
+        //update player's status
+        updatePlayerStatus(response);
         if (response.round === 1) {
             setGameInfo(prev => [
                 ...prev,
@@ -153,15 +193,66 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                 }
             ]);
         }
-
-
+        setCardFlylingDuration(0.5)
+        setGameData(response)
         setEndRoundButton(false);
         setRestarGameButton(false);
         setTakeCardButton(false);
         setEndGameButton(false);
 
     }
+    const addPlayerCard = async (card: any) => {
+        await animatePlayerCard(card);
 
+        setPlayer(prev => {
+            if (!prev) return prev;
+
+            const updatedHand = [
+                ...prev.hand,
+                card,
+            ];
+
+            return {
+                ...prev,
+                hand: updatedHand,
+                handValue: calculateHandValue(updatedHand),
+            };
+        });
+
+        await sleep(10);
+    };
+    const addPlayerCards = async (gameData: GameState) => {
+        const playerInfo = gameData.players.find(
+            p => p.idPlayer === user.id
+        );
+
+        if (!playerInfo) return;
+
+        for (const card of playerInfo.hand.slice(0, 2)) {
+            await addPlayerCard(card);
+        }
+    };
+    const animatePlayerCard = async (card: any) => {
+        const deckElement = deckRef.current;
+
+        if (!deckElement) return;
+
+        await playerAnimation.prepareAnimation(deckElement);
+
+        setDrawnCard(card);
+        setIsDealingCard(true);
+
+        await sleep(500);
+
+        setIsFlippingCard(true);
+
+        await sleep(500);
+
+        setIsFlippingCard(false);
+        setIsDealingCard(false);
+
+        playerAnimation.reset();
+    };
     useEffect(() => {
         if (!player || player.status === "continue" || player.status === "stand") return;
 
@@ -278,6 +369,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
             // Limpiamos la animación
             setIsFlippingCard(false);
             setIsDealingCard(false);
+            setPlayer(playerResponse)
             playerAnimation.reset();
 
         } catch (error) {
@@ -299,12 +391,13 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
 
     const handleEndRound = async () => {
         //disable "end round" button
+
+        if (!gameData) return;
         setEndRoundButton(true);
         setTakeCardButton(true);
         setRestarGameButton(true);
         setEndGameButton(true);
-        if (!gameData) return;
-
+        setCardFlylingDuration(0.3);
         const response = await fetch(`/api/game/twentyOne/solo/play/endRound`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -356,6 +449,12 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
             setTakeCardButton(false);
             setRestarGameButton(false);
             setEndGameButton(false);
+            updatePlayerWithoutCards(response);
+
+            await addPlayerCards(response);
+
+            updatePlayerStatus(response);
+            setCardFlylingDuration(0.5);
 
         }
         else {
@@ -432,18 +531,6 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
     const handleRestartGame = () => {
         setOpenDifficultDialog(true);
     }
-
-
-    //set the player data
-    useEffect(() => {
-        if (!gameData) return;
-        setPlayer(gameData?.players.find(
-            p => p.idPlayer === user.id)
-        );
-
-    }, [gameData])
-
-
 
     return (
         <div className="flex flex-col flex-1 min-h-0 h-full bg-zinc-50 dark:bg-black overflow-hidden">
@@ -742,6 +829,7 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
                 isFlipping={isFlippingCard}
                 card={drawnCard}
                 animation={playerAnimation}
+                duration={cardFlylingDuration}
             />
         </div >
     );

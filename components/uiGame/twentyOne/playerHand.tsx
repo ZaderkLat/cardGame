@@ -38,7 +38,7 @@ export function PlayerHand({ playerHand, placeholderCard, playerScrollRef, cente
 
                 ))}
 
-                {placeholderCard && (
+                {(placeholderCard || playerHand.length === 0) && (
                     <motion.div
                         layout
                         className="shrink-0"

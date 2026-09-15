@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, getPlayerState } from "@/lib/gameEngine/twetyOne/twety_One"
+import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, playerInTurn, getPlayerState } from "@/lib/gameEngine/twentyOne/twenty_One"
 
 
 export async function POST(req: Request) {

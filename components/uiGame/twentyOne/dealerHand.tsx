@@ -100,7 +100,7 @@ export function DealerHand({
                 ))}
 
                 {/* Animation Target*/}
-                {placeholderCard && (
+                {(placeholderCard || dealerHand.length === 0) && (
                     <motion.div
                         layout
                         className="shrink-0"

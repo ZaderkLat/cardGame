@@ -50,7 +50,7 @@ export function endRound(gameData: GameState) {
             hand: hands[index],
             handValue,
             turn: player.turn,
-            status: continueGame === "continue" ? "stand" : continueGame,
+            status: continueGame,
             roundsWin: player.roundsWin
         };
     });
@@ -81,13 +81,14 @@ export function hideDealerCard(game: GameState) {
     return gameResponse;
 }
 export function getPlayerState(handValue: number, quantityCard: number) {
+    if (handValue === 21 && quantityCard === 2) {
+        return "blackJack";
+    }
     if (handValue > 21) {
         return "lose";
     }
 
-    if (handValue === 21 && quantityCard === 2) {
-        return "blackJack";
-    }
+
 
     if (handValue === 21) {
         return "stand";
@@ -325,4 +326,3 @@ export function assingWinner(playersList: PlayerInfo[]): PlayerInfo[] {
 
     return [updatedDealer, ...results];
 }
-

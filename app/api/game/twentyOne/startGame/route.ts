@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server"
 import { randomUUID } from "crypto"
-import { starGame, storageGame, hideDealerCard } from "@/lib/gameEngine/twetyOne/twety_One"
+import { starGame, storageGame, hideDealerCard } from "@/lib/gameEngine/twentyOne/twenty_One"
 import type { GameState } from "@/interface/gameData"
 import { checkRateLimit, getClientIp } from "@/lib/security"
 
