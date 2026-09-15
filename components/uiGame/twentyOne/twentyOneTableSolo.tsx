@@ -393,9 +393,9 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         //disable "end round" button
 
         if (!gameData) return;
+        setRestarGameButton(true);
         setEndRoundButton(true);
         setTakeCardButton(true);
-        setRestarGameButton(true);
         setEndGameButton(true);
         setCardFlylingDuration(0.3);
         const response = await fetch(`/api/game/twentyOne/solo/play/endRound`, {
@@ -445,17 +445,17 @@ export default function TwentyOneTableSolo({ setMenuState, difficulty, rounds, o
         if (response.statusGame !== "finished") {
 
             setGameData(response);
-            setEndRoundButton(false);
-            setTakeCardButton(false);
-            setRestarGameButton(false);
-            setEndGameButton(false);
+
             updatePlayerWithoutCards(response);
 
             await addPlayerCards(response);
 
             updatePlayerStatus(response);
             setCardFlylingDuration(0.5);
-
+            setEndRoundButton(false);
+            setTakeCardButton(false);
+            setRestarGameButton(false);
+            setEndGameButton(false);
         }
         else {
 

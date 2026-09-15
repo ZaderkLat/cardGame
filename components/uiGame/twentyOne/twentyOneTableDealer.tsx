@@ -429,7 +429,7 @@ export default function TwentyOneTableDealer({ setMenuState, user,
 
             await addInitialCards(response)
             updatePlayerStatus(response);
-            setGameControlsDisabled(true);
+            setGameControlsDisabled(false);
             setIsPlaying(true);
             setEndRoundButton(false);
             setTakeCardButton(false);
