@@ -65,8 +65,7 @@ export async function POST(request: NextRequest) {
     //remove deck to send to the frontend
     game.deck = []
     const gameResponse = hideDealerCard(game);
-    //remove deck to send to the frontend
-    game.deck = []
+
     return NextResponse.json(gameResponse)
 }
 
