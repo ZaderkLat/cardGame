@@ -1,42 +1,59 @@
 import { GameState } from "@/interface/gameData";
+import { redis } from "@/lib/redis";
 
+const EXPIRATION_TIME = 60 * 30; // 30 minutos
 
-const globalForGames = globalThis as unknown as {
-  games: Map<string, GameState>
+function getGameKey(id: string) {
+  return `game:${id}`;
 }
 
-export const games =
-  globalForGames.games || new Map<string, GameState>()
+export async function createGame(game: GameState) {
 
-if (!globalForGames.games) {
-  globalForGames.games = games
+  await redis.set(
+    getGameKey(game.id),
+    game,
+    {
+      ex: EXPIRATION_TIME,
+    }
+  );
+
 }
 
-const EXPIRATION_TIME = 1000 * 60 * 30 // 30 min
+export async function getGame(id: string): Promise<GameState | null> {
 
-export function createGame(game: GameState) {
-  games.set(game.id, game)
-}
+  const game = await redis.get<GameState>(
+    getGameKey(id)
+  );
 
-export function getGame(id: string) {
-  const game = games.get(id)
-
-  if (!game) return null
-
-  if (Date.now() - game.lastUpdated > EXPIRATION_TIME) {
-    games.delete(id)
-    return null
+  if (!game) {
+    return null;
   }
 
-  return game
+  return game;
+
 }
 
-export function updateGame(id: string, game: GameState) {
-  
-  game.lastUpdated = Date.now()
-  games.set(id, game)
+export async function updateGame(
+  id: string,
+  game: GameState
+) {
+
+  game.lastUpdated = Date.now();
+
+  await redis.set(
+    getGameKey(id),
+    game,
+    {
+      ex: EXPIRATION_TIME,
+    }
+  );
+
 }
 
-export function deleteGame(id: string) {
-  games.delete(id)
+export async function deleteGame(id: string) {
+
+  await redis.del(
+    getGameKey(id)
+  );
+
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
-import { getGame } from "@/lib/gameEngine/gameStore"
 
+import { getStorageGame } from "@/lib/gameEngine/twentyOne/twenty_One"
 export const runtime = "nodejs"
 
 export async function GET(req: Request) {
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     )
   }
 
-  const game = getGame(gameId)
+  const game = await getStorageGame(gameId)
 
   if (!game) {
     return NextResponse.json(
@@ -22,6 +22,7 @@ export async function GET(req: Request) {
       { status: 404 }
     )
   }
-
+  //remove deck to send to the frontend
+  game.deck = []
   return NextResponse.json(game)
 }

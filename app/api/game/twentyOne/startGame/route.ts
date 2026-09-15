@@ -61,8 +61,9 @@ export async function POST(request: NextRequest) {
         lastUpdated: Date.now()
     }
 
-    storageGame(game)
-
+    await storageGame(game)
+    //remove deck to send to the frontend
+    game.deck = []
     const gameResponse = hideDealerCard(game);
 
     return NextResponse.json(gameResponse)

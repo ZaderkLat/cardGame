@@ -119,14 +119,14 @@ export function takeCard(remainingDeck: card[], hand: card[]) {
     return { newHand, newDeck };
 }
 
-export function storageGame(game: GameState) {
-    createGame(game);
+export async function storageGame(game: GameState) {
+    await createGame(game);
 }
-export function getStorageGame(gameId: string) {
-    return getGame(gameId);
+export async function getStorageGame(gameId: string) {
+    return await getGame(gameId);
 }
-export function updateStorageGame(gameId: string, game: GameState) {
-    updateGame(gameId, game)
+export async function updateStorageGame(gameId: string, game: GameState) {
+    await updateGame(gameId, game)
 }
 
 export function calculateHandValue(hand: card[]) {

@@ -5,7 +5,7 @@ import { getNewCard, calculateHandValue, getStorageGame, updateStorageGame, play
 export async function POST(req: Request) {
   const { gameId } = await req.json()
 
-  const game = getStorageGame(gameId)
+  const game = await getStorageGame(gameId)
 
   if (!game) {
     return NextResponse.json({ error: "Game not found" }, { status: 404 })
@@ -40,7 +40,8 @@ export async function POST(req: Request) {
   game.players = updatedPlayers;
   game.deck = newDeck
 
-  updateStorageGame(gameId, game)
-
+  await updateStorageGame(gameId, game)
+  //remove deck to send to the frontend
+  game.deck = []
   return NextResponse.json(game)
 }
