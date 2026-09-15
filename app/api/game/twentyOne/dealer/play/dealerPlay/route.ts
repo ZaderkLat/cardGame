@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
-import { getGame, updateGame } from "@/lib/gameEngine/gameStore"
 import {
-  getNewCard, calculateHandValue, playerInTurn, assingWinner
+  getNewCard, calculateHandValue, playerInTurn, assingWinner, getStorageGame, updateStorageGame
 } from "@/lib/gameEngine/twentyOne/twenty_One"
 
 
@@ -9,7 +8,7 @@ export async function POST(req: Request) {
 
   const { gameId, idPlayer } = await req.json()
 
-  const game = getGame(gameId)
+  const game = await getStorageGame(gameId)
 
   if (!game) {
     return NextResponse.json({ error: "Game not found" }, { status: 404 })
@@ -43,7 +42,8 @@ export async function POST(req: Request) {
   const updatePlayers = assingWinner(game.players);
   // ensure TypeScript compatibility when assingWinner returns a loose "status" string
   game.players = updatePlayers
-  updateGame(gameId, game)
-
+  await updateStorageGame(gameId, game)
+  //remove deck to send to the frontend
+  game.deck = []
   return NextResponse.json(game)
 }

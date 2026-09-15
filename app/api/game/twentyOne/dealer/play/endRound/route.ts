@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     const { gameId } = await req.json()
 
-    const gameData = getStorageGame(gameId)
+    const gameData = await getStorageGame(gameId)
 
     if (!gameData) {
         return NextResponse.json({ error: "Game not found" }, { status: 404 })
@@ -52,8 +52,10 @@ export async function POST(req: Request) {
         lastUpdated: Date.now()
     }
 
-    updateStorageGame(gameData.id, game)
+    await updateStorageGame(gameData.id, game)
     const gameResponse = hideDealerCard(game);
+    //remove deck to send to the frontend
+    game.deck = []
     return NextResponse.json(gameResponse)
 }
 

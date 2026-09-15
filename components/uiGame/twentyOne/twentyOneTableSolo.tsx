@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
+
 import Maze from "@/components/uiGame/maze";
 import { User } from "@/interface/userData";
 import QuantitySelector from "@/components/ui/quantitySelector";
